@@ -13,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(
+            \App\Repositories\Interfaces\QuizRepositoryInterface::class,
+            \App\Repositories\QuizRepository::class
+        );
     }
 
     /**
