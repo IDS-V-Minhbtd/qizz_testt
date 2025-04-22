@@ -34,6 +34,14 @@ class DashboardTest extends TestCase
         $response->assertStatus(302);
         $response->assertRedirect('/login');
     }
+    /**@test giao diện dashboard của user*/
+    public function user_can_see_quiz_list()
+    {
+        $this->actingAs($this->user);
+        $quiz = Quiz::factory()->create();
+        $response = $this->get('/dashboard');
+        $response->assertSee($quiz->title);
+    }
     
 
 }
