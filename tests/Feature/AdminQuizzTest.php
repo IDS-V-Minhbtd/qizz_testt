@@ -24,7 +24,7 @@ class AdminQuizzTest extends TestCase
     {
         $this->actingAs($this->user);
         $this->user->assignRole('admin');
-        $response = $this->get('/admin/quizzes'); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes');  
 
         $response->assertStatus(200);
     }
@@ -35,7 +35,7 @@ class AdminQuizzTest extends TestCase
         $this->actingAs($this->user);
         $this->user->assignRole('admin');
 
-        $response = $this->post('/admin/quizzes', [ // Sửa lại đường dẫn
+        $response = $this->post('/admin/quizzes', [  
             'title' => 'Test Quiz',
             'description' => 'This is a test quiz.',
             'user_id' => $this->user->id,
@@ -61,7 +61,7 @@ class AdminQuizzTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $response = $this->put('/admin/quizzes/' . $quiz->id, [ // Sửa lại đường dẫn
+        $response = $this->put('/admin/quizzes/' . $quiz->id, [  
             'title' => 'Updated Quiz',
             'description' => 'This is an updated test quiz.',
         ]);
@@ -86,7 +86,7 @@ class AdminQuizzTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $response = $this->delete('/admin/quizzes/' . $quiz->id); // Sửa lại đường dẫn
+        $response = $this->delete('/admin/quizzes/' . $quiz->id);  
         $response->assertStatus(302);
         $response->assertRedirect('/admin/quizzes');
         $this->assertDatabaseMissing('quizzes', [
@@ -107,7 +107,7 @@ class AdminQuizzTest extends TestCase
             'user_id' => $this->user->id,
         ]);
 
-        $response = $this->get('/admin/quizzes/' . $quiz->id); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes/' . $quiz->id);  
         $response->assertStatus(200);
         $response->assertSee('Test Quiz');
         $response->assertSee('This is a test quiz.');
@@ -118,7 +118,7 @@ class AdminQuizzTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $response = $this->get('/admin/quizzes'); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes'); 
         $response->assertStatus(403);
     }
 
@@ -139,7 +139,7 @@ class AdminQuizzTest extends TestCase
             'question' => 'What is your name?',
         ]);
 
-        $response = $this->get('/admin/quizzes/' . $quiz->id . '/questions/' . $question->id); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes/' . $quiz->id . '/questions/' . $question->id);
         $response->assertStatus(200);
         $response->assertSee('What is your name?');
     }
@@ -149,13 +149,13 @@ class AdminQuizzTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        $response = $this->get('/admin/quizzes/create'); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes/create'); 
         $response->assertStatus(403);
 
-        $response = $this->get('/admin/quizzes/' . $this->user->id . '/edit'); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes/' . $this->user->id . '/edit'); 
         $response->assertStatus(403);
 
-        $response = $this->get('/admin/quizzes/' . $this->user->id . '/delete'); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes/' . $this->user->id . '/delete'); 
         $response->assertStatus(403);
     }
 
@@ -191,7 +191,7 @@ class AdminQuizzTest extends TestCase
             'answer' => 'My name is John Doe.',
         ]);
 
-        $response = $this->get('/admin/quizzes/' . $quiz->id . '/results'); // Sửa lại đường dẫn
+        $response = $this->get('/admin/quizzes/' . $quiz->id . '/results'); 
         $response->assertStatus(200);
         $response->assertSee('My name is John Doe.');
     }

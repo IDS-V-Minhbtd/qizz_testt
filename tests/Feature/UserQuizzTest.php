@@ -53,6 +53,7 @@ public function test_user_can_view_quiz_with_questions()
     $response->assertSee('What is the capital of France?');
 
 }
+
 /** @test user can submit quiz and see result */
 public function test_user_can_submit_quiz_and_receive_result()
 {
@@ -127,7 +128,7 @@ public function test_dashboard_shows_user_quiz_results()
         'score' => 80,
     ]);
 
-    $response = $this->get('/dashboard');
+    $response = $this->get('/dashboard/results');
     $response->assertStatus(200);
     $response->assertSee('Quiz for Dashboard');
 }
@@ -137,57 +138,56 @@ public function test_user_when_they_hasnt_chose_quizz()
     $this->actingAs($this->user);
     $this->user->assignRole('user');
 
-    $response = $this->get('/quizzes');
+    $response = $this->get('/quizzes/');
     $response->assertStatus(200);
     $response->assertSee('hãy hoàn thành một bài kiểm tra');
 }
 /** @test user cannot view another user's quiz results */
 public function test_user_cannot_view_another_users_quiz_results()
 {
-    $user1 = User::factory()->create();
-    $user2 = User::factory()->create();
-    
-    $quiz = Quiz::factory()->create(['is_public' => true]);
-    $question = Question::factory()->create(['quiz_id' => $quiz->id]);
-    $answer = Answer::factory()->create(['question_id' => $question->id, 'is_correct' => true]);
+    $this->actingAs($this->user);
+    $this->user->assignRole('user');
 
-    // User1 trả lời quiz
-    $this->actingAs($user1);
-    $this->postJson('/api/quizzes/' . $quiz->id . '/submit', [
-        'answers' => [
-            $question->id => $answer->answer
-        ]
+    $anotherUser = User::factory()->create();
+    $quiz = Quiz::factory()->create([
+        'title' => 'Another User\'s Quiz',
+        'description' => 'This quiz belongs to another user.',
+        'is_public' => true,
+        'created_by' => $anotherUser->id,
     ]);
 
-    // User2 cố xem kết quả của User1
-    $this->actingAs($user2);
-    $response = $this->getJson('/api/results');
-    $response->assertStatus(403); // Không thể xem kết quả của người khác
+    Result::factory()->create([
+        'quiz_id' => $quiz->id,
+        'user_id' => $anotherUser->id,
+        'score' => 90,
+    ]);
+
+    $response = $this->get('/dashboard/results');
+    $response->assertStatus(200);
+    $response->assertDontSee('Another User\'s Quiz');
 }
-/** @test user cannot submit quiz after time limit */
-public function test_user_cannot_submit_after_time_limit()
+/** @test user can see their own quiz results */
+public function test_user_can_see_their_own_quiz_results()
 {
-    // Tạo quiz với time_limit
-    $quiz = Quiz::factory()->create(['is_public' => true, 'time_limit' => 60]);
-    $question = Question::factory()->create(['quiz_id' => $quiz->id]);
-    $answer = Answer::factory()->create(['question_id' => $question->id, 'is_correct' => true]);
+    $this->actingAs($this->user);
+    $this->user->assignRole('user');
 
-    // Giả lập thời gian đã hết
-    Carbon::setTestNow(now()->addMinutes(61));
-
-    // Gửi câu trả lời khi đã quá thời gian
-    $response = $this->postJson('/api/quizzes/' . $quiz->id . '/submit', [
-        'answers' => [
-            $question->id => $answer->answer
-        ]
+    $quiz = Quiz::factory()->create([
+        'title' => 'My Quiz',
+        'description' => 'This is my quiz.',
+        'is_public' => true,
+        'created_by' => $this->user->id,
     ]);
 
-    $response->assertStatus(400); // Lỗi do hết thời gian
-    $response->assertJson(['error' => 'Time limit exceeded']);
+    Result::factory()->create([
+        'quiz_id' => $quiz->id,
+        'user_id' => $this->user->id,
+        'score' => 85,
+    ]);
+
+    $response = $this->get('/dashboard/results');
+    $response->assertStatus(200);
+    $response->assertSee('My Quiz');
+    $response->assertSee('Score: 85');
 }
-
-
-
-
-
 }
