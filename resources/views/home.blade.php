@@ -14,7 +14,11 @@
                         </div>
                     @endif
 
-                    {{ __('You are logged in!') }}
+                    
+                    <div class="mt-4">
+                        <h2>Welcome to the Quiz Application</h2>
+                        <p>Here you can take fun quizzes.</p>
+                        <a href="{{ route('quizzes.index') }}" class="btn btn-primary">View Quizzes</a>
                 </div>
             </div>
         </div>
