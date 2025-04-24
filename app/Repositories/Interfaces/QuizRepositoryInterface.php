@@ -1,23 +1,14 @@
 <?php
-namespace App\Repositories;
+
+namespace App\Repositories\Interfaces;
 
 use App\Models\Quiz;
-use App\Repositories\Interfaces\QuizRepositoryInterface;
 
-class QuizRepository implements QuizRepositoryInterface
+interface QuizRepositoryInterface 
 {
-    public function create(array $data): Quiz
-    {
-        return Quiz::create($data);
-    }
-
-    public function findById(int $id): ?Quiz
-    {
-        return Quiz::find($id);
-    }
-
-    public function all(): iterable
-    {
-        return Quiz::all();
-    }
+    public function create(array $data): Quiz;
+    public function findById(int $id): ?Quiz;
+    public function all(): iterable;
+    public function update(int $id, array $data): bool;
+    public function delete(int $id): bool;
 }

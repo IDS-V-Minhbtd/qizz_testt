@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Repositories;
+
 use App\Models\Question;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
 
@@ -23,6 +25,7 @@ class QuestionRepository implements QuestionRepositoryInterface
         }
         return false;
     }
+
     public function delete(int $id): bool
     {
         $question = $this->findById($id);
@@ -31,16 +34,21 @@ class QuestionRepository implements QuestionRepositoryInterface
         }
         return false;
     }
+
     public function all(): iterable
     {
         return Question::all();
     }
+
     public function findByQuizId(int $quizId): iterable
     {
         return Question::where('quiz_id', $quizId)->get();
     }
+
     public function findByQuizIdAndQuestionId(int $quizId, int $questionId): ?Question
     {
-        return Question::where('quiz_id', $quizId)->where('id', $questionId)->first();
+        return Question::where('quiz_id', $quizId)
+                       ->where('id', $questionId)
+                       ->first();
     }
 }

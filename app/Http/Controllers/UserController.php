@@ -2,70 +2,56 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserRequest;
+use App\Services\UserService;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    protected $service;
+
+    public function __construct(UserService $service)
+    {
+        $this->service = $service;
+    }
+
     public function index()
     {
-        $users = User::all();
-        return view('users.index', compact('users'));
+        $data = $this->service->listUsersWithRoles();
+        return view('users.index', $data);
     }
 
     public function create()
     {
-        return view('users.create');
+        
+        return view('users.create', compact('roles'));
     }
 
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:user,admin',
-        ]);
-
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'role' => $request->role,
-        ]);
-
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        $this->service->create($request->validated());
+        return redirect()->route('users.index')->with('success', 'User created successfully!');
     }
 
     public function edit(User $user)
     {
-        return view('users.edit', compact('user'));
+        
+        return view('users.edit', compact('user', 'roles'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(UserRequest $request, User $user)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:user,admin',
-        ]);
-
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password ? bcrypt($request->password) : $user->password,
-            'role' => $request->role,
-        ]);
-
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+        $this->service->update($user, $request->validated());
+        return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
 
-    public function destroy(User $user)
+    public function destroy($id)
     {
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        $user = User::findOrFail($id);
+        $result = $this->service->delete($user);
+
+        return redirect()->route('users.index')->with($result['status'] ? 'success' : 'error', $result['message']);
     }
+
 }
-
-
