@@ -21,18 +21,25 @@ class QuestionController extends Controller
         return view('questions.index', compact('questions'));
     }
 
-    public function create()
+    public function create($quizId)
     {
-        return view('questions.create');
+        return view('questions.create', ['quizId' => $quizId]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $quizId)
     {
         // Validate and store the question
-        $request->validated();
-        $this->service->create($request->all());
+        $validatedData = $request->validate([
+            'question' => 'required|string|max:500',
+            'order' => 'nullable|integer|min:1',
+            'answer_type' => 'required|string|in:multiple_choice,text_input',
+        ]);
 
-        return redirect()->route('questions.index')->with('success', 'Question created successfully!');
+        $validatedData['quiz_id'] = $quizId; // Associate the question with the quiz
+        $this->service->create($validatedData);
+
+        return redirect()->route('quizzes.questions.index', $quizId)
+            ->with('success', 'Question added successfully!');
     }
 
     public function edit($id)

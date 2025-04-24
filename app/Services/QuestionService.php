@@ -32,8 +32,5 @@ class QuestionService
     {
         return $this->questionRepo->findByQuizId($quizId);
     }
-    public function getByQuizIdAndQuestionId(int $quizId, int $questionId): ?Question
-    {
-        return $this->questionRepo->findByQuizIdAndQuestionId($quizId, $questionId);
-    }
+
 }
