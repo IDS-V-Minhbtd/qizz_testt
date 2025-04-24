@@ -35,13 +35,12 @@ Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin
 
     // Nested: Questions within Quizzes
     Route::prefix('quizzes/{quiz}')->name('quizzes.')->group(function () {
-        
         Route::get('questions', [QuestionController::class, 'index'])->name('questions.index');
         Route::get('questions/create', [QuestionController::class, 'create'])->name('questions.create');
         Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
         Route::get('questions/{question}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
         Route::put('questions/{question}', [QuestionController::class, 'update'])->name('questions.update');
-        Route::post('questions', [QuestionController::class, 'store'])->name('questions.store');
+        Route::delete('questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
 
         Route::get('results', [ResultController::class, 'index'])->name('results.index');
     });
