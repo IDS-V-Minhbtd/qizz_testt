@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ValidateQuizRequest extends FormRequest
+class QuizRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,10 +27,9 @@ class ValidateQuizRequest extends FormRequest
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'time_limit' => 'nullable|integer|min:1|max:1440', // Time limit in minutes
-            'is_public' => 'required|boolean',
+            'is_public' => 'boolean',
         ];
     }
-
     /**
      * Custom messages for validation errors.
      *
@@ -45,7 +44,6 @@ class ValidateQuizRequest extends FormRequest
             'time_limit.integer' => 'The time limit must be a valid number.',
             'time_limit.min' => 'The time limit must be at least 1 minute.',
             'time_limit.max' => 'The time limit must not exceed 1440 minutes.',
-            'is_public.required' => 'The public status is required.',
             'is_public.boolean' => 'The public status must be true or false.',
         ];
     }

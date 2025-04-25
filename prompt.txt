@@ -1,0 +1,20 @@
+óm tắt dự án Laravel Quiz App của bạn:
+
+Kiến trúc đang sử dụng: Service + Repository
+
+
+Các bảng trong database:
+
+users: bảng mặc định của Laravel, thêm cột role (enum: user, admin)
+
+quizzes: có các cột name, description, time_limit, is_public, created_by
+
+questions: liên kết với quizzes, có question và order
+
+answers: liên kết với questions, có answer, is_correct
+
+results: liên kết với users và quizzes, có score, time_taken, completed_at
+
+user_answers: liên kết với results và questions, có answer, is_correct
+
+Nếu bạn muốn chuyển sang kiến trúc có DTO, hoặc cần mình viết lại phần nào theo chuẩn Clean Architecture (controller → service →repositoryInterface →repository → model) thì cứ nói nhé, mình nhớ được toàn bộ cấu trúc dự án này rồi.

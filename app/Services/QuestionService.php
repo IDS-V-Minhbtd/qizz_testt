@@ -1,37 +1,48 @@
 <?php
 namespace App\Services;
 
-use App\Models\Question;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
+use App\Repositories\Interfaces\QuizRepositoryInterface;
 
 class QuestionService
 {
-    public function __construct(protected QuestionRepositoryInterface $questionRepo) {}
+    public function __construct(
+        protected QuestionRepositoryInterface $questionRepo,
+        protected QuizRepositoryInterface $quizRepo // Add QuizRepositoryInterface
+    ) {}
 
-    public function create(array $data): Question
+    public function create(array $data)
     {
         return $this->questionRepo->create($data);
     }
 
-    public function getById(int $id): ?Question
+    public function getById(int $id)
     {
         return $this->questionRepo->findById($id);
     }
-    public function update(int $id, array $data): bool
+
+    public function update(int $id, array $data)
     {
         return $this->questionRepo->update($id, $data);
     }
-    public function delete(int $id): bool
+
+    public function delete(int $id)
     {
         return $this->questionRepo->delete($id);
     }
-    public function getAll(): iterable
-    {
-        return $this->questionRepo->all();
-    }
-    public function getByQuizId(int $quizId): iterable
+
+    public function getByQuizId(int $quizId)
     {
         return $this->questionRepo->findByQuizId($quizId);
     }
 
+    public function getByQuizIdAndQuestionId(int $quizId, int $questionId)
+    {
+        return $this->questionRepo->findByQuizIdAndQuestionId($quizId, $questionId);
+    }
+
+    public function getQuizById(int $quizId)
+    {
+        return $this->quizRepo->findById($quizId);
+    }
 }

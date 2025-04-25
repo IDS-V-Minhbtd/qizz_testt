@@ -10,4 +10,6 @@ interface QuestionRepositoryInterface
     public function update(int $id, array $data): bool;
     public function delete(int $id): bool;
     public function all(): iterable;
+    public function findByQuizId(int $quizId): iterable;
+    public function findByQuizIdAndQuestionId(int $quizId, int $questionId): ?Question;
 }

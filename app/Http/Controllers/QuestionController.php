@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\QuestionService;
+use App\Http\Requests\QuestionRequest;
 
 class QuestionController extends Controller
 {
@@ -14,55 +15,70 @@ class QuestionController extends Controller
         $this->service = $service;
     }
 
-    public function index()
-    {
-        // Fetch all questions and return the view
-        $questions = $this->service->getAll();
-        return view('questions.index', compact('questions'));
-    }
-
+    /**
+     * Hiển thị form thêm câu hỏi mới cho quiz
+     */
     public function create($quizId)
     {
-        return view('questions.create', ['quizId' => $quizId]);
+        $quiz = $this->service->getQuizById($quizId);
+        $questions = $this->service->getByQuizId($quizId);
+
+        if (!$quiz) {
+            abort(404, 'Quiz not found');
+        }
+
+        return view('AdminQuestions.create', compact('quiz', 'questions'));
     }
 
-    public function store(Request $request, $quizId)
+    /**
+     * Lưu câu hỏi mới vào quiz
+     */
+    public function store(QuestionRequest $request, $quizId)
     {
-        // Validate and store the question
-        $validatedData = $request->validate([
-            'question' => 'required|string|max:500',
-            'order' => 'nullable|integer|min:1',
-            'answer_type' => 'required|string|in:multiple_choice,text_input',
-        ]);
+        $validatedData = $request->validated();
+        $validatedData['quiz_id'] = $quizId;
 
-        $validatedData['quiz_id'] = $quizId; // Associate the question with the quiz
         $this->service->create($validatedData);
 
-        return redirect()->route('quizzes.questions.index', $quizId)
+        return redirect()->route('admin.quizzes.edit', $quizId)
             ->with('success', 'Question added successfully!');
     }
 
-    public function edit($id)
+    /**
+     * Hiển thị form chỉnh sửa một câu hỏi cụ thể
+     */
+    public function edit($quizId, $questionId)
     {
-        // Fetch the question by ID and return the edit view
-        $question = $this->service->getById($id);
-        return view('questions.edit', compact('question'));
+        $quiz = $this->service->getQuizById($quizId);
+        $question = $this->service->getByQuizIdAndQuestionId($quizId, $questionId);
+
+        if (!$quiz || !$question) {
+            abort(404, 'Quiz or Question not found');
+        }
+
+        return view('AdminQuestions.edit', compact('quiz', 'question'));
     }
 
-    public function update(Request $request, $id)
+    /**
+     * Cập nhật câu hỏi sau khi chỉnh sửa
+     */
+    public function update(QuestionRequest $request, $quizId, $questionId)
     {
-        // Validate and update the question
-        $request->validated();
-        $this->service->update($id, $request->all());
+        $validatedData = $request->validated();
+        $this->service->update($questionId, $validatedData);
 
-        return redirect()->route('questions.index')->with('success', 'Question updated successfully!');
+        return redirect()->route('admin.quizzes.edit', $quizId)
+            ->with('success', 'Question updated successfully!');
     }
 
-    public function destroy($id)
+    /**
+     * Xóa một câu hỏi khỏi quiz
+     */
+    public function destroy($quizId, $questionId)
     {
-        // Delete the question by ID
-        $this->service->delete($id);
+        $this->service->delete($questionId);
 
-        return redirect()->route('questions.index')->with('success', 'Question deleted successfully!');
+        return redirect()->route('admin.quizzes.edit', $quizId)
+            ->with('success', 'Question deleted successfully!');
     }
 }

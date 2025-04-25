@@ -23,6 +23,15 @@ class QuizService
     {
         return $this->quizRepo->all();
     }
+    public function update(int $id, array $data): bool
+    {
+        return $this->quizRepo->update($id, $data);
+    }
+    public function delete(int $id): bool
+    {
+        return $this->quizRepo->delete($id);
+    }
+
 
   
 }

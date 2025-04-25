@@ -17,6 +17,8 @@ use App\Services\ResultService;
 use App\Repositories\Interfaces\UserAnswerRepositoryInterface;
 use App\Repositories\UserAnswerRepository;
 use App\Services\UserAnswerService;
+use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Repositories\UserRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,7 +39,10 @@ class AppServiceProvider extends ServiceProvider
             QuestionRepository::class
         );
         $this->app->bind(QuestionService::class, function ($app) {
-            return new QuestionService($app->make(QuestionRepositoryInterface::class));
+            return new QuestionService(
+                $app->make(QuestionRepositoryInterface::class),
+                $app->make(QuizRepositoryInterface::class) // Add the second dependency
+            );
         });
 
         // Đăng ký các repository và service cho Answer

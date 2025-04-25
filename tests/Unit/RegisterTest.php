@@ -6,7 +6,7 @@ use Tests\TestCase;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\RegisterRequest;
 
-class RegisterRequestTest extends TestCase
+class RegistertTest extends TestCase
 {
     protected function getValidator(array $data)
     {

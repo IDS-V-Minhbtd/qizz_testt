@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Question;
+use App\Models\Quiz;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
 
 class QuestionRepository implements QuestionRepositoryInterface
@@ -42,7 +43,7 @@ class QuestionRepository implements QuestionRepositoryInterface
 
     public function findByQuizId(int $quizId): iterable
     {
-        return Question::where('quiz_id', $quizId)->get();
+        return Question::where('quiz_id', $quizId)->orderBy('order')->get();
     }
 
     public function findByQuizIdAndQuestionId(int $quizId, int $questionId): ?Question
