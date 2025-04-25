@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Question;
+use App\Models\Answer;
 use App\Models\Quiz;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
 
@@ -51,5 +52,21 @@ class QuestionRepository implements QuestionRepositoryInterface
         return Question::where('quiz_id', $quizId)
                        ->where('id', $questionId)
                        ->first();
+    }
+    public function getAnswers(int $questionId): iterable
+    {
+        return Answer::where('question_id', $questionId)->get();
+    }
+    public function createAnswer(array $data): Answer
+    {
+        return Answer::create($data);
+    }
+    public function updateAnswer(int $id, array $data): bool
+    {
+        $answer = Answer::find($id);
+        if ($answer) {
+            return $answer->update($data);
+        }
+        return false;
     }
 }

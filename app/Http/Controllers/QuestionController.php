@@ -15,9 +15,6 @@ class QuestionController extends Controller
         $this->service = $service;
     }
 
-    /**
-     * Hiển thị form thêm câu hỏi mới cho quiz
-     */
     public function create($quizId)
     {
         $quiz = $this->service->getQuizById($quizId);
@@ -30,23 +27,18 @@ class QuestionController extends Controller
         return view('AdminQuestions.create', compact('quiz', 'questions'));
     }
 
-    /**
-     * Lưu câu hỏi mới vào quiz
-     */
     public function store(QuestionRequest $request, $quizId)
     {
         $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
 
-        $this->service->create($validatedData);
+        // Gộp xử lý tạo question + answers trong service
+        $this->service->createWithAnswers($validatedData);
 
         return redirect()->route('admin.quizzes.edit', $quizId)
-            ->with('success', 'Question added successfully!');
+            ->with('success', 'Câu hỏi và các đáp án đã được thêm!');
     }
 
-    /**
-     * Hiển thị form chỉnh sửa một câu hỏi cụ thể
-     */
     public function edit($quizId, $questionId)
     {
         $quiz = $this->service->getQuizById($quizId);
@@ -59,9 +51,6 @@ class QuestionController extends Controller
         return view('AdminQuestions.edit', compact('quiz', 'question'));
     }
 
-    /**
-     * Cập nhật câu hỏi sau khi chỉnh sửa
-     */
     public function update(QuestionRequest $request, $quizId, $questionId)
     {
         $validatedData = $request->validated();
@@ -71,9 +60,6 @@ class QuestionController extends Controller
             ->with('success', 'Question updated successfully!');
     }
 
-    /**
-     * Xóa một câu hỏi khỏi quiz
-     */
     public function destroy($quizId, $questionId)
     {
         $this->service->delete($questionId);
