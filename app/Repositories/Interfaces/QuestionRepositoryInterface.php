@@ -12,7 +12,5 @@ interface QuestionRepositoryInterface
     public function all(): iterable;
     public function findByQuizId(int $quizId): iterable;
     public function findByQuizIdAndQuestionId(int $quizId, int $questionId): ?Question;
-    public function getAnswers(int $questionId): iterable;
-    public function createAnswer(array $data): Answer;
-    public function updateAnswer(int $id, array $data): bool;
+
 }

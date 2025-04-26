@@ -24,7 +24,7 @@ class QuestionController extends Controller
             abort(404, 'Quiz not found');
         }
 
-        return view('AdminQuestions.create', compact('quiz', 'questions'));
+        return view('admin.quizzes.question.create', compact('quiz', 'questions'));
     }
 
     public function store(QuestionRequest $request, $quizId)
@@ -48,7 +48,7 @@ class QuestionController extends Controller
             abort(404, 'Quiz or Question not found');
         }
 
-        return view('AdminQuestions.edit', compact('quiz', 'question'));
+        return view('admin.quizzes.question.edit', compact('quiz', 'question'));
     }
 
     public function update(QuestionRequest $request, $quizId, $questionId)

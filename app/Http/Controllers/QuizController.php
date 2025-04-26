@@ -22,12 +22,14 @@ class QuizController extends Controller
     {
         // Lấy danh sách tất cả các quiz và trả về view
         $quizzes = $this->service->getAll();
-        return view('AdminQuizzes.index', compact('quizzes'));
+        return view('admin.quizzes.index', compact('quizzes'));
     }
 
     public function create()
     {
-        return view('AdminQuizzes.create');
+        // Pass an empty Quiz instance to the view if needed
+        $quiz = new Quiz();
+        return view('admin.quizzes.create', compact('quiz'));
     }
 
     public function store(QuizRequest $request)
@@ -49,8 +51,9 @@ class QuizController extends Controller
             abort(404, 'Quiz not found');
         }
         $questions = $quiz->questions()->orderBy('order')->get();
+        
 
-        return view('AdminQuizzes.edit', compact('quiz', 'questions'));
+        return view('admin.quizzes.edit', compact('quiz', 'questions'));
     }
 
     public function update(QuizRequest $request, $id)

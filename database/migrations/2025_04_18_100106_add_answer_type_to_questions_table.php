@@ -9,7 +9,7 @@ class AddAnswerTypeToQuestionsTable extends Migration
     public function up()
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->enum('answer_type', ['multiple_choice', 'text_input'])->default('multiple_choice'); // Thêm trường answer_type
+            $table->enum('answer_type', ['multiple_choice', 'text_input','true_flase'])->default('multiple_choice'); // Thêm trường answer_type
         });
     }
 
