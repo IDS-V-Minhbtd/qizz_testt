@@ -21,4 +21,6 @@ Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin
     Route::resource('quizzes', QuizController::class);
     Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
     Route::resource('quizzes.questions', QuestionController::class);
+    Route::resource('/forfun', QuestionController::class);
+    Route::get('quizzes/{quiz}/questions/create', [QuestionController::class, 'create'])->name('quizzes.questions.create');
 });

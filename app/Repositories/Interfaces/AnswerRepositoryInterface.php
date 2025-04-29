@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Interfaces;
 
-use App\Repositories\AnswerRepository;
+use App\Models\Answer;
 
 interface  AnswerRepositoryInterface
 {

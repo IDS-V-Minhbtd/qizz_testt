@@ -4,21 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\QuestionService;
+use App\Services\AnswerService;
 use App\Http\Requests\QuestionRequest;
 
 class QuestionController extends Controller
 {
-    protected $service;
+    protected $questionService;
+    protected $answerService;
 
-    public function __construct(QuestionService $service)
+    public function __construct(QuestionService $questionService, AnswerService $answerService)
     {
-        $this->service = $service;
+        $this->questionService = $questionService;
+        $this->answerService = $answerService;
     }
 
     public function create($quizId)
     {
-        $quiz = $this->service->getQuizById($quizId);
-        $questions = $this->service->getByQuizId($quizId);
+        $quiz = $this->questionService->getQuizById($quizId);
+        $questions = $this->questionService->getByQuizId($quizId);
 
         if (!$quiz) {
             abort(404, 'Quiz not found');
@@ -31,18 +34,24 @@ class QuestionController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
-
-        // Gộp xử lý tạo question + answers trong service
-        $this->service->createWithAnswers($validatedData);
-
+        if ($validatedData['answer_type'] === 'multiple_choice') {
+            $answers = $request->input('answers');
+            $this->questionService->createWithAnswers($validatedData, $answers);
+        } elseif ($validatedData['answer_type'] === 'true_false') {
+            $correctAnswer = $request->input('correct_answer');
+            $this->questionService->createTrueFalse($validatedData, $correctAnswer);
+        } elseif ($validatedData['answer_type'] === 'text_input') {
+            $textAnswer = $request->input('text_answer');
+            $this->questionService->createTextInput($validatedData, $textAnswer);
+        }
         return redirect()->route('admin.quizzes.edit', $quizId)
-            ->with('success', 'Câu hỏi và các đáp án đã được thêm!');
+            ->with('success', 'Câu hỏi đã được thêm thành công!');
     }
 
     public function edit($quizId, $questionId)
     {
-        $quiz = $this->service->getQuizById($quizId);
-        $question = $this->service->getByQuizIdAndQuestionId($quizId, $questionId);
+        $quiz = $this->questionService->getQuizById($quizId);
+        $question = $this->questionService->getByQuizIdAndQuestionId($quizId, $questionId);
 
         if (!$quiz || !$question) {
             abort(404, 'Quiz or Question not found');
@@ -54,17 +63,17 @@ class QuestionController extends Controller
     public function update(QuestionRequest $request, $quizId, $questionId)
     {
         $validatedData = $request->validated();
-        $this->service->update($questionId, $validatedData);
+        $this->questionService->update($questionId, $validatedData);
 
         return redirect()->route('admin.quizzes.edit', $quizId)
-            ->with('success', 'Question updated successfully!');
+            ->with('success', 'Cập nhật câu hỏi thành công!');
     }
 
     public function destroy($quizId, $questionId)
     {
-        $this->service->delete($questionId);
+        $this->questionService->delete($questionId);
 
         return redirect()->route('admin.quizzes.edit', $quizId)
-            ->with('success', 'Question deleted successfully!');
+            ->with('success', 'Xóa câu hỏi thành công!');
     }
 }
