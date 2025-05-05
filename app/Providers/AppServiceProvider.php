@@ -26,7 +26,6 @@ use App\Repositories\UserRepository;
 // Services
 use App\Services\QuizService;
 use App\Services\QuestionService;
-use App\Services\AnswerService;
 use App\Services\ResultService;
 use App\Services\UserAnswerService;
 use App\Services\UserService;
@@ -58,13 +57,7 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->bind(AnswerService::class, function ($app) {
-            return new AnswerService(
-                $app->make(AnswerRepositoryInterface::class),
-                $app->make(QuestionRepositoryInterface::class)
-            );
-        });
-
+        
         $this->app->bind(ResultService::class, function ($app) {
             return new ResultService(
                 $app->make(ResultRepositoryInterface::class)

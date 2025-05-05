@@ -29,4 +29,14 @@ class AnswerRepository implements AnswerRepositoryInterface
     {
         return Answer::all();
     }
+    public function getByQuestionId($questionId)
+{
+    return Answer::where('question_id', $questionId)->get();
+}
+    
+    public function deleteByQuestionId(int $questionId): bool
+    {
+        return Answer::where('question_id', $questionId)->delete();
+    }
+
 }

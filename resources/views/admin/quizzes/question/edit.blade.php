@@ -1,3 +1,24 @@
+@php
+    $answers = collect($answers ?? []);
+    $correctAnswer = old('correct_answer');
+
+    if ($correctAnswer === null) {
+        if ($answers->isNotEmpty()) {
+            $correctAnswer = $answers->search(function ($a) {
+                return ($a['is_correct'] ?? $a->is_correct ?? false);
+            });
+        } elseif (isset($question) && $question->type === 'true_false') {
+            $correctAnswer = $answers[0]['is_correct'] ?? $answers[0]->is_correct ?? null;
+        } elseif (isset($question) && $question->type === 'text_input') {
+            $correctAnswer = $answers[0]['answer'] ?? $answers[0]->answer ?? '';
+        } else {
+            $correctAnswer = -1;
+        }
+    }
+@endphp
+
+
+
 @extends('layouts.app')
 
 @section('content')
@@ -20,12 +41,12 @@
 
     <form method="POST" action="{{ route('admin.quizzes.questions.update', ['quiz' => $quiz->id, 'question' => $question->id]) }}">
         @csrf
-        @method('PUT') {{-- Update thì phải PUT --}}
-        
+        @method('PUT')
+
         <div class="mb-3">
             <label for="question" class="form-label">Câu hỏi</label>
             <input type="text" name="question" id="question" class="form-control @error('question') is-invalid @enderror"
-                value="{{ old('question', $question->question) }}">
+                   value="{{ old('question', $question->question) }}">
             @error('question')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -34,7 +55,7 @@
         <div class="mb-3">
             <label for="order" class="form-label">Thứ tự</label>
             <input type="number" name="order" id="order" class="form-control @error('order') is-invalid @enderror"
-                value="{{ old('order', $question->order) }}" min="1">
+                   value="{{ old('order', $question->order) }}" min="1">
             @error('order')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -52,19 +73,22 @@
             @enderror
         </div>
 
-        {{-- Các phần đáp án theo loại câu hỏi --}}
+        {{-- Multiple Choice --}}
         <div id="multiple-choice-answers" style="display: none;">
             <div class="mb-3">
-                <label for="answers" class="form-label">Các đáp án</label>
+                <label class="form-label">Các đáp án</label>
                 <div id="answers-container">
                     @foreach(old('answers', $answers ?? []) as $index => $answer)
+                        @php
+                            $text = is_array($answer) ? $answer['text'] ?? $answer['answer'] ?? '' : $answer->answer;
+                        @endphp
                         <div class="input-group mb-3">
                             <input type="text" name="answers[{{ $index }}][text]" class="form-control"
-                                placeholder="Đáp án {{ $index + 1 }}"
-                                value="{{ old('answers.' . $index . '.text', $answer['answer']) }}">
+                                   placeholder="Đáp án {{ $index + 1 }}"
+                                   value="{{ old("answers.$index.text", $text) }}">
                             <div class="input-group-text">
                                 <input type="radio" name="correct_answer" value="{{ $index }}"
-                                    {{ old('correct_answer', $correctAnswer ?? -1) == $index ? 'checked' : '' }}>
+                                    {{ $correctAnswer == $index ? 'checked' : '' }}>
                             </div>
                         </div>
                     @endforeach
@@ -76,24 +100,26 @@
             </div>
         </div>
 
+        {{-- Text Input --}}
         <div id="text-input-answer" style="display: none;">
             <div class="mb-3">
                 <label for="text_answer" class="form-label">Đáp án văn bản</label>
                 <input type="text" name="text_answer" id="text_answer"
-                    class="form-control @error('text_answer') is-invalid @enderror"
-                    value="{{ old('text_answer', $answers[0]['answer'] ?? '') }}">
+                       class="form-control @error('text_answer') is-invalid @enderror"
+                       value="{{ old('text_answer', $answers[0]->answer ?? '') }}">
                 @error('text_answer')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
         </div>
 
+        {{-- True / False --}}
         <div id="true-false-answers" style="display: none;">
             <div class="mb-3">
                 <label for="correct_answer" class="form-label">Chọn đáp án đúng</label>
                 <select name="correct_answer" id="correct_answer" class="form-select @error('correct_answer') is-invalid @enderror">
-                    <option value="1" {{ old('correct_answer', $correctAnswer ?? -1) == 1 ? 'selected' : '' }}>Đúng</option>
-                    <option value="0" {{ old('correct_answer', $correctAnswer ?? -1) == 0 ? 'selected' : '' }}>Sai</option>
+                    <option value="1" {{ $correctAnswer == 1 ? 'selected' : '' }}>Đúng</option>
+                    <option value="0" {{ $correctAnswer == 0 ? 'selected' : '' }}>Sai</option>
                 </select>
                 @error('correct_answer')
                     <div class="invalid-feedback">{{ $message }}</div>

@@ -24,6 +24,16 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
     {
         return $this->model->find($id);
     }
-}
-    
 
+    public function getResultByQuizAndUser(int $quizId, int $userId): ?UserAnswer
+    {
+        return $this->model->where('quiz_id', $quizId)
+            ->where('user_id', $userId)
+            ->first();
+    }
+
+    public function getUserResults(int $userId): Collection
+    {
+        return $this->model->where('user_id', $userId)->get();
+    }
+}

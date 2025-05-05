@@ -21,7 +21,7 @@ class QuestionRequest extends FormRequest
 
     if ($this->input('answer_type') === 'multiple_choice') {
         $rules['answers'] = 'required|array|min:2';
-        $rules['answers.*'] = 'required|string|max:255';
+        $rules['answers.*'] = 'required|max:255';
         $rules['correct_answer'] = 'nullable|integer';
     }
 

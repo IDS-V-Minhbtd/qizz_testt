@@ -4,18 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\QuestionService;
-use App\Services\AnswerService;
+
 use App\Http\Requests\QuestionRequest;
 
 class QuestionController extends Controller
 {
     protected $questionService;
-    protected $answerService;
 
-    public function __construct(QuestionService $questionService, AnswerService $answerService)
+    public function __construct(QuestionService $questionService)
     {
         $this->questionService = $questionService;
-        $this->answerService = $answerService;
     }
 
     public function create($quizId)
@@ -52,22 +50,31 @@ class QuestionController extends Controller
     {
         $quiz = $this->questionService->getQuizById($quizId);
         $question = $this->questionService->getByQuizIdAndQuestionId($quizId, $questionId);
-
-        if (!$quiz || !$question) {
-            abort(404, 'Quiz or Question not found');
+        $answers = $this->questionService->getAnswerByQuestionId($questionId)?? collect();
+        if (!$quiz || !$question) { 
+            abort(404, 'Quiz or question not found');
         }
+        
 
-        return view('admin.quizzes.question.edit', compact('quiz', 'question'));
+        return view('admin.quizzes.question.edit', compact('quiz', 'question','answers'));
     }
 
     public function update(QuestionRequest $request, $quizId, $questionId)
-    {
-        $validatedData = $request->validated();
-        $this->questionService->update($questionId, $validatedData);
+{
+    $validatedData = $request->validated();
+    $validatedData['quiz_id'] = $quizId;
 
-        return redirect()->route('admin.quizzes.edit', $quizId)
-            ->with('success', 'Cập nhật câu hỏi thành công!');
-    }
+    // Thêm các input đặc biệt cho từng loại câu hỏi
+    $validatedData['answers'] = $request->input('answers');
+    $validatedData['correct_answer'] = $request->input('correct_answer');
+    $validatedData['text_answer'] = $request->input('text_answer');
+
+    $this->questionService->updateWithAnswers($questionId, $validatedData);
+
+    return redirect()->route('admin.quizzes.edit', $quizId)
+        ->with('success', 'Cập nhật câu hỏi thành công!');
+}
+
 
     public function destroy($quizId, $questionId)
     {

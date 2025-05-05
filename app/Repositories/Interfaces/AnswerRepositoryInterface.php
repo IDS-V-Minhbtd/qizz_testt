@@ -13,4 +13,8 @@ interface  AnswerRepositoryInterface
     public function update(int $id, array $data): bool;
 
     public function all(): iterable;
+
+    public function getByQuestionId($questionId);
+
+    public function deleteByQuestionId(int $questionId): bool;
 }
