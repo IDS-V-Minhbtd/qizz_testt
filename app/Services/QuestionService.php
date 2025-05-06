@@ -76,18 +76,18 @@ class QuestionService
                         ]);
                     }
                 }
-            } elseif ($data['answer_type'] === 'text_input') {
-                $this->answerRepo->create([
-                    'question_id' => $question->id,
-                    'answer'      => $data['text_answer'],
-                    'is_correct'  => true,
-                ]);
-            } elseif ($data['answer_type'] === 'true_false') {
-                $correct = (int)$data['correct_answer'] === 1;
-                $this->answerRepo->createMany([
-                    ['question_id' => $question->id, 'answer' => 'Đúng', 'is_correct' => $correct],
-                    ['question_id' => $question->id, 'answer' => 'Sai',  'is_correct' => !$correct],
-                ]);
+            // } elseif ($data['answer_type'] === 'text_input') {
+            //     $this->answerRepo->create([
+            //         'question_id' => $question->id,
+            //         'answer'      => $data['text_answer'],
+            //         'is_correct'  => true,
+            //     ]);
+            // } elseif ($data['answer_type'] === 'true_false') {
+            //     $correct = (int)$data['correct_answer'] === 1;
+            //     $this->answerRepo->createMany([
+            //         ['question_id' => $question->id, 'answer' => 'Đúng', 'is_correct' => $correct],
+            //         ['question_id' => $question->id, 'answer' => 'Sai',  'is_correct' => !$correct],
+            //     ]);
             }
 
             return $question;
@@ -95,47 +95,42 @@ class QuestionService
     }
 
     public function updateWithAnswers(int $questionId, array $data): Question
-{
-    return DB::transaction(function () use ($questionId, $data) {
-        // Cập nhật câu hỏi
-        $question = $this->questionRepo->update($questionId, [
-            'quiz_id'  => $data['quiz_id'],
-            'question' => $data['question'],
-            'order'    => $data['order'] ?? 0,
-            'type'     => $data['answer_type'], // Đảm bảo rằng bạn gán đúng vào trường 'type'
-        ]);
+    {
+        return DB::transaction(function () use ($questionId, $data) {
+            $this->questionRepo->update($questionId, [
+                'quiz_id'  => $data['quiz_id'],
+                'question' => $data['question'],
+                'order'    => $data['order'] ?? 0,
+                'type'     => $data['answer_type'],
+            ]);
 
-        // Xóa câu trả lời cũ trước khi thêm câu trả lời mới
-        $this->answerRepo->deleteByQuestionId($questionId);
+            $this->answerRepo->deleteByQuestionId($questionId);
 
-        // Thêm câu trả lời mới theo loại câu hỏi
-        if ($data['answer_type'] === 'multiple_choice') {
-            foreach ($data['answers'] as $index => $answer) {
-                if (isset($answer['text'])) {
-                    $this->answerRepo->create([
-                        'question_id' => $questionId,
-                        'answer'      => $answer['text'],
-                        'is_correct'  => ((int)$data['correct_answer'] === $index),
-                    ]);
+            if ($data['answer_type'] === 'multiple_choice') {
+                foreach ($data['answers'] as $index => $answer) {
+                    if (isset($answer['text'])) {
+                        $this->answerRepo->create([
+                            'question_id' => $questionId,
+                            'answer'      => $answer['text'],
+                            'is_correct'  => ((int)$data['correct_answer'] === $index),
+                        ]);
+                    }
                 }
+            // } elseif ($data['answer_type'] === 'text_input') {
+            //     $this->answerRepo->create([
+            //         'question_id' => $questionId,
+            //         'answer'      => $data['text_answer'],
+            //         'is_correct'  => true,
+            //     ]);
+            // } elseif ($data['answer_type'] === 'true_false') {
+            //     $correct = (int)$data['correct_answer'] === 1;
+            //     $this->answerRepo->createMany([
+            //         ['question_id' => $questionId, 'answer' => 'Đúng', 'is_correct' => $correct],
+            //         ['question_id' => $questionId, 'answer' => 'Sai',  'is_correct' => !$correct],
+            //     ]);
             }
-        } elseif ($data['answer_type'] === 'text_input') {
-            $this->answerRepo->create([
-                'question_id' => $questionId,
-                'answer'      => $data['text_answer'],
-                'is_correct'  => true, // Nếu cần, bạn có thể thay đổi logic này để phù hợp
-            ]);
-        } elseif ($data['answer_type'] === 'true_false') {
-            $correct = (int)$data['correct_answer'] === 1;
-            $this->answerRepo->createMany([
-                ['question_id' => $questionId, 'answer' => 'Đúng', 'is_correct' => $correct],
-                ['question_id' => $questionId, 'answer' => 'Sai',  'is_correct' => !$correct],
-            ]);
-        }
 
-        // Trả về câu hỏi đã được cập nhật
-        return $this->questionRepo->findById($questionId);
-    });
-}
-
+            return $this->questionRepo->findById($questionId);
+        });
+    }
 }
