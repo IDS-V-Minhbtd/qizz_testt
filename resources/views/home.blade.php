@@ -46,7 +46,7 @@
 <script>
     function openQuizModal(quizId, quizName) {
         document.getElementById('quizModalLabel').innerText = 'Bắt đầu: ' + quizName;
-        document.getElementById('startQuizBtn').href = `/quizzes/${quizId}/start`;
+        document.getElementById('startQuizBtn').href = `/quizz/${quizId}`;
         const modal = new bootstrap.Modal(document.getElementById('quizModal'));
         modal.show();
     }

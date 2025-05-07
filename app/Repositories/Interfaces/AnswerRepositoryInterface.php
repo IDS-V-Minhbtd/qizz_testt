@@ -17,4 +17,6 @@ interface  AnswerRepositoryInterface
     public function getByQuestionId($questionId);
 
     public function deleteByQuestionId(int $questionId): bool;
+
+    public function deleteById(int $id): bool;
 }

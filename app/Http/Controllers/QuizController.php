@@ -32,28 +32,6 @@ class QuizController extends Controller
         return view('admin.quizzes.create', compact('quiz'));
     }
 
-    public function start(Quiz $quiz)
-    {
-        if (!$quiz->is_public) {
-            return redirect()->route('home')->with('error', 'Quiz này không công khai.');
-        }
-
-        $questions = $quiz->questions()->with('answers')->get();
-        return view('quizzes.start', compact('quiz', 'questions'));
-    }
-
-    public function submitAnswers(Request $request, Quiz $quiz)
-    {
-        $validatedData = $request->validate([
-            'answers' => 'required|array',
-            'answers.*' => 'required|string',
-        ]);
-
-        $userAnswers = $validatedData['answers'];
-        $result = app(UserAnswerService::class)->checkAnswer(auth()->id(), $quiz->id, $userAnswers);
-
-        return redirect()->route('quizzes.result', $quiz->id)->with('success', 'Bạn đã hoàn thành quiz!');
-    }
 
     public function store(QuizRequest $request)
     {

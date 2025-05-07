@@ -14,4 +14,12 @@ interface UserAnswerRepositoryInterface
     public function getResultByQuizAndUser(int $quizId, int $userId): ?UserAnswer;
 
     public function getUserResults(int $userId): Collection;
+
+    public function getUserAnswerByQuizAndQuestion(int $quizId, int $questionId, int $userId): ?UserAnswer;
+
+    public function getCorrectAnswersCount(int $quizId, int $userId): int;
+
+    public function getAllAnswersByQuiz(int $quizId, int $userId): Collection;
+
+    public function deleteAnswers(int $quizId, int $userId): void;
 }

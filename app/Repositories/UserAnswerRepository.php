@@ -36,4 +36,43 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
     {
         return $this->model->where('user_id', $userId)->get();
     }
+
+    public function getUserAnswerByQuizAndQuestion(int $quizId, int $questionId, int $userId): ?UserAnswer
+    {
+        return $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
+                $query->where('quiz_id', $quizId)
+                      ->where('user_id', $userId);
+            })
+            ->where('question_id', $questionId)
+            ->first();
+    }
+
+    public function getCorrectAnswersCount(int $quizId, int $userId): int
+    {
+        return $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
+                $query->where('quiz_id', $quizId)
+                      ->where('user_id', $userId);
+            })
+            ->where('is_correct', true)
+            ->count();
+    }
+
+    public function getAllAnswersByQuiz(int $quizId, int $userId): Collection
+    {
+        return $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
+                $query->where('quiz_id', $quizId)
+                      ->where('user_id', $userId);
+            })
+            ->get();
+    }
+
+    public function deleteAnswers(int $quizId, int $userId): void
+    {
+        $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
+                $query->where('quiz_id', $quizId)
+                      ->where('user_id', $userId);
+            })
+            ->delete();
+    }
+
 }

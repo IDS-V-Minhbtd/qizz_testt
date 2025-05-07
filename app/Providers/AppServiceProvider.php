@@ -64,9 +64,12 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->bind(UserAnswerService::class, function ($app) {
+        $this->app->singleton(UserAnswerService::class, function ($app) {
             return new UserAnswerService(
-                $app->make(UserAnswerRepositoryInterface::class)
+                $app->make(UserAnswerRepositoryInterface::class), 
+                $app->make(AnswerRepositoryInterface::class),    
+                $app->make(QuestionRepositoryInterface::class),   
+                $app->make(QuizRepositoryInterface::class)      
             );
         });
 
