@@ -48,4 +48,9 @@ class AnswerRepository implements AnswerRepositoryInterface
         }
         return false;
     }
+    public function getAnswerbyQuestionID(array $ids): bool
+    {
+        return Answer::where('id', $answerId)->where('question_id', $questionId)->first();
+
+    }
 }

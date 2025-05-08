@@ -73,4 +73,20 @@ class UserAnswerService
         $answer = $this->answerRepo->findById($answerId);
         return $answer && $answer->question_id === $questionId && $answer->is_correct;
     }
+    public function getAnswersByQuiz(int $quizId, int $userId)
+    {
+        return $this->userAnswerRepo->getAllAnswersByQuiz($quizId, $userId); // Gọi phương thức repo
+    }
+    // Trong UserAnswerService
+public function getCorrectCount(int $quizId, int $userId): int
+{
+    // Giả sử bạn đã có phương thức getAnswersByQuiz trả về các câu trả lời của người dùng
+    $answers = $this->userAnswerRepo->getAllAnswersByQuiz($quizId, $userId);
+
+    // Lọc ra các câu trả lời đúng
+    return $answers->filter(function ($answer) {
+        return $answer->is_correct;
+    })->count();
+}
+
 }

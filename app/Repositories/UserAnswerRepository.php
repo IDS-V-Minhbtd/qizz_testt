@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\UserAnswer;
+use App\Models\Result;
 use App\Repositories\Interfaces\UserAnswerRepositoryInterface;
 use Illuminate\Support\Collection;
 
@@ -25,11 +26,10 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
         return $this->model->find($id);
     }
 
-    public function getResultByQuizAndUser(int $quizId, int $userId): ?UserAnswer
+    public function isCorrect(int $id): bool
     {
-        return $this->model->where('quiz_id', $quizId)
-            ->where('user_id', $userId)
-            ->first();
+        $userAnswer = $this->findById($id);
+        return $userAnswer ? $userAnswer->is_correct : false;
     }
 
     public function getUserResults(int $userId): Collection
@@ -45,16 +45,6 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
             })
             ->where('question_id', $questionId)
             ->first();
-    }
-
-    public function getCorrectAnswersCount(int $quizId, int $userId): int
-    {
-        return $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
-                $query->where('quiz_id', $quizId)
-                      ->where('user_id', $userId);
-            })
-            ->where('is_correct', true)
-            ->count();
     }
 
     public function getAllAnswersByQuiz(int $quizId, int $userId): Collection
@@ -75,4 +65,21 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
             ->delete();
     }
 
+    public function getResultByQuizAndUser(int $quizId, int $userId): ?UserAnswer
+{
+    return $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
+        $query->where('quiz_id', $quizId)
+              ->where('user_id', $userId);
+    })->first();
+}
+
+    public function getCorrectAnswersCount(int $quizId, int $userId): int
+    {
+        return $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
+                $query->where('quiz_id', $quizId)
+                      ->where('user_id', $userId);
+            })
+            ->where('is_correct', true)
+            ->count();
+    }
 }

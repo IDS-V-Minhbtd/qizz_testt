@@ -5,30 +5,35 @@
     <h3>Bắt đầu Quiz: {{ $quiz->title }}</h3>
     <p>{{ $quiz->description }}</p>
 
-    <div id="quiz-container">
-        @foreach($questions as $index => $question)
-            <div class="card mb-3 question-block" data-index="{{ $index }}" style="{{ $index === 0 ? '' : 'display:none;' }}">
-                <div class="card-header">Câu {{ $index + 1 }} trên {{ $questions->count() }}</div>
-                <div class="card-body">
-                    <p class="fw-bold">{{ $question->question }}</p>
-                    @foreach($question->answers as $answer)
-                        <button class="btn btn-outline-primary d-block mb-2 answer-btn"
-                            data-answer-id="{{ $answer->id }}"
-                            data-question-id="{{ $question->id }}">
-                            {{ $answer->answer }}
-                        </button>
-                    @endforeach
-                    <div class="result mt-2 fw-bold"></div>
-                </div>
-            </div>
-        @endforeach
+    <div class="alert alert-info">
+        Thời gian còn lại: <span id="time">00:00</span>
     </div>
 
-    <div id="summary" class="mt-4" style="display:none;">
-        <h4>Kết quả</h4>
-        <p>Bạn đã trả lời đúng <span id="correct-count">0</span> trên {{ $questions->count() }} câu.</p>
-        <a href="{{ route('home') }}" class="btn btn-primary">Về trang chủ</a>
-    </div>
+    <form id="quiz-result-form" method="POST" action="{{ route('quizz.submit', $quiz->id) }}">
+        @csrf
+        <input type="hidden" name="score" id="final-score">
+        <input type="hidden" name="answers" id="final-answers">
+        <div id="quiz-container">
+            @foreach($questions as $index => $question)
+                <div class="card mb-3 question-block" data-index="{{ $index }}" style="{{ $index === 0 ? '' : 'display:none;' }}">
+                    <div class="card-header">Câu {{ $index + 1 }} trên {{ $questions->count() }}</div>
+                    <div class="card-body">
+                        <p class="fw-bold">{{ $question->question }}</p>
+                        @foreach($question->answers as $answer)
+                            <button class="btn btn-outline-primary d-block mb-2 answer-btn"
+                                    data-answer-id="{{ $answer->id }}"
+                                    data-question-id="{{ $question->id }}"
+                                    data-is-correct="{{ $answer->is_correct ? '1' : '0' }}"
+                                    data-disabled="false">
+                                {{ $answer->answer }}
+                            </button>
+                        @endforeach
+                        <div class="result mt-2 fw-bold"></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </form>
 </div>
 @endsection
 
@@ -38,53 +43,83 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalQuestions = {{ $questions->count() }};
     let currentIndex = 0;
     let correctCount = 0;
+    let timer = {{ $quiz->time_limit ?? 60 }} * 60;
+    const display = document.getElementById('time');
+    const selectedAnswers = [];
+    let isSubmitting = false;
 
-    const showQuestion = index => {
+    const interval = setInterval(updateTimer, 1000);
+
+    function updateTimer() {
+        const minutes = String(Math.floor(timer / 60)).padStart(2, '0');
+        const seconds = String(timer % 60).padStart(2, '0');
+        display.textContent = `${minutes}:${seconds}`;
+
+        if (--timer < 0) {
+            clearInterval(interval);
+            alert("Thời gian đã hết!");
+            finishQuiz();
+        }
+    }
+
+    function showQuestion(index) {
         document.querySelectorAll('.question-block').forEach(block => {
             block.style.display = block.dataset.index == index ? '' : 'none';
         });
-    };
+    }
 
-    const nextOrFinish = () => {
+    function nextOrFinish() {
         if (currentIndex + 1 < totalQuestions) {
             currentIndex++;
             showQuestion(currentIndex);
         } else {
-            document.getElementById('quiz-container').style.display = 'none';
-            document.getElementById('correct-count').textContent = correctCount;
-            document.getElementById('summary').style.display = '';
+            finishQuiz();
         }
-    };
+    }
+
+    function finishQuiz() {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        clearInterval(interval);
+        document.getElementById('quiz-container').style.display = 'none';
+
+        // Ensure the form is submitted as POST
+        document.getElementById('final-score').value = correctCount;
+        document.getElementById('final-answers').value = JSON.stringify(selectedAnswers);
+        document.getElementById('quiz-result-form').submit(); // Ensure this submits the form as POST
+    }
+
+    function checkAnswer(buttonElement) {
+        return buttonElement.dataset.isCorrect === "1";
+    }
 
     document.querySelectorAll('.answer-btn').forEach(button => {
         button.addEventListener('click', function () {
+            if (this.dataset.disabled === "true") return;
+
             const answerId = this.dataset.answerId;
             const questionId = this.dataset.questionId;
             const container = this.closest('.question-block');
             const resultEl = container.querySelector('.result');
 
-            container.querySelectorAll('.answer-btn').forEach(btn => btn.disabled = true);
-
-            fetch('/api/check-answer', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ answer_id: answerId, question_id: questionId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                resultEl.textContent = data.message;
-                resultEl.classList.add(data.correct ? 'text-success' : 'text-danger');
-                if (data.correct) correctCount++;
-                setTimeout(nextOrFinish, 1000);
-            })
-            .catch(() => {
-                resultEl.textContent = 'Lỗi xảy ra!';
-                resultEl.classList.add('text-danger');
-                setTimeout(nextOrFinish, 1000);
+            container.querySelectorAll('.answer-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.dataset.disabled = "true";
             });
+
+            const isCorrect = checkAnswer(this);
+            resultEl.textContent = isCorrect ? 'Đúng' : 'Sai';
+            resultEl.classList.add(isCorrect ? 'text-success' : 'text-danger');
+
+            if (isCorrect) correctCount++;
+
+            selectedAnswers.push({
+                question_id: questionId,
+                answer_id: answerId,
+                is_correct: isCorrect
+            });
+
+            setTimeout(nextOrFinish, 1000);
         });
     });
 });

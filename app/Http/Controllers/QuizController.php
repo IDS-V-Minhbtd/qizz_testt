@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\QuizService;
 use App\Http\Requests\QuizRequest;
-use App\Models\Quiz;
-use App\Models\Question;
 use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
@@ -20,14 +18,12 @@ class QuizController extends Controller
 
     public function index()
     {
-        // Lấy danh sách tất cả các quiz và trả về view
         $quizzes = $this->service->getAll();
         return view('admin.quizzes.index', compact('quizzes'));
     }
 
     public function create()
     {
-        // Pass an empty Quiz instance to the view if needed
         $quiz = new Quiz();
         return view('admin.quizzes.create', compact('quiz'));
     }
