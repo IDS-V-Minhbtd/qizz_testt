@@ -2,23 +2,29 @@
 
 @section('content')
 <div class="container">
-    <h3>Kết quả bài Quiz: {{ $result->quiz->title }}</h3>
-    <p>Điểm số: <strong>{{ $result->score }}</strong></p>
-    <p>Thời gian hoàn thành: {{ gmdate("i:s", $result->time_taken) }}</p>
-    <p>Hoàn thành lúc: {{ $result->completed_at->format('H:i:s d/m/Y') }}</p>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title mb-3 text-primary">🎉 Kết quả bài Quiz: {{ $result->quiz->title }}</h3>
 
-    <hr>
-    <h5>Câu trả lời của bạn:</h5>
-    <ul>
-        @foreach($result->userAnswers as $userAnswer)
-            <li>
-                <strong>Câu hỏi:</strong> {{ $userAnswer->question->question }} <br>
-                <strong>Trả lời:</strong> {{ $userAnswer->answer->answer }} -
-                <span class="{{ $userAnswer->is_correct ? 'text-success' : 'text-danger' }}">
-                    {{ $userAnswer->is_correct ? 'Đúng' : 'Sai' }}
-                </span>
-            </li>
-        @endforeach
-    </ul>
+            <ul class="list-group list-group-flush mb-4">
+                <li class="list-group-item">
+                    <strong>✅ Điểm số:</strong> {{ $result->score }}
+                </li>
+                <li class="list-group-item">
+                    <strong>⏱️ Thời gian hoàn thành:</strong> {{ gmdate("i:s", $result->time_taken) }}
+                </li>
+                <li class="list-group-item">
+                    <strong>🕒 Thời gian bắt đầu:</strong> {{ $result->start_time ?? 'N/A' }}
+                </li>
+            </ul>
+
+            
+            </div>
+
+            <a href="{{ route('home') }}" class="btn btn-primary">
+                🔙 Về trang chủ
+            </a>
+        </div>
+    </div>
 </div>
 @endsection

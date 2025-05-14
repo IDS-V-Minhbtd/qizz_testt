@@ -32,6 +32,15 @@ class ResultRepository implements ResultRepositoryInterface
         }
         return false;
     }
+    public function update(int $id, array $data): ?Result
+    {
+        $result = $this->findById($id);
+        if ($result) {
+            $result->update($data);
+            return $result;
+        }
+        return null;
+    }
 
     public function findByIdWithAnswers(int $id)
     {

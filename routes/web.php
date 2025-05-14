@@ -31,7 +31,7 @@ Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin
 // Người dùng đã đăng nhập
 Route::middleware('auth')->group(function () {
     Route::post('quizz/{quiz}/submit', [UserAnswerController::class, 'submit'])->name('quizz.submit');
-    Route::get('quizz/{quiz}/result', [UserAnswerController::class, 'result'])->name('quizz.result');
+    Route::get('quizz/{quiz}/result', [UserAnswerController::class, 'resultByQuiz'])->name('quizz.result');
     Route::get('/quizz/{quiz}', [UserAnswerController::class, 'start'])->name('quizz.index');
-    Route::post('/quizz/{quiz}/CheckAnswer', [UserAnswerController::class, 'checkAnswer'])->name('quizz.checkAnswer');
 });
+

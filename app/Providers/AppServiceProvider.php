@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserAnswerRepositoryInterface::class, UserAnswerRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
 
-        // Bind Services (nếu cần custom constructor)
+
         $this->app->bind(QuizService::class, function ($app) {
             return new QuizService(
                 $app->make(QuizRepositoryInterface::class)
@@ -60,7 +60,10 @@ class AppServiceProvider extends ServiceProvider
         
         $this->app->bind(ResultService::class, function ($app) {
             return new ResultService(
-                $app->make(ResultRepositoryInterface::class)
+                $app->make(ResultRepositoryInterface::class),
+                $app->make(UserAnswerRepositoryInterface::class),
+                $app->make(QuizRepositoryInterface::class),
+                $app->make(AnswerRepositoryInterface::class)
             );
         });
 
@@ -69,7 +72,8 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(UserAnswerRepositoryInterface::class), 
                 $app->make(AnswerRepositoryInterface::class),    
                 $app->make(QuestionRepositoryInterface::class),   
-                $app->make(QuizRepositoryInterface::class)      
+                $app->make(QuizRepositoryInterface::class),
+                $app->make(ResultRepositoryInterface::class)
             );
         });
 

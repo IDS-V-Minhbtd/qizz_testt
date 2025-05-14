@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Services;
-
+ 
 use App\Repositories\Interfaces\{
     UserAnswerRepositoryInterface,
     AnswerRepositoryInterface,
     QuestionRepositoryInterface,
-    QuizRepositoryInterface
+    QuizRepositoryInterface,
+    ResultRepositoryInterface
 };
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,7 @@ class UserAnswerService
         protected AnswerRepositoryInterface $answerRepo,
         protected QuestionRepositoryInterface $questionRepo,
         protected QuizRepositoryInterface $quizRepo,
+        protected ResultRepositoryInterface $resultRepo
     ) {}
 
    public function submitQuiz(int $quizId, array $answers, int $userId): array
@@ -30,10 +32,16 @@ class UserAnswerService
         ];
     }
 
-    // Tạo kết quả (result)
-    $result = $this->resultService->createResult($quizId, $userId);
+    // Create a result entry for the user
+    $result = $this->resultRepo->create([
+        'user_id'     => $userId,
+        'quiz_id'     => $quizId,
+        'score'       => 0, // Initial score, will be updated later
+        'time_taken'  => 0, // Placeholder, update as needed
+        'completed_at'=> now(),
+    ]);
+    
 
-    // Lưu từng câu trả lời
     foreach ($answers as $questionId => $answerId) {
         if (is_array($answerId)) {
             $answerId = $answerId[0] ?? null;
@@ -43,13 +51,14 @@ class UserAnswerService
             continue;
         }
 
-        $this->saveAnswer([
-            'quiz_id'     => $quizId,
-            'question_id' => (int) $questionId,
+        $userAnswer = $this-> userAnswerRepo->create([
             'user_id'     => $userId,
-            'answer_id'   => (int) $answerId,
-            'is_correct'  => $this->isCorrect($questionId, $answerId),
+            'quiz_id'     => $quizId,
             'result_id'   => $result->id,
+            'question_id' => $questionId,
+            'answer'      => $answerId,  
+            'answer_id'   => $answerId,
+            'is_correct'  => $this->isCorrect($questionId, $answerId),
         ]);
     }
 
@@ -66,14 +75,15 @@ class UserAnswerService
         return $this->quizRepo->findByIdWithQuestions($quizId);
     }
 
-    public function deleteAnswers(int $quizId, int $userId): void
-    {
-        $this->userAnswerRepo->deleteAnswers($quizId, $userId);
-    }
 
     public function saveAnswer(array $data): void
     {
-        $this->userAnswerRepo->create($data);
+        $this->userAnswerRepo->create([
+            'result_id'   => $data['result_id'],
+            'question_id' => $data['question_id'],
+            'answer'      => $data['answer'] ?? '', // Provide a default value if 'answer' is not set
+            'is_correct'  => $data['is_correct'],
+        ]);
     }
 
     public function isCorrect(int $questionId, int $answerId): bool
