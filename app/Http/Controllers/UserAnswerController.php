@@ -48,54 +48,19 @@ class UserAnswerController extends Controller
 
     // Gửi câu trả lời
     public function submit(Request $request, $quizId)
-    {
-        if ($request->method() !== 'POST') {
-            abort(405, 'Method Not Allowed');
-        }
+{
+    $userId = Auth::id();
+    $answers = $request->input('answers'); // expect: ['question_id' => 'answer_id', ...]
 
-        $userId = Auth::id();
-        $quiz = $this->quizService->getById($quizId);
-
-        if (!$quiz) {
-            return redirect()->route('dashboard')->with('error', 'Quiz không tồn tại.');
-        }
-
-        $this->userAnswerService->deleteAnswers($quizId, $userId);
-
-        $answers = $request->input('answers');
-
-        // Nếu là chuỗi JSON, parse về mảng
-        if (is_string($answers)) {
-            $answers = json_decode($answers, true);
-        }
-
-        // Nếu không phải mảng sau khi parse, trả về lỗi
-        if (!is_array($answers)) {
-            return redirect()->back()->with('error', 'Dữ liệu câu trả lời không hợp lệ.');
-        }
-
-        foreach ($answers as $questionId => $answerId) {
-            // Nếu $answerId là mảng (ví dụ: [2]), lấy phần tử đầu tiên
-            if (is_array($answerId)) {
-                $answerId = $answerId[0] ?? null;
-            }
-        
-            if (!is_int($answerId)) {
-                continue; // hoặc xử lý lỗi
-            }
-        
-            $this->userAnswerService->saveAnswer([
-                'quiz_id'     => $quizId,
-                'question_id' => (int) $questionId,
-                'user_id'     => $userId,
-                'answer_id'   => $answerId,
-                'is_correct'  => $this->userAnswerService->isCorrect((int) $questionId, $answerId),
-            ]);
-        }
-        
-
-        return redirect()->route('quizz.submit', $quizId)->with('success', 'Nộp bài thành công!');
+    if (!is_array($answers)) {
+        return redirect()->back()->with('error', 'Dữ liệu không hợp lệ.');
     }
+
+    $this->userAnswerService->submitAnswers($quizId, $userId, $answers);
+
+    return redirect()->route('quizz.result', $quizId)->with('success', 'Nộp bài thành công!');
+}
+
 
 
     // Hiển thị kết quả quiz

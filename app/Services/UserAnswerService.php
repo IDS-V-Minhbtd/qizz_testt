@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Repositories\Interfaces\{
@@ -18,40 +19,47 @@ class UserAnswerService
         protected QuizRepositoryInterface $quizRepo,
     ) {}
 
-    public function submitAnswer(int $quizId, int $questionId, int $answerId): array
-    {
-        $userId = Auth::id();
-
-        // Kiểm tra câu hỏi thuộc quiz
-        $question = $this->questionRepo->findByQuizIdAndQuestionId($quizId, $questionId);
-        if (!$question) {
-            return ['success' => false, 'message' => 'Câu hỏi không hợp lệ.'];
-        }
-
-        // Kiểm tra đáp án đúng
-        $answer = $this->answerRepo->findById($answerId);
-        if (!$answer || $answer->question_id !== $questionId) {
-            return ['success' => false, 'message' => 'Đáp án không hợp lệ.'];
-        }
-
-        $isCorrect = (bool) $answer->is_correct;
-
-        // Lưu user answer
-        $this->userAnswerRepo->create([
-            'quiz_id'     => $quizId,
-            'question_id' => $questionId,
-            'answer_id'   => $answerId,
-            'user_id'     => $userId,
-            'is_correct'  => $isCorrect,
-            'result_id'   => $resultId,
-        ]);
-
+   public function submitQuiz(int $quizId, array $answers, int $userId): array
+{
+    // Lấy quiz
+    $quiz = $this->quizRepo->findById($quizId);
+    if (!$quiz || !$quiz->is_public) {
         return [
-            'success' => true,
-            'correct' => $isCorrect,
-            'message' => $isCorrect ? 'Chính xác!' : 'Sai rồi!',
+            'success' => false,
+            'message' => 'Quiz không khả dụng.'
         ];
     }
+
+    // Tạo kết quả (result)
+    $result = $this->resultService->createResult($quizId, $userId);
+
+    // Lưu từng câu trả lời
+    foreach ($answers as $questionId => $answerId) {
+        if (is_array($answerId)) {
+            $answerId = $answerId[0] ?? null;
+        }
+
+        if (!is_numeric($answerId)) {
+            continue;
+        }
+
+        $this->saveAnswer([
+            'quiz_id'     => $quizId,
+            'question_id' => (int) $questionId,
+            'user_id'     => $userId,
+            'answer_id'   => (int) $answerId,
+            'is_correct'  => $this->isCorrect($questionId, $answerId),
+            'result_id'   => $result->id,
+        ]);
+    }
+
+    return [
+        'success' => true,
+        'message' => 'Nộp bài thành công.',
+        'result_id' => $result->id
+    ];
+}
+
 
     public function getQuizWithQuestions(int $quizId)
     {
@@ -73,20 +81,18 @@ class UserAnswerService
         $answer = $this->answerRepo->findById($answerId);
         return $answer && $answer->question_id === $questionId && $answer->is_correct;
     }
+
     public function getAnswersByQuiz(int $quizId, int $userId)
     {
-        return $this->userAnswerRepo->getAllAnswersByQuiz($quizId, $userId); // Gọi phương thức repo
+        return $this->userAnswerRepo->getAllAnswersByQuiz($quizId, $userId);
     }
-    // Trong UserAnswerService
-public function getCorrectCount(int $quizId, int $userId): int
-{
-    // Giả sử bạn đã có phương thức getAnswersByQuiz trả về các câu trả lời của người dùng
-    $answers = $this->userAnswerRepo->getAllAnswersByQuiz($quizId, $userId);
 
-    // Lọc ra các câu trả lời đúng
-    return $answers->filter(function ($answer) {
-        return $answer->is_correct;
-    })->count();
-}
+    public function getCorrectCount(int $quizId, int $userId): int
+    {
+        $answers = $this->userAnswerRepo->getAllAnswersByQuiz($quizId, $userId);
 
+        return $answers->filter(function ($answer) {
+            return $answer->is_correct;
+        })->count();
+    }
 }
