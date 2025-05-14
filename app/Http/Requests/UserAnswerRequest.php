@@ -17,6 +17,8 @@ class UserAnswerRequest extends FormRequest
             'question_id' => 'required|integer|exists:questions,id',
             'answer_id' => 'required|integer|exists:answers,id',
             'user_id' => 'required|integer|exists:users,id',
+            'answers' => 'required|array',
+            'answers.*' => 'required|integer|exists:answers,id',
         ];
     }
 

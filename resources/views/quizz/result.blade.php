@@ -11,14 +11,11 @@
                     <strong>✅ Điểm số:</strong> {{ $result->score }}
                 </li>
                 <li class="list-group-item">
-                    <strong>⏱️ Thời gian hoàn thành:</strong> {{ gmdate("i:s", $result->time_taken) }}
-                </li>
-                <li class="list-group-item">
-                    <strong>🕒 Thời gian bắt đầu:</strong> {{ $result->start_time ?? 'N/A' }}
+                    <strong>⏱️ Thời gian hoàn thành:</strong> 
+                    {{ sprintf('%02d:%02d', floor($result->time_taken / 60), $result->time_taken % 60) }}
                 </li>
             </ul>
 
-            
             </div>
 
             <a href="{{ route('home') }}" class="btn btn-primary">

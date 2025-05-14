@@ -27,7 +27,7 @@ class ResultService
     return $answer && $answer->question_id === $questionId && $answer->is_correct;
 }
 
-    public function submitQuizAndSaveResult(int $quizId, array $answers, int $userId)
+    public function submitQuizAndSaveResult(int $quizId, array $answers, int $userId, int $timeTaken)
 {
     // Lấy quiz
     $quiz = $this->quizRepo->findById($quizId);
@@ -40,7 +40,6 @@ class ResultService
 
     // Tính điểm và thời gian làm bài
     $score = 0;
-    $timeTaken = 0; // Bạn có thể tính toán thời gian tại đây nếu có.
 
     $userAnswers = []; // Mảng để lưu tất cả câu trả lời của người dùng.
 
@@ -48,8 +47,8 @@ class ResultService
     $result = $this->resultRepo->create([
         'user_id'     => $userId,
         'quiz_id'     => $quizId,
-        'score'       => $score, // Sẽ cập nhật điểm sau khi kiểm tra câu trả lời.
-        'time_taken'  => $timeTaken,
+        'score'       => $score, // Initial score
+        'time_taken'  => $timeTaken, // Save time taken
         'completed_at'=> now(),
     ]);
 
@@ -84,7 +83,7 @@ class ResultService
     // Cập nhật điểm và thời gian làm bài vào kết quả
     $this->resultRepo->update($result->id, [
         'score'      => $score,
-        'time_taken' => $timeTaken,
+        'time_taken' => $timeTaken, // Ensure time_taken is updated
     ]);
 
     return $result; 

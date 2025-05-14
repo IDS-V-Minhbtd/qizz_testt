@@ -7,6 +7,7 @@ use App\Services\UserAnswerService;
 use App\Services\QuizService;
 use App\Services\ResultService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserAnswerController extends Controller
 {
@@ -47,13 +48,14 @@ class UserAnswerController extends Controller
     {
         $userId = Auth::id();
         $answers = $request->input('answers');
+        $timeTaken = $request->input('time_taken'); // Retrieve time_taken from the request
 
         if (!is_array($answers)) {
             return redirect()->back()->with('error', 'Dữ liệu không hợp lệ.');
         }
 
-        // Gửi và lưu kết quả bằng service
-        $result = $this->resultService->submitQuizAndSaveResult($quizId, $answers, $userId);
+        // Pass the timeTaken argument to the service method
+        $result = $this->resultService->submitQuizAndSaveResult($quizId, $answers, $userId, $timeTaken);
 
         return redirect()->route('quizz.result', $result->id)->with('success', 'Nộp bài thành công!');
     }
@@ -76,20 +78,20 @@ class UserAnswerController extends Controller
      * Hiển thị kết quả quiz theo quiz_id
      */
     public function resultByQuiz($quizId)
-{
-    $userId = Auth::id();
+    {
+        $userId = Auth::id();
 
-    $result = $this->resultService->getResultWithAnswers($quizId, $userId);
+        $result = $this->resultService->getResultWithAnswers($quizId, $userId);
 
-    if (!$result) {
-        return redirect()->route('dashboard')->with('error', 'Không tìm thấy kết quả.');
+        if (!$result) {
+            return redirect()->route('dashboard')->with('error', 'Không tìm thấy kết quả.');
+        }
+
+        // Load quan hệ nếu cần
+        $result->load('quiz', 'userAnswers.question', 'userAnswers.answer');
+
+        return view('quizz.result', compact('result'));
     }
-
-    // Load quan hệ nếu cần
-    $result->load('quiz', 'userAnswers.question', 'userAnswers.answer');
-
-    return view('quizz.result', compact('result'));
-}
 
 
     /**

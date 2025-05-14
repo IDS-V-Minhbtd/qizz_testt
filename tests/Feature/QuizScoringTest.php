@@ -57,4 +57,29 @@ class QuizScoringTest extends TestCase
     //     $result = Result::where('user_id', $this->user->id)->where('quiz_id' => $this->quiz->id)->first();
     //     $this->assertEquals(($score / count($userAnswers)) * 100, $result->score);
     // }
+
+    public function test_time_taken_is_saved_correctly()
+    {
+        $this->actingAs($this->user);
+
+        $answers = [
+            $this->questions[0]->id => $this->answers[0]->id,
+            $this->questions[1]->id => $this->answers[1]->id,
+        ];
+
+        $timeTaken = 120; // Simulate 2 minutes
+
+        $response = $this->post(route('quizz.submit', $this->quiz->id), [
+            'answers' => $answers,
+            'time_taken' => $timeTaken,
+        ]);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('results', [
+            'quiz_id' => $this->quiz->id,
+            'user_id' => $this->user->id,
+            'time_taken' => $timeTaken,
+        ]);
+    }
 }

@@ -4,8 +4,11 @@ namespace App\Repositories;
 
 use App\Models\UserAnswer;
 use App\Models\Result;
+use App\Models\Answer;
 use App\Repositories\Interfaces\UserAnswerRepositoryInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
+
 
 class UserAnswerRepository implements UserAnswerRepositoryInterface
 {
@@ -17,9 +20,19 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
     }
 
     public function create(array $data): UserAnswer
-    {
-        return $this->model->create($data);
-    }
+{
+    $resultId = $data['result_id'];
+    $questionId = $data['question_id'];
+    $answerId = $data['answer_id'];
+    $isCorrect = $data['is_correct'];
+
+    return $this->model->create([
+        'result_id' => $resultId,
+        'question_id' => $questionId,
+        'answer_id' => $answerId,
+        'is_correct' => $isCorrect,
+    ]);
+}
 
     public function findById(int $id): ?UserAnswer
     {

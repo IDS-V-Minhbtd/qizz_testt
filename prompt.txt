@@ -1,4 +1,4 @@
-óm tắt dự án Laravel Quiz App của bạn:
+tóm tắt dự án Laravel Quiz App của bạn:
 
 Kiến trúc đang sử dụng: Service + Repository + repositoryInterface
 
@@ -15,5 +15,5 @@ answers: liên kết với questions, có answer, is_correct,Answer_tpye
 
 results: liên kết với users và quizzes, có score, time_taken, completed_at
 
-user_answers: liên kết với results và questions, có answer, is_correct
+user_answers: liên kết với results và questions, có answer_id, is_correct
 
