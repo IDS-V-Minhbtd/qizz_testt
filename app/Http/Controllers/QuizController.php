@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Services\QuizService;
 use App\Http\Requests\QuizRequest;
 use Illuminate\Support\Facades\Log;
+use App\Models\Quiz; // Import the Quiz model
 
 class QuizController extends Controller
 {

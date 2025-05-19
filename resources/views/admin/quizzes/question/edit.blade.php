@@ -1,3 +1,12 @@
+@extends('adminlte::page')
+
+@section('title', 'Cập nhật câu hỏi')
+
+@section('content_header')
+    <h1>Cập nhật câu hỏi: {{ $quiz->name }}</h1>
+@endsection
+
+@section('content')
 @php
     $answers = collect($answers ?? []);
     $correctAnswer = old('correct_answer');
@@ -17,20 +26,13 @@
     }
 @endphp
 
-
-
-@extends('layouts.app')
-
-@section('content')
-<div class="container py-5">
+<div class="container-fluid">
     @if ($errors->any())
         <div class="alert alert-danger">
-            <strong>Đã có lỗi xảy ra:</strong>
+            <h5><i class="icon fas fa-exclamation-triangle"></i> Lỗi:</h5>
             <ul class="mb-0">
-                @foreach ($errors->all() as $index => $error)
-                    @if ($index < 10)
-                        <li>{{ $error }}</li>
-                    @endif
+                @foreach ($errors->take(10) as $error)
+                    <li>{{ $error }}</li>
                 @endforeach
                 @if ($errors->count() > 10)
                     <li>Và {{ $errors->count() - 10 }} lỗi khác...</li>
@@ -43,8 +45,8 @@
         @csrf
         @method('PUT')
 
-        <div class="mb-3">
-            <label for="question" class="form-label">Câu hỏi</label>
+        <div class="form-group mb-3">
+            <label for="question">Câu hỏi</label>
             <input type="text" name="question" id="question" class="form-control @error('question') is-invalid @enderror"
                    value="{{ old('question', $question->question) }}">
             @error('question')
@@ -52,8 +54,8 @@
             @enderror
         </div>
 
-        <div class="mb-3">
-            <label for="order" class="form-label">Thứ tự</label>
+        <div class="form-group mb-3">
+            <label for="order">Thứ tự</label>
             <input type="number" name="order" id="order" class="form-control @error('order') is-invalid @enderror"
                    value="{{ old('order', $question->order) }}" min="1">
             @error('order')
@@ -61,9 +63,9 @@
             @enderror
         </div>
 
-        <div class="mb-3">
-            <label for="answer_type" class="form-label">Loại câu trả lời</label>
-            <select name="answer_type" id="answer_type" class="form-select @error('answer_type') is-invalid @enderror">
+        <div class="form-group mb-4">
+            <label for="answer_type">Loại câu trả lời</label>
+            <select name="answer_type" id="answer_type" class="form-control @error('answer_type') is-invalid @enderror">
                 <option value="multiple_choice" {{ old('answer_type', $question->type) == 'multiple_choice' ? 'selected' : '' }}>Lựa chọn nhiều</option>
                 <option value="text_input" {{ old('answer_type', $question->type) == 'text_input' ? 'selected' : '' }}>Nhập văn bản</option>
                 <option value="true_false" {{ old('answer_type', $question->type) == 'true_false' ? 'selected' : '' }}>Đúng/Sai</option>
@@ -75,14 +77,14 @@
 
         {{-- Multiple Choice --}}
         <div id="multiple-choice-answers" style="display: none;">
-            <div class="mb-3">
-                <label class="form-label">Các đáp án</label>
+            <div class="form-group mb-3">
+                <label>Các đáp án</label>
                 <div id="answers-container">
                     @foreach(old('answers', $answers ?? []) as $index => $answer)
                         @php
                             $text = is_array($answer) ? $answer['text'] ?? $answer['answer'] ?? '' : $answer->answer;
                         @endphp
-                        <div class="input-group mb-3">
+                        <div class="input-group mb-2">
                             <input type="text" name="answers[{{ $index }}][text]" class="form-control"
                                    placeholder="Đáp án {{ $index + 1 }}"
                                    value="{{ old("answers.$index.text", $text) }}">
@@ -93,7 +95,9 @@
                         </div>
                     @endforeach
                 </div>
-                <button type="button" class="btn btn-secondary" id="add-answer">Thêm đáp án</button>
+                <button type="button" class="btn btn-secondary mt-2" id="add-answer">
+                    <i class="fas fa-plus"></i> Thêm đáp án
+                </button>
                 @error('correct_answer')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
@@ -102,8 +106,8 @@
 
         {{-- Text Input --}}
         <div id="text-input-answer" style="display: none;">
-            <div class="mb-3">
-                <label for="text_answer" class="form-label">Đáp án văn bản</label>
+            <div class="form-group mb-3">
+                <label for="text_answer">Đáp án văn bản</label>
                 <input type="text" name="text_answer" id="text_answer"
                        class="form-control @error('text_answer') is-invalid @enderror"
                        value="{{ old('text_answer', $answers[0]->answer ?? '') }}">
@@ -115,11 +119,11 @@
 
         {{-- True / False --}}
         <div id="true-false-answers" style="display: none;">
-            <div class="mb-3">
-                <label for="correct_answer" class="form-label">Chọn đáp án đúng</label>
-                <select name="correct_answer" id="correct_answer" class="form-select @error('correct_answer') is-invalid @enderror">
+            <div class="form-group mb-3">
+                <label for="correct_answer">Chọn đáp án đúng</label>
+                <select name="correct_answer" id="correct_answer" class="form-control @error('correct_answer') is-invalid @enderror">
                     <option value="1" {{ $correctAnswer == 1 ? 'selected' : '' }}>Đúng</option>
-                    <option value="0" {{ $correctAnswer == 0 ? 'selected' : '' }}>Sai</option>
+                    <option value="0" {{ $correctAnswer === 0 ? 'selected' : '' }}>Sai</option>
                 </select>
                 @error('correct_answer')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -127,12 +131,14 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Cập Nhật Câu Hỏi</button>
+        <button type="submit" class="btn btn-success mt-3">
+            <i class="fas fa-save"></i> Cập nhật câu hỏi
+        </button>
     </form>
 </div>
 @endsection
 
-@section('scripts')
+@section('js')
 <script>
     (function() {
         const answerTypeSelect = document.getElementById('answer_type');
@@ -159,20 +165,20 @@
 
         document.getElementById('add-answer').addEventListener('click', function () {
             const container = document.getElementById('answers-container');
-            const answerInputs = container.querySelectorAll('input[type="text"]').length;
-            if (answerInputs >= 10) {
+            const index = container.querySelectorAll('.input-group').length;
+            if (index >= 10) {
                 alert('Bạn chỉ có thể thêm tối đa 10 đáp án!');
                 return;
             }
-            const newAnswerInput = document.createElement('div');
-            newAnswerInput.classList.add('input-group', 'mb-3');
-            newAnswerInput.innerHTML = `
-                <input type="text" name="answers[${answerInputs}][text]" class="form-control" placeholder="Đáp án ${answerInputs + 1}">
+            const div = document.createElement('div');
+            div.classList.add('input-group', 'mb-2');
+            div.innerHTML = `
+                <input type="text" name="answers[${index}][text]" class="form-control" placeholder="Đáp án ${index + 1}">
                 <div class="input-group-text">
-                    <input type="radio" name="correct_answer" value="${answerInputs}">
+                    <input type="radio" name="correct_answer" value="${index}">
                 </div>
             `;
-            container.appendChild(newAnswerInput);
+            container.appendChild(div);
         });
 
         toggleAnswerSections();

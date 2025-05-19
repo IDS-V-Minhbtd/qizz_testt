@@ -4,12 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Services\UserService;
-use App\Models\User;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
-    protected $service;
+    protected UserService $service;
 
     public function __construct(UserService $service)
     {
@@ -18,40 +17,49 @@ class UserController extends Controller
 
     public function index()
     {
-        $data = $this->service->listUsersWithRoles();
-        return view('users.index', $data);
+        $users = $this->service->listUsers();
+        return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
-        
-        return view('users.create', compact('roles'));
+        return view('users.create');
     }
 
     public function store(UserRequest $request)
     {
-        $this->service->create($request->validated());
-        return redirect()->route('users.index')->with('success', 'User created successfully!');
+        $data = $request->validated();
+        Log::debug('Creating user with data:', $data);
+
+        $this->service->create($data);
+
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully!');
     }
 
-    public function edit(User $user)
+    public function edit($id)
     {
-        
-        return view('users.edit', compact('user', 'roles'));
+        $user = $this->service->getUserById($id);
+        if (!$user) {
+            abort(404, 'User not found');
+        }
+        return view('admin.users.edit', compact('user'));
     }
 
-    public function update(UserRequest $request, User $user)
+    public function update(UserRequest $request, $id)
     {
-        $this->service->update($user, $request->validated());
-        return redirect()->route('users.index')->with('success', 'User updated successfully');
+        $data = $request->validated();
+        Log::debug("Updating user ID $id with data:", $data);
+
+        if ($this->service->update($id, $data)) {
+            return redirect()->route('admin.users.index')->with('success', 'User updated successfully');
+        }
+
+        return redirect()->back()->with('error', 'Failed to update user');
     }
 
     public function destroy($id)
     {
-        $user = User::findOrFail($id);
-        $result = $this->service->delete($user);
-
-        return redirect()->route('users.index')->with($result['status'] ? 'success' : 'error', $result['message']);
+        $this->service->delete($id);
+        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully');
     }
-
 }

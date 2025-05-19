@@ -15,23 +15,31 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// Route công khai
+
 Route::get('quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
 
-// Admin routes
+
 Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', fn () => view('admin.dashboard'))->name('dashboard');
+
+
     Route::resource('users', UserController::class);
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::post('users/search', [UserController::class, 'search'])->name('users.search');
+    Route::get('users/{user}/results', [UserController::class, 'showResults'])->name('users.results');
+
+
     Route::resource('quizzes', QuizController::class);
-    Route::resource('quizzes.questions', QuestionController::class);
+    Route::resource('quizzes.questions', QuestionController::class)->shallow();
     Route::get('quizzes/{quiz}/questions/create', [QuestionController::class, 'create'])->name('quizzes.questions.create');
     Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
 });
 
-// Người dùng đã đăng nhập
 Route::middleware('auth')->group(function () {
     Route::post('quizz/{quiz}/submit', [UserAnswerController::class, 'submit'])->name('quizz.submit');
     Route::get('quizz/{quiz}/result', [UserAnswerController::class, 'resultByQuiz'])->name('quizz.result');
-    Route::get('/quizz/{quiz}', [UserAnswerController::class, 'start'])->name('quizz.index');
-});
+    Route::get('quizz/{quiz}', [UserAnswerController::class, 'start'])->name('quizz.index');
 
+    Route::get('profile', [UserController::class, 'profile'])->name('profile');
+    Route::post('profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
+});

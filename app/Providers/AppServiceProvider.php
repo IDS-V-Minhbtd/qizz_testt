@@ -23,6 +23,8 @@ use App\Repositories\UserAnswerRepository;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\UserRepository;
 
+
+
 // Services
 use App\Services\QuizService;
 use App\Services\QuestionService;
@@ -79,7 +81,8 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(UserService::class, function ($app) {
             return new UserService(
-                $app->make(UserRepositoryInterface::class)
+                $app->make(UserRepositoryInterface::class),
+                $app->make(ResultRepositoryInterface::class)
             );
         });
     }

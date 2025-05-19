@@ -1,24 +1,31 @@
 <?php
+
 namespace App\Services;
 
-use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use App\Common\Constant;
 
 class UserService
 {
-    public function __construct(protected UserRepositoryInterface $userRepo) {}
+    protected UserRepositoryInterface $userRepo;
 
-    public function create(array $data): User
+    public function __construct(UserRepositoryInterface $userRepo)
+    {
+        $this->userRepo = $userRepo;
+    }
+
+    public function listUsers(): iterable
+    {
+        return $this->userRepo->all();
+    }
+
+    public function create(array $data)
     {
         $data['password'] = Hash::make($data['password']);
         return $this->userRepo->create($data);
-    }
-
-    public function getById(int $id): ?User
-    {
-        return $this->userRepo->findById($id);
     }
 
     public function update(int $id, array $data): bool
@@ -34,20 +41,64 @@ class UserService
         return $this->userRepo->delete($id);
     }
 
-    public function getAll(): iterable
+    public function getUserById(int $id)
     {
-        return $this->userRepo->all();
+        return $this->userRepo->findById($id);
     }
 
-    public function getAllUsersWithRoles(): Collection
-    {
-        return $this->userRepo->all()->map(function ($user) {
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'roles' => $user->getRoleNames(),
-            ];
-        });
+    public function getAll(){
+        return $this->userRepo->getAll();
+    }
+
+    public function findByName($name){
+        Log::info($name);
+        return $this->userRepo->findByName($name);
+    }
+
+    public function findById($id){
+        return $this->userRepo->findById($id);
+    }
+
+    public function createUser(array $data){
+        if(!isset($data['role_id'])){
+            $data['role_id']=Constant::MEMBER_ROLE;
+        }
+        $data['password'] = bcrypt($data['password']);
+        $data['avatar'] = 'avatars/default.png';
+        return $this->userRepo->createUser($data);
+    }
+
+    public function updateUser($id, array $data){
+        if (!isset($data['password']) || empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = bcrypt($data['password']);
+        }
+        return $this->userRepo->updateUser($id, $data);
+    }
+
+    public function deleteUser($id){
+        return $this->userRepo->deleteUser($id);
+    }
+
+    public function updateAvatar($id, array $data){
+        if (!isset($data['password']) || empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = bcrypt($data['password']);
+        }
+        if (isset($data['avatar'])) {
+            $avatarPath = $data['avatar']->store('avatars', 'public');
+            $data['avatar'] = $avatarPath;
+        } else {
+            $data['avatar'] = `avatars/default.png`;
+        }
+
+        return $this->userRepo->updateUser($id, $data);
+    }
+
+    public function getProfile(){
+        $user = Auth::user();
+        return $this->userRepo->findProfile($user->id);
     }
 }
