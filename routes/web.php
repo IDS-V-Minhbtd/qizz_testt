@@ -23,6 +23,7 @@ Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin
     Route::get('/dashboard', fn () => view('admin.dashboard'))->name('dashboard');
 
 
+
     Route::resource('users', UserController::class);
     Route::get('users', [UserController::class, 'index'])->name('users.index');
     Route::post('users/search', [UserController::class, 'search'])->name('users.search');
@@ -32,6 +33,8 @@ Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin
     Route::resource('quizzes', QuizController::class);
     Route::resource('quizzes.questions', QuestionController::class)->shallow();
     Route::get('quizzes/{quiz}/questions/create', [QuestionController::class, 'create'])->name('quizzes.questions.create');
+    Route::get('quizzes/{quiz}/questions/{question}/edit', [QuestionController::class, 'edit'])->name('quizzes.questions.edit');
+    Route::put('quizzes/{quiz}/questions/{question}/update', [QuestionController::class, 'update'])->name('quizzes.questions.update');
     Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
 });
 

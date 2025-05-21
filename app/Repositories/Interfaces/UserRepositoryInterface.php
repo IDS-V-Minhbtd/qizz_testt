@@ -3,14 +3,21 @@
 namespace App\Repositories\Interfaces;
 
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface UserRepositoryInterface
 {
-    public function getAll();
-    public function findByName($name);
-    public function findById(int $id): ?User; // Add type hinting for $id and return type
-    public function createUser(array $data);
-    public function updateUser($id, array $data);
-    public function deleteUser($id);
-    public function findProfile($id);
+    public function paginate(int $perPage = 10): LengthAwarePaginator;
+
+    public function findById(int $id): ?User;
+
+    public function create(array $data): User;
+
+    public function update(int $id, array $data): bool;
+
+    public function delete(int $id): bool;
+
+    public function findByUsername(string $username): ?User;
+
+    public function findProfile(int $id): ?User;
 }

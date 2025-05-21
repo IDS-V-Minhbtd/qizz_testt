@@ -118,4 +118,8 @@ class ResultService
             'wrong_answers' => $wrongAnswers
         ];
     }
+      public function getResultsByUserId($userId)
+    {
+        return $this->resultRepo->getByUserId($userId);
+    }
 }

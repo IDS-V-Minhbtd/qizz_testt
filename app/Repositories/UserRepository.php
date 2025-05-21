@@ -4,20 +4,16 @@ namespace App\Repositories;
 
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UserRepository implements UserRepositoryInterface
 {
-    public function all(): Collection
+    public function paginate(int $perPage = 10): LengthAwarePaginator
     {
-        return User::all(); // This returns a collection of User objects
+        return User::paginate($perPage);
     }
 
-    public function getAll()
-    {
-        return User::all(); // Implement the getAll method
-    }
-    public function findById(int $id): ?User // Ensure this matches the interface
+    public function findById(int $id): ?User
     {
         return User::find($id);
     }
@@ -30,51 +26,22 @@ class UserRepository implements UserRepositoryInterface
     public function update(int $id, array $data): bool
     {
         $user = $this->findById($id);
-        if ($user) {
-            return $user->update($data);
-        }
-        return false;
+        return $user ? $user->update($data) : false;
     }
 
     public function delete(int $id): bool
     {
         $user = $this->findById($id);
-        if ($user) {
-            return $user->delete();
-        }
-        return false;
+        return $user ? $user->delete() : false;
     }
 
-    public function findByName($name)
+    public function findByUsername(string $username): ?User
     {
-        return User::where('name', $name)->first();
+        return User::where('username', $username)->first();
     }
 
-    public function createUser(array $data): User
+    public function findProfile(int $id): ?User
     {
-        return User::create($data);
-    }
-
-    public function updateUser($id, array $data): bool
-    {
-        $user = $this->findById($id);
-        if ($user) {
-            return $user->update($data);
-        }
-        return false;
-    }
-
-    public function deleteUser($id): bool
-    {
-        $user = $this->findById($id);
-        if ($user) {
-            return $user->delete();
-        }
-        return false;
-    }
-
-    public function findProfile($id)
-    {
-        return User::find($id);
+        return $this->findById($id);
     }
 }

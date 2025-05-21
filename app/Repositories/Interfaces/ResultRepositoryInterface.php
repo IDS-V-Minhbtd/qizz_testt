@@ -9,4 +9,5 @@ interface ResultRepositoryInterface
     public function getByUser(int $userId): iterable;
     public function findByIdWithAnswers(int $id);
     public function delete(int $id): bool;
+    public function getByUserId($userId);
 }

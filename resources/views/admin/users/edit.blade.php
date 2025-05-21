@@ -11,31 +11,62 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('users.update', $user->id) }}" method="POST">
+                    <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                         @csrf
                         @method('PUT')
+
+                        <!-- Name -->
                         <div class="form-group">
-                            <label>Username</label>
-                            <input type="text" class="form-control" name="username" value="{{ $user->username }}" required>
+                            <label>Name</label>
+                            <input type="text" 
+                                   class="form-control @error('name') is-invalid @enderror" 
+                                   name="name" 
+                                   value="{{ old('name', $user->name) }}" 
+                                   required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
+
+                        <!-- Email -->
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="email" class="form-control" name="email" value="{{ $user->email }}" required>
+                            <input type="email" 
+                                   class="form-control @error('email') is-invalid @enderror" 
+                                   name="email" 
+                                   value="{{ old('email', $user->email) }}" 
+                                   required>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
+
+                        <!-- Password -->
                         <div class="form-group">
                             <label>Password (leave blank if not changing)</label>
-                            <input type="password" class="form-control" name="password">
+                            <input type="password" 
+                                   class="form-control @error('password') is-invalid @enderror" 
+                                   name="password">
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
+
+                        <!-- Role -->
                         <div class="form-group">
                             <label>Role</label>
-                            <select class="form-control" name="role_id" required>
-                                <option value="1" {{ $user->role_id == 1 ? 'selected' : '' }}>Admin</option>
-                                <option value="2" {{ $user->role_id == 2 ? 'selected' : '' }}>Member</option>
+                            <select class="form-control @error('role_id') is-invalid @enderror" name="role_id" required>
+                                <option value="1" {{ old('role_id', $user->role_id) == 1 ? 'selected' : '' }}>Admin</option>
+                                <option value="2" {{ old('role_id', $user->role_id) == 2 ? 'selected' : '' }}>Member</option>
                             </select>
+                            @error('role_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
+
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary">Update</button>
-                            <a href="{{ route('users.index') }}" class="btn btn-secondary">Back</a>
+                            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Back</a>
                         </div>
                     </form>
                 </div>

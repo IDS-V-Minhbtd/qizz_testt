@@ -52,4 +52,8 @@ class ResultRepository implements ResultRepositoryInterface
     {
         return $this->model->where('user_id', $userId)->get();
     }
+     public function getByUserId($userId)
+    {
+        return Result::with('quiz')->where('user_id', $userId)->latest()->get();
+    }
 }

@@ -11,18 +11,17 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('users.store') }}" method="POST">
+                    <form action="{{ route('admin.users.store') }}" method="POST">
                         @csrf
                         
-                        <!-- Username -->
+                        <!-- Name -->
                         <div class="form-group">
-                            <label>Username</label>
-                            <input type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required>
-                            @error('username')
+                            <label>Name</label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required>
+                            @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
 
                         <!-- Email -->
                         <div class="form-group">
@@ -65,7 +64,7 @@
 
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary">Save</button>
-                            <a href="{{ route('users.index') }}" class="btn btn-secondary">Back</a>
+                            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Back</a>
                         </div>
                     </form>
                 </div>

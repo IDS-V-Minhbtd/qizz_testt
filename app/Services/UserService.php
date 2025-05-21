@@ -3,102 +3,100 @@
 namespace App\Services;
 
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Repositories\Interfaces\ResultRepositoryInterface;
+use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use App\Common\Constant;
 
 class UserService
 {
     protected UserRepositoryInterface $userRepo;
+    protected ResultRepositoryInterface $resultRepo;
+    protected QuizRepositoryInterface $quizRepo;
 
-    public function __construct(UserRepositoryInterface $userRepo)
-    {
+    public function __construct(
+        UserRepositoryInterface $userRepo,
+        ResultRepositoryInterface $resultRepo,
+        QuizRepositoryInterface $quizRepo
+    ) {
         $this->userRepo = $userRepo;
+        $this->resultRepo = $resultRepo; 
+        $this->quizRepo = $quizRepo;
     }
 
-    public function listUsers(): iterable
+    // Lấy danh sách user có phân trang
+    public function listUsers($perPage = 10)
     {
-        return $this->userRepo->all();
+        return $this->userRepo->paginate($perPage);
     }
 
+    // Tạo user mới, hash password tự động
     public function create(array $data)
-    {
-        $data['password'] = Hash::make($data['password']);
-        return $this->userRepo->create($data);
-    }
-
-    public function update(int $id, array $data): bool
     {
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
+        return $this->userRepo->create($data);
+    }
+
+    // Cập nhật user, hash password nếu có thay đổi
+    public function update(int $id, array $data): bool
+    {
+        if (isset($data['password']) && !empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
         return $this->userRepo->update($id, $data);
     }
 
+    // Xóa user
     public function delete(int $id): bool
     {
         return $this->userRepo->delete($id);
     }
 
+    // Lấy user theo id
     public function getUserById(int $id)
     {
         return $this->userRepo->findById($id);
     }
 
-    public function getAll(){
-        return $this->userRepo->getAll();
+    // Tìm user theo username
+    public function findByUsername(string $username)
+    {
+        return $this->userRepo->findByUsername($username);
     }
 
-    public function findByName($name){
-        Log::info($name);
-        return $this->userRepo->findByName($name);
+    // Lấy profile user hiện tại
+    public function getProfile()
+    {
+        $user = Auth::user();
+        return $this->userRepo->findProfile($user->id);
     }
 
-    public function findById($id){
-        return $this->userRepo->findById($id);
-    }
-
-    public function createUser(array $data){
-        if(!isset($data['role_id'])){
-            $data['role_id']=Constant::MEMBER_ROLE;
-        }
-        $data['password'] = bcrypt($data['password']);
-        $data['avatar'] = 'avatars/default.png';
-        return $this->userRepo->createUser($data);
-    }
-
-    public function updateUser($id, array $data){
-        if (!isset($data['password']) || empty($data['password'])) {
-            unset($data['password']);
+    // Cập nhật avatar user kèm xử lý password nếu có
+    public function updateAvatar(int $id, array $data)
+    {
+        if (isset($data['password']) && !empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
         } else {
-            $data['password'] = bcrypt($data['password']);
-        }
-        return $this->userRepo->updateUser($id, $data);
-    }
-
-    public function deleteUser($id){
-        return $this->userRepo->deleteUser($id);
-    }
-
-    public function updateAvatar($id, array $data){
-        if (!isset($data['password']) || empty($data['password'])) {
             unset($data['password']);
-        } else {
-            $data['password'] = bcrypt($data['password']);
         }
+
         if (isset($data['avatar'])) {
             $avatarPath = $data['avatar']->store('avatars', 'public');
             $data['avatar'] = $avatarPath;
         } else {
-            $data['avatar'] = `avatars/default.png`;
+            $data['avatar'] = 'avatars/default.png';
         }
 
-        return $this->userRepo->updateUser($id, $data);
+        return $this->userRepo->update($id, $data);
     }
 
-    public function getProfile(){
-        $user = Auth::user();
-        return $this->userRepo->findProfile($user->id);
+    // Lấy kết quả của user theo ID
+    public function showResults($id)
+    {
+        return $this->resultRepo->showResults($id);
     }
 }
