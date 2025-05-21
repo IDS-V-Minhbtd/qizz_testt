@@ -53,16 +53,17 @@
                         </div>
 
                         <!-- Role -->
-                        <div class="form-group">
-                            <label>Role</label>
-                            <select class="form-control @error('role_id') is-invalid @enderror" name="role_id" required>
-                                <option value="1" {{ old('role_id', $user->role_id) == 1 ? 'selected' : '' }}>Admin</option>
-                                <option value="2" {{ old('role_id', $user->role_id) == 2 ? 'selected' : '' }}>Member</option>
-                            </select>
-                            @error('role_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+<div class="form-group">
+    <label>Role</label>
+    <select class="form-control @error('role') is-invalid @enderror" name="role" required>
+        <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+        <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>Member</option>
+    </select>
+    @error('role')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
 
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary">Update</button>

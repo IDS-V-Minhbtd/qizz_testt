@@ -22,11 +22,11 @@
                     <table class="table table-bordered table-striped mb-0">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th style="width: 5%">#</th>
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
-                                <th style="width: 180px;">Actions</th>
+                                <th style="width: 210px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,28 +36,44 @@
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
                                     <td>
-                                        @if($user->role_id == 1)
-                                            Admin
-                                        @elseif($user->role_id == 2)
-                                            Member
-                                        @else
-                                            Unknown
-                                        @endif
-                                    </td>
+    @switch($user->role)
+        @case('admin')
+            Admin
+            @break
+        @case('user')
+            Member
+            @break
+        @default
+            Unknown
+    @endswitch
+</td>
+
                                     <td>
-                                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-pen"></i> Edit
+                                        <a href="{{ route('admin.users.edit', $user->id) }}" 
+                                           class="btn btn-sm btn-primary" 
+                                           data-toggle="tooltip" 
+                                           title="Edit User">
+                                            <i class="fas fa-pen"></i>
                                         </a>
 
-                                        <a href="{{ route('admin.users.results', $user->id) }}" class="btn btn-info btn-sm">
-                                            <i class="fas fa-list"></i> Results
+                                        <a href="{{ route('admin.users.results', $user->id) }}" 
+                                           class="btn btn-sm btn-info" 
+                                           data-toggle="tooltip" 
+                                           title="View Results">
+                                            <i class="fas fa-list"></i>
                                         </a>
 
-                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                        <form action="{{ route('admin.users.destroy', $user->id) }}" 
+                                              method="POST" 
+                                              class="d-inline" 
+                                              onsubmit="return confirm('Are you sure you want to delete this user?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="btn btn-danger btn-sm" type="submit">
-                                                <i class="fas fa-trash"></i> Delete
+                                            <button class="btn btn-sm btn-danger" 
+                                                    type="submit" 
+                                                    data-toggle="tooltip" 
+                                                    title="Delete User">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     </td>
@@ -77,4 +93,12 @@
             </div>
         </div>
     </div>
+@stop
+
+@section('js')
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
 @stop

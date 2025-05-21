@@ -4,22 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\QuizService;
+use App\Services\QuestionService;
 use App\Http\Requests\QuizRequest;
-use Illuminate\Support\Facades\Log;
-use App\Models\Quiz; // Import the Quiz model
+use App\Models\Quiz;
 
 class QuizController extends Controller
 {
-    protected $service;
+    protected QuizService $quizService;
+    protected QuestionService $questionService;
 
-    public function __construct(QuizService $service)
+    public function __construct(QuizService $quizService, QuestionService $questionService)
     {
-        $this->service = $service;
+        $this->quizService = $quizService;
+        $this->questionService = $questionService;
     }
 
     public function index()
     {
-        $quizzes = $this->service->getAll();
+        $quizzes = $this->quizService->getAll();
         return view('admin.quizzes.index', compact('quizzes'));
     }
 
@@ -29,47 +31,42 @@ class QuizController extends Controller
         return view('admin.quizzes.create', compact('quiz'));
     }
 
-
     public function store(QuizRequest $request)
     {
-        // Xử lý và tạo quiz mới
         $validatedData = $request->validated();
+        $this->quizService->create($validatedData);
 
-        // Tạo quiz thông qua service
-        $this->service->create($validatedData);
-
-        return redirect()->route('admin.quizzes.index')->with('success', 'Quiz created successfully!');
+        return redirect()->route('admin.quizzes.index')
+                         ->with('success', 'Quiz created successfully!');
     }
 
     public function edit($id)
     {
-        
-        $quiz = $this->service->getById($id);
+        $quiz = $this->quizService->getById($id);
         if (!$quiz) {
             abort(404, 'Quiz not found');
         }
-        $questions = $quiz->questions()->orderBy('order')->get();
-        
+
+        // ✅ Lấy danh sách câu hỏi theo quiz_id với phân trang
+        $questions = $this->questionService->paginateByQuizId($id, 10);
 
         return view('admin.quizzes.edit', compact('quiz', 'questions'));
     }
 
     public function update(QuizRequest $request, $id)
     {
-        // Process and update the quiz
         $validatedData = $request->validated();
+        $this->quizService->update($id, $validatedData);
 
-        // Update quiz through the service
-        $this->service->update($id, $validatedData);
-
-        return redirect()->route('admin.quizzes.index')->with('success', 'Quiz updated successfully!');
+        return redirect()->route('admin.quizzes.index')
+                         ->with('success', 'Quiz updated successfully!');
     }
 
     public function destroy($id)
     {
-        // Delete the quiz by ID
-        $this->service->delete($id);
+        $this->quizService->delete($id);
 
-        return redirect()->route('admin.quizzes.index')->with('success', 'Quiz deleted successfully!');
+        return redirect()->route('admin.quizzes.index')
+                         ->with('success', 'Quiz deleted successfully!');
     }
 }

@@ -35,6 +35,7 @@ Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin
     Route::get('quizzes/{quiz}/questions/create', [QuestionController::class, 'create'])->name('quizzes.questions.create');
     Route::get('quizzes/{quiz}/questions/{question}/edit', [QuestionController::class, 'edit'])->name('quizzes.questions.edit');
     Route::put('quizzes/{quiz}/questions/{question}/update', [QuestionController::class, 'update'])->name('quizzes.questions.update');
+    Route::delete('quizzes/{quiz}/questions/{question}', [QuestionController::class, 'destroy'])->name('quizzes.questions.destroy');
     Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
 });
 

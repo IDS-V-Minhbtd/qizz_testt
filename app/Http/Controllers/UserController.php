@@ -23,9 +23,9 @@ class UserController extends Controller
     {
         Log::info('UserController@index called');
 
-        $users = $this->userService->listUsers();
+        $users = $this->userService->listUsers(); // returns paginator
 
-        Log::info('User list fetched', ['count' => count($users)]);
+        Log::info('User list fetched', ['count' => $users->total()]);
         return view('admin.users.index', compact('users'));
     }
 

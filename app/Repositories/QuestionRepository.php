@@ -5,6 +5,7 @@ use App\Models\Question;
 use App\Models\Answer;
 use App\Models\Quiz;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class QuestionRepository implements QuestionRepositoryInterface
 {
@@ -59,5 +60,9 @@ class QuestionRepository implements QuestionRepositoryInterface
                        ->where('id', $questionId)
                        ->first();
     }
+    public function paginateByQuizId(int $quizId, int $perPage = 10): LengthAwarePaginator
+{
+    return Question::where('quiz_id', $quizId)->orderBy('order')->paginate($perPage);
+}
 
 }

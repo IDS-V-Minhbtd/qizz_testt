@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Repositories\Interfaces\AnswerRepositoryInterface;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class QuestionService
 {
@@ -133,4 +134,8 @@ class QuestionService
             return $this->questionRepo->findById($questionId);
         });
     }
+    public function paginateByQuizId(int $quizId, int $perPage = 10): LengthAwarePaginator
+{
+    return $this->questionRepo->paginateByQuizId($quizId, $perPage);
+}
 }

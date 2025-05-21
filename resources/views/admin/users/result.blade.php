@@ -30,7 +30,7 @@
                         @foreach($results as $index => $result)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $result->quiz->title ?? 'N/A' }}</td>
+                                <td>{{ $result->quiz->name ?? 'N/A' }}</td>
                                 <td>{{ $result->score }}</td>
                                 <td>{{ $result->created_at->format('d M Y H:i') }}</td>
                             </tr>

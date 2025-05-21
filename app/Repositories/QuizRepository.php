@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Quiz;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class QuizRepository implements QuizRepositoryInterface
 {
@@ -11,6 +12,10 @@ class QuizRepository implements QuizRepositoryInterface
     {
         return Quiz::create($data);
     }
+    public function paginate(int $perPage = 10): LengthAwarePaginator
+    {
+        return Quiz::paginate($perPage);
+    }       
 
     public function findById(int $id): ?Quiz
     {
