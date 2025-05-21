@@ -2,8 +2,6 @@
 namespace App\Repositories;
 
 use App\Models\Question;
-use App\Models\Answer;
-use App\Models\Quiz;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 

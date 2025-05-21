@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\QuestionService;
-
 use App\Http\Requests\QuestionRequest;
+use App\Services\QuestionService;
+use Illuminate\Support\Facades\Log;
 
 class QuestionController extends Controller
 {
@@ -32,55 +31,64 @@ class QuestionController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
-        if ($validatedData['answer_type'] === 'multiple_choice') {
-            $answers = $request->input('answers');
-            $this->questionService->createWithAnswers($validatedData, $answers);
-        } elseif ($validatedData['answer_type'] === 'true_false') {
-            $correctAnswer = $request->input('correct_answer');
-            $this->questionService->createTrueFalse($validatedData, $correctAnswer);
-        } elseif ($validatedData['answer_type'] === 'text_input') {
-            $textAnswer = $request->input('text_answer');
-            $this->questionService->createTextInput($validatedData, $textAnswer);
+
+        \Log::info('Dữ liệu gửi từ form (store):', $validatedData);
+
+        try {
+            $this->questionService->createWithAnswers($validatedData);
+            return redirect()->route('admin.quizzes.edit', $quizId)
+                ->with('success', 'Câu hỏi đã được thêm thành công!');
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi tạo câu hỏi: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Không thể tạo câu hỏi: ' . $e->getMessage()])->withInput();
         }
-        return redirect()->route('admin.quizzes.edit', $quizId)
-            ->with('success', 'Câu hỏi đã được thêm thành công!');
     }
 
     public function edit($quizId, $questionId)
     {
         $quiz = $this->questionService->getQuizById($quizId);
         $question = $this->questionService->getByQuizIdAndQuestionId($quizId, $questionId);
-        $answers = $this->questionService->getAnswerByQuestionId($questionId)?? collect();
-        if (!$quiz || !$question) { 
+        $answers = $this->questionService->getAnswerByQuestionId($questionId) ?? collect();
+
+        if (!$quiz || !$question) {
             abort(404, 'Quiz or question not found');
         }
-        
 
-        return view('admin.quizzes.question.edit', compact('quiz', 'question','answers'));
+        \Log::info('Question edit data:', [
+            'quiz' => $quiz->toArray(),
+            'question' => $question->toArray(),
+            'answers' => $answers->toArray(),
+        ]);
+
+        return view('admin.quizzes.question.edit', compact('quiz', 'question', 'answers'));
     }
 
     public function update(QuestionRequest $request, $quizId, $questionId)
-{
-    $validatedData = $request->validated();
-    $validatedData['quiz_id'] = $quizId;
+    {
+        $validatedData = $request->validated();
+        $validatedData['quiz_id'] = $quizId;
 
-    // Thêm các input đặc biệt cho từng loại câu hỏi
-    $validatedData['answers'] = $request->input('answers');
-    $validatedData['correct_answer'] = $request->input('correct_answer');
-    $validatedData['text_answer'] = $request->input('text_answer');
+        \Log::info('Dữ liệu gửi từ form (update):', $validatedData);
 
-    $this->questionService->updateWithAnswers($questionId, $validatedData);
-
-    return redirect()->route('admin.quizzes.edit', $quizId)
-        ->with('success', 'Cập nhật câu hỏi thành công!');
-}
-
+        try {
+            $this->questionService->updateWithAnswers($questionId, $validatedData);
+            return redirect()->route('admin.quizzes.edit', $quizId)
+                ->with('success', 'Cập nhật câu hỏi thành công!');
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi cập nhật câu hỏi: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Không thể cập nhật câu hỏi: ' . $e->getMessage()])->withInput();
+        }
+    }
 
     public function destroy($quizId, $questionId)
     {
-        $this->questionService->delete($questionId);
-
-        return redirect()->route('admin.quizzes.edit', $quizId)
-            ->with('success', 'Xóa câu hỏi thành công!');
+        try {
+            $this->questionService->delete($questionId);
+            return redirect()->route('admin.quizzes.edit', $quizId)
+                ->with('success', 'Xóa câu hỏi thành công!');
+        } catch (\Exception $e) {
+            \Log::error('Lỗi khi xóa câu hỏi: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Không thể xóa câu hỏi: ' . $e->getMessage()]);
+        }
     }
 }

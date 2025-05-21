@@ -14,7 +14,7 @@ class QuestionService
     public function __construct(
         protected QuestionRepositoryInterface $questionRepo,
         protected QuizRepositoryInterface $quizRepo,
-        protected AnswerRepositoryInterface $answerRepo 
+        protected AnswerRepositoryInterface $answerRepo
     ) {}
 
     public function create(array $data)
@@ -60,6 +60,8 @@ class QuestionService
     public function createWithAnswers(array $data): Question
     {
         return DB::transaction(function () use ($data) {
+            \Log::info('Dữ liệu đầu vào createWithAnswers:', $data);
+
             $question = $this->questionRepo->create([
                 'quiz_id'  => $data['quiz_id'],
                 'question' => $data['question'],
@@ -68,29 +70,52 @@ class QuestionService
             ]);
 
             if ($data['answer_type'] === 'multiple_choice') {
+                if (!isset($data['answers']) || !is_array($data['answers']) || count($data['answers']) < 2) {
+                    throw new \Exception('Cần ít nhất hai đáp án cho câu hỏi trắc nghiệm.');
+                }
+                if (!isset($data['correct_answer']) || !array_key_exists((int)$data['correct_answer'], $data['answers'])) {
+                    throw new \Exception('Đáp án đúng không hợp lệ: ' . ($data['correct_answer'] ?? 'không xác định'));
+                }
                 foreach ($data['answers'] as $index => $answer) {
-                    if (isset($answer['text'])) {
+                    if (isset($answer['text']) && !empty(trim($answer['text']))) {
+                        $isCorrect = ((int)$data['correct_answer'] === $index);
+                        \Log::info('Tạo đáp án:', [
+                            'index' => $index,
+                            'text' => $answer['text'],
+                            'is_correct' => $isCorrect,
+                            'correct_answer' => $data['correct_answer'],
+                        ]);
                         $this->answerRepo->create([
                             'question_id' => $question->id,
                             'answer'      => $answer['text'],
-                            'is_correct'  => ((int)$data['correct_answer'] === $index),
+                            'is_correct'  => $isCorrect,
                         ]);
                     }
                 }
-            // } elseif ($data['answer_type'] === 'text_input') {
-            //     $this->answerRepo->create([
-            //         'question_id' => $question->id,
-            //         'answer'      => $data['text_answer'],
-            //         'is_correct'  => true,
-            //     ]);
-            // } elseif ($data['answer_type'] === 'true_false') {
-            //     $correct = (int)$data['correct_answer'] === 1;
-            //     $this->answerRepo->createMany([
-            //         ['question_id' => $question->id, 'answer' => 'Đúng', 'is_correct' => $correct],
-            //         ['question_id' => $question->id, 'answer' => 'Sai',  'is_correct' => !$correct],
-            //     ]);
+            } elseif ($data['answer_type'] === 'text_input') {
+                if (!isset($data['text_answer']) || empty(trim($data['text_answer']))) {
+                    throw new \Exception('Đáp án văn bản không được để trống.');
+                }
+                $this->answerRepo->create([
+                    'question_id' => $question->id,
+                    'answer'      => $data['text_answer'],
+                    'is_correct'  => true,
+                ]);
+            } elseif ($data['answer_type'] === 'true_false') {
+                if (!isset($data['correct_answer']) || !in_array($data['correct_answer'], ['0', '1'])) {
+                    throw new \Exception('Đáp án đúng cho câu hỏi Đúng/Sai không hợp lệ.');
+                }
+                $correct = (int)$data['correct_answer'] === 1;
+                $this->answerRepo->createMany([
+                    ['question_id' => $question->id, 'answer' => 'Đúng', 'is_correct' => $correct],
+                    ['question_id' => $question->id, 'answer' => 'Sai', 'is_correct' => !$correct],
+                ]);
+            } else {
+                throw new \Exception('Loại câu hỏi không hợp lệ.');
             }
 
+            $question = $this->questionRepo->findById($question->id);
+            \Log::info('Dữ liệu sau khi tạo:', $question->answers->toArray());
             return $question;
         });
     }
@@ -98,6 +123,8 @@ class QuestionService
     public function updateWithAnswers(int $questionId, array $data): Question
     {
         return DB::transaction(function () use ($questionId, $data) {
+            \Log::info('Dữ liệu đầu vào updateWithAnswers:', $data);
+
             $this->questionRepo->update($questionId, [
                 'quiz_id'  => $data['quiz_id'],
                 'question' => $data['question'],
@@ -108,34 +135,58 @@ class QuestionService
             $this->answerRepo->deleteByQuestionId($questionId);
 
             if ($data['answer_type'] === 'multiple_choice') {
+                if (!isset($data['answers']) || !is_array($data['answers']) || count($data['answers']) < 2) {
+                    throw new \Exception('Cần ít nhất hai đáp án cho câu hỏi trắc nghiệm.');
+                }
+                if (!isset($data['correct_answer']) || !array_key_exists((int)$data['correct_answer'], $data['answers'])) {
+                    throw new \Exception('Đáp án đúng không hợp lệ: ' . ($data['correct_answer'] ?? 'không xác định'));
+                }
                 foreach ($data['answers'] as $index => $answer) {
-                    if (isset($answer['text'])) {
+                    if (isset($answer['text']) && !empty(trim($answer['text']))) {
+                        $isCorrect = ((int)$data['correct_answer'] === $index);
+                        \Log::info('Tạo đáp án:', [
+                            'index' => $index,
+                            'text' => $answer['text'],
+                            'is_correct' => $isCorrect,
+                            'correct_answer' => $data['correct_answer'],
+                        ]);
                         $this->answerRepo->create([
                             'question_id' => $questionId,
                             'answer'      => $answer['text'],
-                            'is_correct'  => ((int)$data['correct_answer'] === $index),
+                            'is_correct'  => $isCorrect,
                         ]);
                     }
                 }
-            // } elseif ($data['answer_type'] === 'text_input') {
-            //     $this->answerRepo->create([
-            //         'question_id' => $questionId,
-            //         'answer'      => $data['text_answer'],
-            //         'is_correct'  => true,
-            //     ]);
-            // } elseif ($data['answer_type'] === 'true_false') {
-            //     $correct = (int)$data['correct_answer'] === 1;
-            //     $this->answerRepo->createMany([
-            //         ['question_id' => $questionId, 'answer' => 'Đúng', 'is_correct' => $correct],
-            //         ['question_id' => $questionId, 'answer' => 'Sai',  'is_correct' => !$correct],
-            //     ]);
+            } elseif ($data['answer_type'] === 'text_input') {
+                if (!isset($data['text_answer']) || empty(trim($data['text_answer']))) {
+                    throw new \Exception('Đáp án văn bản không được để trống.');
+                }
+                $this->answerRepo->create([
+                    'question_id' => $questionId,
+                    'answer'      => $data['text_answer'],
+                    'is_correct'  => true,
+                ]);
+            } elseif ($data['answer_type'] === 'true_false') {
+                if (!isset($data['correct_answer']) || !in_array($data['correct_answer'], ['0', '1'])) {
+                    throw new \Exception('Đáp án đúng cho câu hỏi Đúng/Sai không hợp lệ.');
+                }
+                $correct = (int)$data['correct_answer'] === 1;
+                $this->answerRepo->createMany([
+                    ['question_id' => $questionId, 'answer' => 'Đúng', 'is_correct' => $correct],
+                    ['question_id' => $questionId, 'answer' => 'Sai', 'is_correct' => !$correct],
+                ]);
+            } else {
+                throw new \Exception('Loại câu hỏi không hợp lệ.');
             }
 
-            return $this->questionRepo->findById($questionId);
+            $question = $this->questionRepo->findById($questionId);
+            \Log::info('Dữ liệu sau khi cập nhật:', $question->answers->toArray());
+            return $question;
         });
     }
+
     public function paginateByQuizId(int $quizId, int $perPage = 10): LengthAwarePaginator
-{
-    return $this->questionRepo->paginateByQuizId($quizId, $perPage);
-}
+    {
+        return $this->questionRepo->paginateByQuizId($quizId, $perPage);
+    }
 }
