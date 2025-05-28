@@ -20,6 +20,7 @@ class QuestionService
 
     public function createQuestion(array $data): Question
     {
+        Log::info('Tạo câu hỏi:', $data);
         return $this->questionRepo->create([
             'quiz_id'  => $data['quiz_id'],
             'question' => $data['question'],
@@ -47,11 +48,28 @@ class QuestionService
 
             foreach ($data['answers'] as $id => $answer) {
                 if (!empty(trim($answer['text'] ?? ''))) {
-                    $this->answerRepo->create([
+                    $isCorrect = ((int)$data['correct_answer'] === $id);
+                    Log::info('Chuẩn bị tạo đáp án', [
                         'question_id' => $questionId,
-                        'answer'      => $answer['text'],
-                        'is_correct' => ($data['correct_answer'] == $id)
+                        'answer_text' => $answer['text'],
+                        'correct_answer' => $data['correct_answer'],
+                        'id' => $id,
+                        'is_correct' => $isCorrect
                     ]);
+                    try {
+                        $this->answerRepo->create([
+                            'question_id' => $questionId,
+                            'answer' => $answer['text'],
+                            'is_correct' => $isCorrect,
+                        ]);
+                        Log::info('Đáp án đã được lưu', ['answer_text' => $answer['text']]);
+                    } catch (\Exception $e) {
+                        Log::error('Lỗi khi lưu đáp án: ' . $e->getMessage(), [
+                            'answer_text' => $answer['text'],
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        throw $e; // Ném lỗi để transaction rollback
+                    }
                 }
             }
 
@@ -60,8 +78,8 @@ class QuestionService
 
             $this->answerRepo->create([
                 'question_id' => $questionId,
-                'answer'      => $data['text_answer'],
-                'is_correct'  => true,
+                'answer' => $data['text_answer'],
+                'is_correct' => true,
             ]);
 
         } elseif ($answerType === 'true_false') {
@@ -102,7 +120,6 @@ class QuestionService
         });
     }
 
-    // Các hàm hỗ trợ lấy dữ liệu
     public function getById(int $id)
     {
         return $this->questionRepo->findById($id);
@@ -138,7 +155,6 @@ class QuestionService
         return $this->questionRepo->paginateByQuizId($quizId, $perPage);
     }
 
-    // Validation helpers
     protected function validateMultipleChoiceAnswers(array $data): void
     {
         if (!isset($data['answers']) || count($data['answers']) < 2) {
