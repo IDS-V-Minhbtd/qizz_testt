@@ -230,4 +230,4 @@
         });
     });
 </script>
-@endsection
+@endsection 

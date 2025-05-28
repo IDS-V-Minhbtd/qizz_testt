@@ -132,7 +132,7 @@ class QuestionService
 
     public function getByQuizId(int $quizId)
     {
-        return $this->questionRepo->findByQuizId($quizId);
+        return $this->questionRepo->findByQuizId($quizId); 
     }
 
     public function getAnswerByQuestionId(int $questionId)
