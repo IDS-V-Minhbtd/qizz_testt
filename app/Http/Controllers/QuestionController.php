@@ -8,21 +8,18 @@ use Illuminate\Support\Facades\Log;
 
 class QuestionController extends Controller
 {
-    protected $questionService;
-
-    public function __construct(QuestionService $questionService)
+    public function __construct(protected QuestionService $questionService)
     {
-        $this->questionService = $questionService;
     }
 
     public function create($quizId)
     {
         $quiz = $this->questionService->getQuizById($quizId);
-        $questions = $this->questionService->getByQuizId($quizId);
-
         if (!$quiz) {
             abort(404, 'Quiz not found');
         }
+
+        $questions = $this->questionService->getByQuizId($quizId);
 
         return view('admin.quizzes.question.create', compact('quiz', 'questions'));
     }
@@ -32,15 +29,17 @@ class QuestionController extends Controller
         $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
 
-        \Log::info('Dữ liệu gửi từ form (store):', $validatedData);
+        Log::info('Dữ liệu đã validate trước khi gửi tới QuestionService:', $validatedData);
 
         try {
             $this->questionService->createWithAnswers($validatedData);
             return redirect()->route('admin.quizzes.edit', $quizId)
                 ->with('success', 'Câu hỏi đã được thêm thành công!');
         } catch (\Exception $e) {
-            \Log::error('Lỗi khi tạo câu hỏi: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['error' => 'Không thể tạo câu hỏi: ' . $e->getMessage()])->withInput();
+            Log::error('Lỗi khi tạo câu hỏi: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Không thể tạo câu hỏi: ' . $e->getMessage()])
+                ->withInput();
         }
     }
 
@@ -48,13 +47,22 @@ class QuestionController extends Controller
     {
         $quiz = $this->questionService->getQuizById($quizId);
         $question = $this->questionService->getByQuizIdAndQuestionId($quizId, $questionId);
-        $answers = $this->questionService->getAnswerByQuestionId($questionId) ?? collect();
 
         if (!$quiz || !$question) {
             abort(404, 'Quiz or question not found');
         }
 
-        \Log::info('Question edit data:', [
+        $answersRaw = $this->questionService->getAnswerByQuestionId($questionId) ?? collect();
+        $answers = $answersRaw->map(function($item) {
+            return [
+                'id' => $item->id,
+                'answer' => $item->answer,
+                'text' => $item->answer,
+                'is_correct' => (bool) $item->is_correct,
+            ];
+        });
+
+        Log::info('Question edit data:', [
             'quiz' => $quiz->toArray(),
             'question' => $question->toArray(),
             'answers' => $answers->toArray(),
@@ -68,15 +76,17 @@ class QuestionController extends Controller
         $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
 
-        \Log::info('Dữ liệu gửi từ form (update):', $validatedData);
+        Log::info('Dữ liệu gửi từ form (update):', $validatedData);
 
         try {
             $this->questionService->updateWithAnswers($questionId, $validatedData);
             return redirect()->route('admin.quizzes.edit', $quizId)
                 ->with('success', 'Cập nhật câu hỏi thành công!');
         } catch (\Exception $e) {
-            \Log::error('Lỗi khi cập nhật câu hỏi: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['error' => 'Không thể cập nhật câu hỏi: ' . $e->getMessage()])->withInput();
+            Log::error('Lỗi khi cập nhật câu hỏi: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Không thể cập nhật câu hỏi: ' . $e->getMessage()])
+                ->withInput();
         }
     }
 
@@ -87,8 +97,9 @@ class QuestionController extends Controller
             return redirect()->route('admin.quizzes.edit', $quizId)
                 ->with('success', 'Xóa câu hỏi thành công!');
         } catch (\Exception $e) {
-            \Log::error('Lỗi khi xóa câu hỏi: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['error' => 'Không thể xóa câu hỏi: ' . $e->getMessage()]);
+            Log::error('Lỗi khi xóa câu hỏi: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => 'Không thể xóa câu hỏi: ' . $e->getMessage()]);
         }
     }
 }

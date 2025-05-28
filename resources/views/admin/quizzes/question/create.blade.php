@@ -41,9 +41,6 @@
             <h5>Đáp án (Multiple Choice)</h5>
             <div id="answers-wrapper"></div>
             <button type="button" class="btn btn-secondary mb-3" id="btn-add-answer">+ Thêm đáp án</button>
-            <div class="mb-3">
-                <label>Chọn đáp án đúng:</label>
-            </div>
         </div>
 
         {{-- Text Input --}}
@@ -80,6 +77,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const answersWrapper = document.getElementById('answers-wrapper');
     const addAnswerBtn = document.getElementById('btn-add-answer');
 
+    // Counter ID cho đáp án kiểu số nguyên
+    let answerCounter = 0;
+
     function toggleSections() {
         const type = answerTypeSelect.value;
         multipleChoiceSection.style.display = type === 'multiple_choice' ? 'block' : 'none';
@@ -88,34 +88,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function addAnswer(text = '') {
+        answerCounter++;
+        const id = answerCounter; // ID số nguyên tăng dần
+
         const answerDiv = document.createElement('div');
         answerDiv.classList.add('input-group', 'mb-2');
         answerDiv.innerHTML = `
             <div class="input-group-text">
-                <input type="radio" name="correct_answer" required>
+                <input type="radio" name="correct_answer" value="${id}" required>
             </div>
-            <input type="text" class="form-control" placeholder="Nội dung đáp án" value="${text}" required>
-            <button type="button" class="btn btn-danger btn-remove-answer">&times;</button>
+            <input type="text" name="answers[${id}][text]" class="form-control" placeholder="Nội dung đáp án" value="${text}" required>
+            <button type="button" class="btn btn-danger btn-remove-answer">×</button>
         `;
         answersWrapper.appendChild(answerDiv);
 
         answerDiv.querySelector('.btn-remove-answer').addEventListener('click', () => {
             answerDiv.remove();
-            reIndexAnswers();
-        });
-
-        reIndexAnswers();
-    }
-
-    function reIndexAnswers() {
-        const answerDivs = answersWrapper.querySelectorAll('.input-group');
-        answerDivs.forEach((div, idx) => {
-            const radio = div.querySelector('input[type=radio]');
-            const textInput = div.querySelector('input[type=text]');
-            radio.value = idx;
-            radio.name = "correct_answer";
-            textInput.name = `answers[${idx}][text]`;
-            textInput.placeholder = `Nội dung đáp án ${idx + 1}`;
         });
     }
 
@@ -123,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         addAnswer();
     });
 
-    answerTypeSelect.addEventListener('change', function() {
+    answerTypeSelect.addEventListener('change', function () {
         toggleSections();
         if (answerTypeSelect.value === 'multiple_choice' && answersWrapper.childElementCount === 0) {
             addAnswer();
@@ -131,9 +119,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Khởi tạo mặc định
+    // Khởi tạo khi load trang
     toggleSections();
-    if (answerTypeSelect.value === 'multiple_choice') {
+    if (answerTypeSelect.value === 'multiple_choice' && answersWrapper.childElementCount === 0) {
         addAnswer();
         addAnswer();
     }

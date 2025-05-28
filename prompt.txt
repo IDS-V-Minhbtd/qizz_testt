@@ -7,7 +7,7 @@ Các bảng trong database:
 
 users: bảng mặc định của Laravel, thêm cột role (enum: user, admin)
 
-quizzes: có các cột name, description, time_limit, is_public, created_by
+quizzes: có các cột name, description, quizz_code, time_limit, is_public, created_by
 
 questions: liên kết với quizzes, có question và order, Answer_tpye
 

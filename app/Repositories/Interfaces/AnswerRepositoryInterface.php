@@ -10,7 +10,7 @@ interface  AnswerRepositoryInterface
 
     public function findById(int $id): ?Answer;
 
-    public function update(int $id, array $data): bool;
+    public function updateOrderByQuestionId(int $id, array $data): bool;
 
     public function all(): iterable;
 
@@ -19,4 +19,5 @@ interface  AnswerRepositoryInterface
     public function deleteByQuestionId(int $questionId): bool;
 
     public function deleteById(int $id): bool;
+    
 }
