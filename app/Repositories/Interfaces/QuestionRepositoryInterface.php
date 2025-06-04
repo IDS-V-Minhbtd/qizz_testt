@@ -15,4 +15,5 @@ interface QuestionRepositoryInterface
     public function findByQuizId(int $quizId): iterable;
     public function findByQuizIdAndQuestionId(int $quizId, int $questionId): ?Question;
     public function paginateByQuizId(int $quizId, int $perPage = 10): LengthAwarePaginator;
+    public function countByQuizId(int $quizId): int;
 }

@@ -38,6 +38,9 @@
                                     <div class="mb-3">
                                         <span class="badge bg-white text-dark">Câu hỏi: {{ $quiz->questions_count ?? 'N/A' }}</span>
                                     </div>
+                                    <div class="mb-3">
+                                        <span class="badge bg-white text-dark">Thời gian: {{ $quiz->time_limit }} phút</span>
+                                    </div>
                                     <button class="btn btn-white btn-sm w-100 quiz-btn" onclick="openQuizModal({{ $quiz->id }}, '{{ addslashes($quiz->name) }}')">
                                         <i class="bi bi-play-circle me-2 animate__animated animate__pulse animate__infinite"></i> Bắt đầu
                                     </button>
@@ -60,7 +63,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <i class="bi bi-question-circle-fill text-primary mb-3" style="font-size: 2rem;"></i>
+             
                 <p id="quizModalBody">Bạn có chắc chắn muốn bắt đầu quiz này?</p>
             </div>
             <div class="modal-footer">

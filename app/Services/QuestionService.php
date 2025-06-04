@@ -182,4 +182,9 @@ class QuestionService
             throw new Exception('Đáp án đúng cho câu hỏi Đúng/Sai không hợp lệ.');
         }
     }
+
+    public function getTotalQuestionByQuizId(int $quizId): int
+    {
+        return $this->questionRepo->countByQuizId($quizId);
+    }
 }

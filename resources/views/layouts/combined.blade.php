@@ -62,33 +62,14 @@
             color: #ffffff !important;
             font-weight: 300;
             font-size: 1.5rem;
+            margin-left: 77px;
         }
 
         .navbar-brand:hover {
             color: #e9ecef !important;
         }
 
-        .navbar .search-form {
-            max-width: 300px;
-            margin: 0 20px;
-        }
-
-        .navbar .search-form .form-control {
-            background-color: #3a2b4f;
-            border: none;
-            color: #ffffff;
-        }
-
-        .navbar .search-form .form-control::placeholder {
-            color: #b0b0b0;
-        }
-
-        .navbar .search-form .btn {
-            background-color: #3a2b4f;
-            border: none;
-            color: #ffffff;
-        }
-
+      
         .navbar .nav-link {
             color: #ffffff !important;
             margin-right: 15px;
@@ -119,10 +100,6 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarContent">
-                    <form class="search-form d-flex my-2 my-lg-0">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                        <button class="btn" type="submit"><i class="bi bi-search"></i></button>
-                    </form>
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('history') }}">

@@ -62,5 +62,10 @@ class QuestionRepository implements QuestionRepositoryInterface
 {
     return Question::where('quiz_id', $quizId)->orderBy('order')->paginate($perPage);
 }
+    // Get the count of questions by quiz ID
+    public function countByQuizId(int $quizId): int
+    {
+        return Question::where('quiz_id', $quizId)->count();
+    }
 
 }
