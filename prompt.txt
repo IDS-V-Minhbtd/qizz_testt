@@ -31,3 +31,5 @@ sửa phần update role
 thêm role quizz_manager để quản lí quizz 
 thêm chức năng đăng kí quyền cấp quizz_manager 
 sửa lại màn hình results
+viết lại trang validate dữ liệu
+vết unit test cho từng tính năng
