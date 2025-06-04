@@ -57,7 +57,7 @@
                 <!-- Tên quiz -->
                 <div class="form-group mb-3">
                     <label for="name" class="form-label font-weight-bold">Tên Quiz <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $quiz->name) }}" required>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $quiz->name) }}" >
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -75,7 +75,7 @@
                 <!-- Giới hạn thời gian -->
                 <div class="form-group mb-3">
                     <label for="time_limit" class="form-label font-weight-bold">Giới hạn thời gian (phút) <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control @error('time_limit') is-invalid @enderror" id="time_limit" name="time_limit" value="{{ old('time_limit', ($quiz->time_limit ?? 10)) }}" required min="1">
+                    <input type="number" class="form-control @error('time_limit') is-invalid @enderror" id="time_limit" name="time_limit" value="{{ old('time_limit', ($quiz->time_limit ?? 10)) }}"  min="1">
                     @error('time_limit')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

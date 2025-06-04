@@ -22,7 +22,7 @@
             <label for="name" class="form-label">Tên Quiz</label>
             <input type="text" name="name" id="name"
                 class="form-control @error('name') is-invalid @enderror"
-                value="{{ old('name') }}" required>
+                value="{{ old('name') }}" >
             @error('name')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

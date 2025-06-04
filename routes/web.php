@@ -45,5 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('quizz/{quiz}', [UserAnswerController::class, 'start'])->name('quizz.index');
 
     Route::get('profile', [UserController::class, 'profile'])->name('profile');
-    Route::post('profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
+    Route::match(['post', 'put'], 'profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+    Route::post('profile/delete', [UserController::class, 'deleteProfile'])->name('profile.delete');
+    Route::get('history', [UserController::class, 'history'])->name('history');
 });

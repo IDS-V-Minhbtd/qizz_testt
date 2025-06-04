@@ -318,30 +318,32 @@ return [
         'text' => 'search',
         'icon' => 'fas fa-fw fa-search', // Added icon for sidebar search
     ],
-    [
-        'text' => 'blog',
-        'url' => 'admin/blog',
-        'can' => 'manage-blog',
-        'icon' => 'fas fa-fw fa-blog', // Changed to blog-specific icon
-    ],
+
     [
         'text' => 'quizz management',
         'url' => 'admin/quizzes',   
         'icon' => 'fas fa-fw fa-question-circle', // Changed to quiz-related icon
         'label' => 4,
         'label_color' => 'success',
+        'can' => 'isAdmin',
     ],
     ['header' => 'account_settings'],
     [
         'text' => 'user management',
         'url' => 'admin/users',
-        'icon' => 'fas fa-fw fa-users', // Changed to plural users icon
+        'icon' => 'fas fa-fw fa-users', 
+        'can' => 'isAdmin',
     ],
     [
         'text' => 'profile',
         'url' => 'profile',
         'icon' => 'fas fa-fw fa-user-circle', // Changed to profile-specific icon
     ],
+    [
+        'text' => 'history',
+        'url' => 'history',
+        'icon' => 'fas fa-fw fa-history', // Changed to history-specific icon
+    ]
 ],
 
     /*

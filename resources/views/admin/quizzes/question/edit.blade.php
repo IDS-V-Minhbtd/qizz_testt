@@ -1,190 +1,185 @@
-@extends('adminlte::page')
-
-@section('title', 'Cập nhật câu hỏi')
-
-@section('content_header')
-    <h1>Cập nhật câu hỏi: {{ $quiz->name }}</h1>
-@endsection
+@extends('layouts.app')
 
 @section('content')
-@php
-    $questionType = old('answer_type', $question->type); // giữ nguyên lựa chọn
-    $answers = collect($answers ?? [])->map(function ($a) {
-        return [
-            'id' => $a['id'] ?? null,
-            'text' => $a['answer'] ?? $a['text'] ?? '',
-            'is_correct' => isset($a['is_correct']) ? (int)$a['is_correct'] : 0,
-        ];
-    });
+<div class="container" style="max-width: 800px">
+    <h2 class="mb-4">Chỉnh sửa câu hỏi: {{ $quiz->name }}</h2>
 
-    $correctIndexOld = old('correct_answer');
-    $correctIndex = is_null($correctIndexOld)
-        ? $answers->search(fn($a) => $a['is_correct'] === 1)
-        : (int) $correctIndexOld;
-@endphp
-
-@if ($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-<form method="POST" action="{{ route('admin.quizzes.questions.update', [$quiz->id, $question->id]) }}">
-    @csrf
-    @method('PUT')
-
-    <div class="card">
-        <div class="card-header">Thông tin câu hỏi</div>
-        <div class="card-body">
-            <div class="form-group">
-                <label for="question">Câu hỏi <span class="text-danger">*</span></label>
-                <input type="text" name="question" id="question" class="form-control @error('question') is-invalid @enderror"
-                       value="{{ old('question', $question->question) }}" required>
-                @error('question') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="order">Thứ tự <span class="text-danger">*</span></label>
-                <input type="number" name="order" id="order" class="form-control @error('order') is-invalid @enderror"
-                       value="{{ old('order', $question->order) }}" required min="1">
-                @error('order') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="answer_type">Loại câu trả lời <span class="text-danger">*</span></label>
-                <select name="answer_type" id="answer_type" class="form-control @error('answer_type') is-invalid @enderror" required>
-                    <option value="multiple_choice" {{ $questionType === 'multiple_choice' ? 'selected' : '' }}>Lựa chọn nhiều</option>
-                    <option value="text_input" {{ $questionType === 'text_input' ? 'selected' : '' }}>Nhập văn bản</option>
-                    <option value="true_false" {{ $questionType === 'true_false' ? 'selected' : '' }}>Đúng/Sai</option>
-                </select>
-                @error('answer_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
+    {{-- Hiển thị lỗi --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
-    </div>
+    @endif
 
-    <div class="card mt-3">
-        <div class="card-header">Đáp án</div>
-        <div class="card-body">
-            <div id="multiple-choice-section" style="display: {{ $questionType === 'multiple_choice' ? 'block' : 'none' }};">
-                <div id="answers-container">
-                    @foreach($answers as $index => $answer)
-                        <div class="input-group mb-2" data-index="{{ $index }}">
-                            <input type="text" name="answers[{{ $index }}][text]" class="form-control"
-                                   value="{{ old("answers.$index.text", $answer['text']) }}" placeholder="Đáp án {{ $index + 1 }}" required>
-                            <input type="hidden" name="answers[{{ $index }}][id]" value="{{ $answer['id'] ?? '' }}">
-                            <input type="hidden" name="answers[{{ $index }}][is_correct]" value="{{ $answer['is_correct'] }}" class="is-correct-hidden">
-                            <div class="input-group-text">
-                                <input type="radio" name="correct_answer"
-                                       value="{{ $index }}"
-                                       {{ $correctIndex === $index ? 'checked' : '' }}>
-                                <span class="ml-2">Đúng</span>
+    <form method="POST" action="{{ route('admin.quizzes.questions.update', [$quiz->id, $question->id]) }}">
+        @csrf
+        @method('PUT')
+
+        <input type="hidden" name="answer_type" value="multiple_choice">
+        <input type="hidden" name="question_id" value="{{ $question->id }}">
+
+        {{-- Câu hỏi --}}
+        <div class="mb-3">
+            <label for="question" class="form-label">Nội dung câu hỏi <span class="text-danger">*</span></label>
+            <textarea name="question" id="question" rows="3" class="form-control">{{ old('question', $question->question) }}</textarea>
+            @error('question')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+        {{-- Thứ tự --}}
+        <div class="mb-3">
+            <label for="order" class="form-label">Thứ tự <span class="text-danger">*</span></label>
+            <input type="number" name="order" id="order" class="form-control" value="{{ old('order', $question->order) }}" min="1">
+            @error('order')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+        {{-- Đáp án --}}
+        <div class="card mb-4">
+            <div class="card-header fw-bold">Đáp án (Trắc nghiệm)</div>
+            <div class="card-body">
+                @php
+                    $oldAnswers = old('answers', $question->answers->mapWithKeys(fn($a) => [$a->id => ['text' => $a->answer]])->toArray());
+                    $maxId = count($oldAnswers) ? max(array_keys($oldAnswers)) : 2;
+                @endphp
+
+                <div id="answers-wrapper">
+                    @foreach ($oldAnswers as $id => $answer)
+                        <div class="row g-2 align-items-center mb-2" data-answer-id="{{ $id }}">
+                            <div class="col-auto">
+                                <label class="form-label mb-0">Đáp án {{ $loop->iteration }}</label>
                             </div>
+                            <div class="col">
+                                <input type="text" name="answers[{{ $id }}][text]" class="form-control answer-input"
+                                       value="{{ $answer['text'] ?? '' }}" placeholder="Nội dung đáp án">
+                            </div>
+                            @if ($loop->index >= 2)
+                                <div class="col-auto">
+                                    <button type="button" class="btn btn-outline-danger btn-remove-answer">×</button>
+                                </div>
+                            @endif
                         </div>
+                        @error("answers.{$id}.text")
+                            <div class="text-danger small mb-2">{{ $message }}</div>
+                        @enderror
                     @endforeach
                 </div>
-                <button type="button" class="btn btn-sm btn-secondary" id="add-answer">
-                    <i class="fas fa-plus"></i> Thêm đáp án
-                </button>
-                @error('correct_answer') <div class="text-danger mt-2">{{ $message }}</div> @enderror
-            </div>
 
-            <div id="text-input-section" style="display: {{ $questionType === 'text_input' ? 'block' : 'none' }};">
-                <div class="form-group">
-                    <label for="text_answer">Đáp án chính xác</label>
-                    <input type="text" name="text_answer" id="text_answer" class="form-control"
-                           value="{{ old('text_answer', $answers[0]['text'] ?? '') }}">
-                    @error('text_answer') <div class="text-danger">{{ $message }}</div> @enderror
-                </div>
-            </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="btn-add-answer">+ Thêm đáp án</button>
 
-            <div id="true-false-section" style="display: {{ $questionType === 'true_false' ? 'block' : 'none' }};">
-                <div class="form-group">
-                    <label>Chọn đáp án đúng</label>
-                    <select name="correct_answer" class="form-control" required>
-                        <option value="1" {{ old('correct_answer', $answers->firstWhere('is_correct', 1)['text'] ?? '') === 'Đúng' ? 'selected' : '' }}>Đúng</option>
-                        <option value="0" {{ old('correct_answer', $answers->firstWhere('is_correct', 1)['text'] ?? '') === 'Sai' ? 'selected' : '' }}>Sai</option>
+                @error('answers')
+                    <div class="text-danger mt-2">{{ $message }}</div>
+                @enderror
+
+                {{-- Đáp án đúng --}}
+                <div class="mt-4">
+                    <label for="correct_answer" class="form-label">Đáp án đúng <span class="text-danger">*</span></label>
+                    <select name="correct_answer" id="correct_answer" class="form-select">
+                        @foreach ($oldAnswers as $id => $answer)
+                            <option value="{{ $id }}"
+                                {{ old('correct_answer', $question->answers->firstWhere('is_correct', true)?->id) == $id ? 'selected' : '' }}>
+                                Đáp án  {{ $answer['text'] ?? '' }}
+                            </option>
+                        @endforeach
                     </select>
-                    @error('correct_answer') <div class="text-danger">{{ $message }}</div> @enderror
+                    @error('correct_answer')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="card mt-3">
-        <div class="card-body">
-            <button type="submit" class="btn btn-success">
-                <i class="fas fa-save"></i> Cập nhật
-            </button>
+        <div class="d-flex justify-content-between">
             <a href="{{ route('admin.quizzes.edit', $quiz->id) }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Cập nhật
+            </button>
         </div>
-    </div>
-</form>
+    </form>
+</div>
 @endsection
 
-@section('js')
+@section('scripts')
+@section('scripts')
 <script>
-    const answerType = document.getElementById('answer_type');
-    const multipleChoiceSection = document.getElementById('multiple-choice-section');
-    const textInputSection = document.getElementById('text-input-section');
-    const trueFalseSection = document.getElementById('true-false-section');
+document.addEventListener('DOMContentLoaded', function () {
+    let answerId = {{ $maxId }};
+    const wrapper = document.getElementById('answers-wrapper');
+    const correctSelect = document.getElementById('correct_answer');
 
-    function toggleSections() {
-        const type = answerType.value;
-        multipleChoiceSection.style.display = type === 'multiple_choice' ? 'block' : 'none';
-        textInputSection.style.display = type === 'text_input' ? 'block' : 'none';
-        trueFalseSection.style.display = type === 'true_false' ? 'block' : 'none';
+    function updateAnswerLabelsAndOptions() {
+        const rows = wrapper.querySelectorAll('.row[data-answer-id]');
+        correctSelect.innerHTML = ''; // Clear dropdown
+        rows.forEach((row, index) => {
+            const label = row.querySelector('label');
+            const input = row.querySelector('input');
+            const id = row.getAttribute('data-answer-id');
+
+            // Cập nhật label số thứ tự
+            if (label) {
+                label.textContent = 'Đáp án ' + (index + 1);
+            }
+
+            // Thêm lại option vào dropdown
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = 'Đáp án ' + (input.value || '');
+            // Nếu là đáp án đang chọn (dựa vào old input hoặc default), giữ selected
+            if (parseInt(correctSelect.getAttribute('data-selected')) === parseInt(id)) {
+                option.selected = true;
+            }
+            correctSelect.appendChild(option);
+
+            // Gắn listener khi input thay đổi -> update option text
+            input.addEventListener('input', () => {
+                const opt = correctSelect.querySelector(`option[value="${id}"]`);
+                if (opt) opt.textContent = 'Đáp án ' + input.value;
+            });
+        });
     }
 
-    answerType.addEventListener('change', toggleSections);
-
-    document.querySelectorAll('input[name="correct_answer"]').forEach(radio => {
-        radio.addEventListener('change', function () {
-            const selectedIndex = parseInt(this.value);
-            const answersContainer = document.getElementById('answers-container');
-            if (!answersContainer) return;
-            answersContainer.querySelectorAll('.input-group').forEach(div => {
-                const idx = parseInt(div.getAttribute('data-index'));
-                const hiddenInput = div.querySelector('.is-correct-hidden');
-                hiddenInput.value = (idx === selectedIndex) ? 1 : 0;
-            });
-        });
-    });
-
-    document.getElementById('add-answer')?.addEventListener('click', () => {
-        const answersContainer = document.getElementById('answers-container');
-        const newIndex = answersContainer.children.length;
-
-        const div = document.createElement('div');
-        div.classList.add('input-group', 'mb-2');
-        div.setAttribute('data-index', newIndex);
-
-        div.innerHTML = `
-            <input type="text" name="answers[${newIndex}][text]" class="form-control" placeholder="Đáp án ${newIndex + 1}" required>
-            <input type="hidden" name="answers[${newIndex}][id]" value="">
-            <input type="hidden" name="answers[${newIndex}][is_correct]" value="0" class="is-correct-hidden">
-            <div class="input-group-text">
-                <input type="radio" name="correct_answer" value="${newIndex}">
-                <span class="ml-2">Đúng</span>
+    document.getElementById('btn-add-answer').addEventListener('click', function () {
+        answerId++;
+        const row = document.createElement('div');
+        row.className = 'row g-2 align-items-center mb-2';
+        row.setAttribute('data-answer-id', answerId);
+        row.innerHTML = `
+            <div class="col-auto">
+                <label class="form-label mb-0">Đáp án</label>
+            </div>
+            <div class="col">
+                <input type="text" name="answers[${answerId}][text]" class="form-control answer-input" placeholder="Nội dung đáp án">
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-outline-danger btn-remove-answer">×</button>
             </div>
         `;
-        answersContainer.appendChild(div);
-
-        div.querySelector('input[type=radio]').addEventListener('change', function () {
-            const selectedIndex = parseInt(this.value);
-            answersContainer.querySelectorAll('.input-group').forEach(div2 => {
-                const idx = parseInt(div2.getAttribute('data-index'));
-                const hiddenInput = div2.querySelector('.is-correct-hidden');
-                hiddenInput.value = (idx === selectedIndex) ? 1 : 0;
-            });
-        });
+        wrapper.appendChild(row);
+        updateAnswerLabelsAndOptions();
     });
 
-    toggleSections(); // Gọi lúc đầu
+    wrapper.addEventListener('click', function (e) {
+        if (e.target.classList.contains('btn-remove-answer')) {
+            e.target.closest('.row').remove();
+            updateAnswerLabelsAndOptions();
+        }
+    });
+
+    // Ghi nhận đáp án đúng ban đầu
+    correctSelect.setAttribute('data-selected', correctSelect.value);
+
+    // Gọi lần đầu để gắn sự kiện change
+    updateAnswerLabelsAndOptions();
+});
 </script>
+@endsection
+
 @endsection

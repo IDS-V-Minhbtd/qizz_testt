@@ -7,6 +7,7 @@ use App\Repositories\Interfaces\ResultRepositoryInterface;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\UploadedFile;
 
 class UserService
 {
@@ -36,17 +37,19 @@ class UserService
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
+
         return $this->userRepo->create($data);
     }
 
     // Cập nhật user, hash password nếu có thay đổi
     public function update(int $id, array $data): bool
     {
-        if (isset($data['password']) && !empty($data['password'])) {
+        if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
         }
+
         return $this->userRepo->update($id, $data);
     }
 
@@ -75,27 +78,58 @@ class UserService
         return $this->userRepo->findProfile($user->id);
     }
 
-    // Cập nhật avatar user kèm xử lý password nếu có
-    public function updateAvatar(int $id, array $data)
+    //     Xử lý upload avatar dùng chung
+    protected function handleAvatarUpload(?UploadedFile $avatar): ?string
     {
-        if (isset($data['password']) && !empty($data['password'])) {
+        if ($avatar && $avatar->isValid()) {
+            return $avatar->store('avatars', 'public');
+        }
+
+        return null;
+    }
+
+    //     Cập nhật profile gồm avatar + password
+    public function updateProfile(int $id, array $data): bool
+    {
+        $user = Auth::user();
+        if (!$user || $user->id !== $id) {
+            return false;
+        }
+
+        // Xử lý avatar nếu có
+        if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
+            $avatarPath = $this->handleAvatarUpload($data['avatar']);
+            if ($avatarPath) {
+                $data['avatar'] = $avatarPath;
+            } else {
+                unset($data['avatar']);
+            }
+        } else {
+            unset($data['avatar']);
+        }
+
+        // Xử lý mật khẩu nếu có
+        if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
         }
 
-        if (isset($data['avatar'])) {
-            $avatarPath = $data['avatar']->store('avatars', 'public');
-            $data['avatar'] = $avatarPath;
-        } else {
-            $data['avatar'] = 'avatars/default.png';
-        }
-
         return $this->userRepo->update($id, $data);
     }
 
-    // Lấy kết quả của user theo ID
-    public function showResults($id)
+    //     Xoá profile của user hiện tại
+    public function profileDelete(int $id): bool
+    {
+        $user = Auth::user();
+        if (!$user || $user->id !== $id) {
+            return false;
+        }
+        return $this->userRepo->delete($id);
+    }
+
+    //     Lấy kết quả của user theo ID
+    public function getResultsByUserId(int $id)
     {
         return $this->resultRepo->showResults($id);
     }

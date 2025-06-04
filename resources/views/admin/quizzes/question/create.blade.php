@@ -20,7 +20,7 @@
 
         <div class="mb-3">
             <label for="question" class="form-label">Nội dung câu hỏi <span class="text-danger">*</span></label>
-            <textarea name="question" id="question" rows="3" class="form-control" required>{{ old('question') }}</textarea>
+            <textarea name="question" id="question" rows="3" class="form-control" >{{ old('question') }}</textarea>
             @error('question')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -28,7 +28,7 @@
 
         <div class="mb-3">
             <label for="order" class="form-label">Thứ tự <span class="text-danger">*</span></label>
-            <input type="number" name="order" id="order" class="form-control" value="{{ old('order', 1) }}" min="1" required>
+            <input type="number" name="order" id="order" class="form-control" value="{{ old('order', 1) }}" min="1" >
             @error('order')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -44,7 +44,7 @@
                 @foreach ($oldAnswers as $id => $answer)
                     <div class="input-group mb-2" data-answer-id="{{ $id }}">
                         <span class="input-group-text">Đáp án {{ $id }}</span>
-                        <input type="text" name="answers[{{ $id }}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="{{ $answer['text'] }}" required>
+                        <input type="text" name="answers[{{ $id }}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="{{ $answer['text'] }}" >
                         @if ($id > 2)
                             <button type="button" class="btn btn-danger btn-remove-answer">×</button>
                         @endif
@@ -62,7 +62,7 @@
 
         <div class="mb-3">
             <label for="correct_answer" class="form-label">Đáp án đúng <span class="text-danger">*</span></label>
-            <select name="correct_answer" id="correct_answer" class="form-select" required>
+            <select name="correct_answer" id="correct_answer" class="form-select" >
                 @foreach ($oldAnswers as $id => $answer)
                     <option value="{{ $id }}" {{ old('correct_answer', 1) == $id ? 'selected' : '' }}>
                         Đáp án {{ $id }}: {{ $answer['text'] }}
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
         answerDiv.dataset.answerId = answerCounter;
         answerDiv.innerHTML = `
             <span class="input-group-text">Đáp án ${answerCounter}</span>
-            <input type="text" name="answers[${answerCounter}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="${text}" required>
+            <input type="text" name="answers[${answerCounter}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="${text}" >
             <button type="button" class="btn btn-danger btn-remove-answer">×</button>
         `;
         answersWrapper.appendChild(answerDiv);

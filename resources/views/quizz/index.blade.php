@@ -38,7 +38,7 @@
                                 name="answers[{{ $question->id }}]"
                                 value="{{ $answer->id }}"
                                 id="answer-{{ $answer->id }}"
-                                required>
+                                >
                             <label class="form-check-label" for="answer-{{ $answer->id }}">
                                 {{ $answer->answer }}
                             </label>

@@ -31,6 +31,7 @@ class UserAnswerController extends Controller
     public function start($quizId)
     {
         $quiz = $this->quizService->getById($quizId);
+        
 
         if (!$quiz || !$quiz->is_public) {
             return redirect()->route('dashboard')->with('error', 'Quiz không khả dụng.');
