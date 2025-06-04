@@ -8,12 +8,12 @@
 
 @section('content')
 @php
-    $questionType = old('answer_type', $question->type);
+    $questionType = old('answer_type', $question->type); // giữ nguyên lựa chọn
     $answers = collect($answers ?? [])->map(function ($a) {
         return [
             'id' => $a['id'] ?? null,
             'text' => $a['answer'] ?? $a['text'] ?? '',
-            'is_correct' => isset($a['is_correct']) ? (int)$a['is_correct'] : 0, // Ép thành số 0 hoặc 1
+            'is_correct' => isset($a['is_correct']) ? (int)$a['is_correct'] : 0,
         ];
     });
 
@@ -69,8 +69,7 @@
     <div class="card mt-3">
         <div class="card-header">Đáp án</div>
         <div class="card-body">
-            {{-- Multiple Choice --}}
-            <div id="multiple-choice-section" style="display: none;">
+            <div id="multiple-choice-section" style="display: {{ $questionType === 'multiple_choice' ? 'block' : 'none' }};">
                 <div id="answers-container">
                     @foreach($answers as $index => $answer)
                         <div class="input-group mb-2" data-index="{{ $index }}">
@@ -79,7 +78,7 @@
                             <input type="hidden" name="answers[{{ $index }}][id]" value="{{ $answer['id'] ?? '' }}">
                             <input type="hidden" name="answers[{{ $index }}][is_correct]" value="{{ $answer['is_correct'] }}" class="is-correct-hidden">
                             <div class="input-group-text">
-                                <input type="radio" name="correct_answer" 
+                                <input type="radio" name="correct_answer"
                                        value="{{ $index }}"
                                        {{ $correctIndex === $index ? 'checked' : '' }}>
                                 <span class="ml-2">Đúng</span>
@@ -93,8 +92,7 @@
                 @error('correct_answer') <div class="text-danger mt-2">{{ $message }}</div> @enderror
             </div>
 
-            {{-- Text Input --}}
-            <div id="text-input-section" style="display: none;">
+            <div id="text-input-section" style="display: {{ $questionType === 'text_input' ? 'block' : 'none' }};">
                 <div class="form-group">
                     <label for="text_answer">Đáp án chính xác</label>
                     <input type="text" name="text_answer" id="text_answer" class="form-control"
@@ -103,8 +101,7 @@
                 </div>
             </div>
 
-            {{-- True/False --}}
-            <div id="true-false-section" style="display: none;">
+            <div id="true-false-section" style="display: {{ $questionType === 'true_false' ? 'block' : 'none' }};">
                 <div class="form-group">
                     <label>Chọn đáp án đúng</label>
                     <select name="correct_answer" class="form-control" required>
@@ -114,28 +111,6 @@
                     @error('correct_answer') <div class="text-danger">{{ $message }}</div> @enderror
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="card mt-3">
-        <div class="card-header">Danh sách đáp án</div>
-        <div class="card-body">
-            @if($question->type === 'multiple_choice')
-                <ul>
-                    @foreach($answers as $index => $answer)
-                        <li>
-                            Đáp án {{ $index + 1 }}: {{ $answer['text'] }}
-                            @if($answer['is_correct'] == 1)
-                                <span class="text-success font-weight-bold">(Đáp án đúng)</span>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            @elseif($question->type === 'text_input')
-                <p>Đáp án đúng: <strong>{{ $answers[0]['text'] ?? 'Không có đáp án' }}</strong></p>
-            @elseif($question->type === 'true_false')
-                <p>Đáp án đúng: <strong>{{ $answers->firstWhere('is_correct', 1)['text'] ?? 'Không có đáp án' }}</strong></p>
-            @endif
         </div>
     </div>
 
@@ -150,17 +125,6 @@
         </div>
     </div>
 </form>
-@endsection
-
-@section('css')
-<style>
-    .text-success {
-        color: #28a745 !important;
-    }
-    .font-weight-bold {
-        font-weight: 700;
-    }
-</style>
 @endsection
 
 @section('js')
@@ -178,31 +142,23 @@
     }
 
     answerType.addEventListener('change', toggleSections);
-    toggleSections();
 
-    // Khi user chọn radio đáp án đúng, cập nhật hidden input is_correct tương ứng
     document.querySelectorAll('input[name="correct_answer"]').forEach(radio => {
-        radio.addEventListener('change', function() {
+        radio.addEventListener('change', function () {
             const selectedIndex = parseInt(this.value);
             const answersContainer = document.getElementById('answers-container');
             if (!answersContainer) return;
             answersContainer.querySelectorAll('.input-group').forEach(div => {
                 const idx = parseInt(div.getAttribute('data-index'));
                 const hiddenInput = div.querySelector('.is-correct-hidden');
-                if (idx === selectedIndex) {
-                    hiddenInput.value = 1;
-                } else {
-                    hiddenInput.value = 0;
-                }
+                hiddenInput.value = (idx === selectedIndex) ? 1 : 0;
             });
         });
     });
 
-    // Thêm đáp án mới
-    document.getElementById('add-answer').addEventListener('click', () => {
+    document.getElementById('add-answer')?.addEventListener('click', () => {
         const answersContainer = document.getElementById('answers-container');
-        const currentCount = answersContainer.children.length;
-        const newIndex = currentCount;
+        const newIndex = answersContainer.children.length;
 
         const div = document.createElement('div');
         div.classList.add('input-group', 'mb-2');
@@ -219,8 +175,7 @@
         `;
         answersContainer.appendChild(div);
 
-        // Thêm sự kiện change cho radio mới
-        div.querySelector('input[type=radio]').addEventListener('change', function() {
+        div.querySelector('input[type=radio]').addEventListener('change', function () {
             const selectedIndex = parseInt(this.value);
             answersContainer.querySelectorAll('.input-group').forEach(div2 => {
                 const idx = parseInt(div2.getAttribute('data-index'));
@@ -229,5 +184,7 @@
             });
         });
     });
+
+    toggleSections(); // Gọi lúc đầu
 </script>
-@endsection 
+@endsection

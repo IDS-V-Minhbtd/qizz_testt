@@ -16,50 +16,62 @@
 
     <form method="POST" action="{{ route('admin.quizzes.questions.store', $quiz->id) }}">
         @csrf
+        <input type="hidden" name="answer_type" value="multiple_choice">
 
         <div class="mb-3">
             <label for="question" class="form-label">Nội dung câu hỏi <span class="text-danger">*</span></label>
             <textarea name="question" id="question" rows="3" class="form-control" required>{{ old('question') }}</textarea>
+            @error('question')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mb-3">
             <label for="order" class="form-label">Thứ tự <span class="text-danger">*</span></label>
             <input type="number" name="order" id="order" class="form-control" value="{{ old('order', 1) }}" min="1" required>
+            @error('order')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mb-3">
-            <label for="answer_type" class="form-label">Loại câu hỏi <span class="text-danger">*</span></label>
-            <select name="answer_type" id="answer_type" class="form-select" required>
-                <option value="multiple_choice" {{ old('answer_type') === 'multiple_choice' ? 'selected' : '' }}>Trắc nghiệm</option>
-                <option value="text_input" {{ old('answer_type') === 'text_input' ? 'selected' : '' }}>Nhập văn bản</option>
-                <option value="true_false" {{ old('answer_type') === 'true_false' ? 'selected' : '' }}>Đúng/Sai</option>
-            </select>
-        </div>
-
-        {{-- Multiple Choice --}}
-        <div id="multiple-choice-section" style="display: none;">
-            <h5>Đáp án (Multiple Choice)</h5>
-            <div id="answers-wrapper"></div>
+            <h5>Đáp án (Trắc nghiệm)</h5>
+            <div id="answers-wrapper">
+                @php
+                    $oldAnswers = old('answers', [1 => ['text' => ''], 2 => ['text' => '']]);
+                    $maxId = max(array_keys($oldAnswers));
+                @endphp
+                @foreach ($oldAnswers as $id => $answer)
+                    <div class="input-group mb-2" data-answer-id="{{ $id }}">
+                        <span class="input-group-text">Đáp án {{ $id }}</span>
+                        <input type="text" name="answers[{{ $id }}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="{{ $answer['text'] }}" required>
+                        @if ($id > 2)
+                            <button type="button" class="btn btn-danger btn-remove-answer">×</button>
+                        @endif
+                    </div>
+                    @error("answers.{$id}.text")
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                @endforeach
+            </div>
             <button type="button" class="btn btn-secondary mb-3" id="btn-add-answer">+ Thêm đáp án</button>
+            @error('answers')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
         </div>
 
-        {{-- Text Input --}}
-        <div id="text-input-section" style="display: none;">
-            <div class="mb-3">
-                <label for="text_answer" class="form-label">Đáp án chính xác <span class="text-danger">*</span></label>
-                <input type="text" name="text_answer" id="text_answer" class="form-control" value="{{ old('text_answer') }}">
-            </div>
-        </div>
-
-        {{-- True/False --}}
-        <div id="true-false-section" style="display: none;">
-            <div class="mb-3">
-                <label for="correct_answer" class="form-label">Chọn đáp án đúng <span class="text-danger">*</span></label>
-                <select name="correct_answer" id="correct_answer" class="form-select" required>
-                    <option value="1" {{ old('correct_answer') === '1' ? 'selected' : '' }}>Đúng</option>
-                    <option value="0" {{ old('correct_answer') === '0' ? 'selected' : '' }}>Sai</option>
-                </select>
-            </div>
+        <div class="mb-3">
+            <label for="correct_answer" class="form-label">Đáp án đúng <span class="text-danger">*</span></label>
+            <select name="correct_answer" id="correct_answer" class="form-select" required>
+                @foreach ($oldAnswers as $id => $answer)
+                    <option value="{{ $id }}" {{ old('correct_answer', 1) == $id ? 'selected' : '' }}>
+                        Đáp án {{ $id }}: {{ $answer['text'] }}
+                    </option>
+                @endforeach
+            </select>
+            @error('correct_answer')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
         </div>
 
         <button type="submit" class="btn btn-primary">Lưu câu hỏi</button>
@@ -70,61 +82,78 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const answerTypeSelect = document.getElementById('answer_type');
-    const multipleChoiceSection = document.getElementById('multiple-choice-section');
-    const textInputSection = document.getElementById('text-input-section');
-    const trueFalseSection = document.getElementById('true-false-section');
     const answersWrapper = document.getElementById('answers-wrapper');
     const addAnswerBtn = document.getElementById('btn-add-answer');
+    const correctAnswerSelect = document.getElementById('correct_answer');
 
-    // Counter ID cho đáp án kiểu số nguyên
-    let answerCounter = 0;
+    // Tính ID lớn nhất hiện tại
+    let answerCounter = Math.max(...Array.from(answersWrapper.children).map(div => parseInt(div.dataset.answerId) || 0), 0);
 
-    function toggleSections() {
-        const type = answerTypeSelect.value;
-        multipleChoiceSection.style.display = type === 'multiple_choice' ? 'block' : 'none';
-        textInputSection.style.display = type === 'text_input' ? 'block' : 'none';
-        trueFalseSection.style.display = type === 'true_false' ? 'block' : 'none';
+    function updateCorrectAnswerDropdown() {
+        correctAnswerSelect.innerHTML = '';
+        Array.from(answersWrapper.children).forEach(div => {
+            const id = div.dataset.answerId;
+            const input = div.querySelector('input');
+            const text = input.value || `Đáp án ${id}`;
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = `Đáp án ${id}: ${text}`;
+            if (parseInt(correctAnswerSelect.value) === parseInt(id)) {
+                option.selected = true;
+            }
+            correctAnswerSelect.appendChild(option);
+        });
     }
 
     function addAnswer(text = '') {
-        answerCounter++;
-        const id = answerCounter; // ID số nguyên tăng dần
+        if (answersWrapper.children.length >= 10) {
+            alert('Không thể thêm quá 10 đáp án.');
+            return;
+        }
 
+        answerCounter++;
         const answerDiv = document.createElement('div');
         answerDiv.classList.add('input-group', 'mb-2');
+        answerDiv.dataset.answerId = answerCounter;
         answerDiv.innerHTML = `
-            <div class="input-group-text">
-                <input type="radio" name="correct_answer" value="${id}" required>
-            </div>
-            <input type="text" name="answers[${id}][text]" class="form-control" placeholder="Nội dung đáp án" value="${text}" required>
+            <span class="input-group-text">Đáp án ${answerCounter}</span>
+            <input type="text" name="answers[${answerCounter}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="${text}" required>
             <button type="button" class="btn btn-danger btn-remove-answer">×</button>
         `;
         answersWrapper.appendChild(answerDiv);
 
         answerDiv.querySelector('.btn-remove-answer').addEventListener('click', () => {
-            answerDiv.remove();
+            if (confirm('Bạn có chắc chắn muốn xóa đáp án này?')) {
+                answerDiv.remove();
+                updateCorrectAnswerDropdown();
+            }
         });
+
+        // Cập nhật dropdown khi text thay đổi
+        answerDiv.querySelector('input').addEventListener('input', updateCorrectAnswerDropdown);
+
+        updateCorrectAnswerDropdown();
     }
 
     addAnswerBtn.addEventListener('click', () => {
         addAnswer();
     });
 
-    answerTypeSelect.addEventListener('change', function () {
-        toggleSections();
-        if (answerTypeSelect.value === 'multiple_choice' && answersWrapper.childElementCount === 0) {
-            addAnswer();
-            addAnswer();
-        }
+    // Gán sự kiện cho các đáp án hiện tại
+    answersWrapper.querySelectorAll('.btn-remove-answer').forEach(btn => {
+        btn.addEventListener('click', function () {
+            if (confirm('Bạn có chắc chắn muốn xóa đáp án này?')) {
+                this.closest('.input-group').remove();
+                updateCorrectAnswerDropdown();
+            }
+        });
+    }); 
+
+    answersWrapper.querySelectorAll('.answer-input').forEach(input => {
+        input.addEventListener('input', updateCorrectAnswerDropdown);
     });
 
-    // Khởi tạo khi load trang
-    toggleSections();
-    if (answerTypeSelect.value === 'multiple_choice' && answersWrapper.childElementCount === 0) {
-        addAnswer();
-        addAnswer();
-    }
+    updateCorrectAnswerDropdown();
 });
 </script>
-@endsection 
+@endsection

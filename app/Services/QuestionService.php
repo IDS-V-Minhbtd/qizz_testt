@@ -8,6 +8,7 @@ use App\Repositories\Interfaces\AnswerRepositoryInterface;
 use App\Repositories\Interfaces\QuestionRepositoryInterface;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class QuestionService
@@ -48,7 +49,7 @@ class QuestionService
 
             foreach ($data['answers'] as $id => $answer) {
                 if (!empty(trim($answer['text'] ?? ''))) {
-                    $isCorrect = ((int)$data['correct_answer'] === $id);
+                    $isCorrect = ((int)$data['correct_answer'] === (int)$id);
                     Log::info('Chuẩn bị tạo đáp án', [
                         'question_id' => $questionId,
                         'answer_text' => $answer['text'],

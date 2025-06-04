@@ -11,7 +11,7 @@ quizzes: có các cột name, description, quizz_code, time_limit, is_public, cr
 
 questions: liên kết với quizzes, có question và order, Answer_tpye
 
-answers: liên kết với questions, có answer, is_correct,Answer_tpye
+answers: liên kết với questions, có answer, is_correct
 
 results: liên kết với users và quizzes, có score, time_taken, completed_at
 
