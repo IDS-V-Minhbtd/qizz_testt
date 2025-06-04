@@ -27,13 +27,13 @@ class UserController extends Controller
 
         Log::info('User list fetched', ['count' => $users->total()]);
 
-        return view('admin.users.index', compact('users'));
+        return view('admin.user.index', compact('users'));
     }
 
     public function create()
     {
         Log::info('UserController@create called');
-        return view('admin.users.create');
+        return view('admin.user.create');
     }
 
     public function store(UserRequest $request)
@@ -50,7 +50,7 @@ class UserController extends Controller
 
         $this->userService->create($data);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        return redirect()->route('admin.user.index')->with('success', 'User created successfully.');
     }
 
     public function edit($id)
@@ -63,7 +63,7 @@ class UserController extends Controller
             abort(404, 'User not found');
         }
 
-        return view('admin.users.edit', compact('user'));
+        return view('admin.user.edit', compact('user'));
     }
 
     public function update(UserRequest $request, $id)
@@ -104,7 +104,7 @@ class UserController extends Controller
         $user = $this->userService->getUserById($id);
         $results = $this->resultService->getResultsByUserId($id);
 
-        return view('admin.users.result', compact('user', 'results'));
+        return view('admin.user.result', compact('user', 'results'));
     }
 
     // Hiển thị profile người dùng hiện tại

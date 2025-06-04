@@ -17,3 +17,17 @@ results: liên kết với users và quizzes, có score, time_taken, completed_a
 
 user_answers: liên kết với results và questions, có answer_id, is_correct
 
+
+cải thiện thêm giao diện trang home
+viết hàm tìm kiếm quizzes 
+thêm cột code trong quizzes 
+tối ưu giao diện trong khi làm quizzes 
+đồng bộ các giao diện trong trang admin 
+thêm các dạng câu hỏi
+sửa cái hàm thứ tự không được trùng
+sửa câu hỏi không được trùng 
+sửa phần hàm tính tổng điểm của màn hình history
+sửa phần update role
+thêm role quizz_manager để quản lí quizz 
+thêm chức năng đăng kí quyền cấp quizz_manager 
+sửa lại màn hình results

@@ -339,11 +339,6 @@ return [
         'url' => 'profile',
         'icon' => 'fas fa-fw fa-user-circle', // Changed to profile-specific icon
     ],
-    [
-        'text' => 'history',
-        'url' => 'history',
-        'icon' => 'fas fa-fw fa-history', // Changed to history-specific icon
-    ]
 ],
 
     /*
