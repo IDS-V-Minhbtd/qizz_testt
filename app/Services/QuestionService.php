@@ -113,6 +113,7 @@ class QuestionService
     public function createWithAnswers(array $data): Question
     {
         return DB::transaction(function () use ($data) {
+
             $question = $this->createQuestion($data);
             $this->createAnswersForQuestion($question->id, $data);
             return $this->questionRepo->findById($question->id);

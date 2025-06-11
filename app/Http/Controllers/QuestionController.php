@@ -14,7 +14,9 @@ class QuestionController extends Controller
 
     public function create($quizId)
     {
+
         $quiz = $this->questionService->getQuizById($quizId);
+
         if (!$quiz) {
             abort(404, 'Quiz not found');
         }
@@ -28,10 +30,11 @@ class QuestionController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
-
+        
         Log::info('Dữ liệu đã validate trước khi gửi tới QuestionService:', $validatedData);
 
         try {
+            dd($validatedData);
             $this->questionService->createWithAnswers($validatedData);
             return redirect()->route('admin.quizzes.edit', $quizId)
                 ->with('success', 'Câu hỏi đã được thêm thành công!');
@@ -61,12 +64,6 @@ class QuestionController extends Controller
                 'is_correct' => (bool) $item->is_correct,
             ];
         });
- 
-        Log::info('Question edit data:', [
-            'quiz' => $quiz->toArray(),
-            'question' => $question->toArray(),
-            'answers' => $answers->toArray(),
-        ]);
 
         return view('admin.quizzes.question.edit', compact('quiz', 'question', 'answers'));
     }
