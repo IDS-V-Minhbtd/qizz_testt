@@ -209,7 +209,7 @@ class QuestionService
         $questions = $query->orderBy('order')->get();
 
         foreach ($questions as $q) {
-            $q->order++;
+            $q->order++; 
             $q->save();
         }
     }
