@@ -27,7 +27,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="order" class="form-label">Thứ tự <span class="text-danger">*</span></label>
+            <label for="order" class="form-label">Thứ tự <span class="text-danger">*(không cần nhập để tự động sắp xếp thứ tự)</span></label>
             <input type="number" name="order" id="order" class="form-control" value="{{ old('order', 1) }}" min="1" >
             @error('order')
                 <div class="text-danger">{{ $message }}</div>

@@ -1,5 +1,18 @@
 @extends('layouts.app')
 
+
+
+@section('content_header')
+    <h1 class="m-0">Edit Question: {{ $question->question }}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.quizzes.index') }}">Quizzes</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.quizzes.edit', $quiz->id) }}">{{ $quiz->name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit Question</li>
+        </ol>
+    </nav>
+@endsection
 @section('content')
 <div class="container" style="max-width: 800px">
     <h2 class="mb-4">Chỉnh sửa câu hỏi: {{ $quiz->name }}</h2>

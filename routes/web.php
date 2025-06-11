@@ -14,6 +14,7 @@ Route::get('/', fn () => view('welcome'));
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/search', [HomeController::class, 'search'])->name('search.quizzes.index');
 
 
 Route::get('quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');

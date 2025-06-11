@@ -11,7 +11,19 @@ class QuizService
     public function create(array $data): Quiz
     {
         $data['created_by'] = auth()->id();
+        if (empty($data['code'])) {
+            $data['code'] = $this->generateUniqueCode();
+        }
         return $this->quizRepo->create($data);
+    }
+
+    // Sinh code ngẫu nhiên, không trùng
+    protected function generateUniqueCode($length = 8)
+    {
+        do {
+            $code = strtoupper(\Str::random($length));
+        } while ($this->quizRepo->all()->contains('code', $code));
+        return $code;
     }
 
     public function getById(int $id): ?Quiz
@@ -30,6 +42,10 @@ class QuizService
     public function delete(int $id): bool
     {
         return $this->quizRepo->delete($id);
+    }
+    public function search(string $keyword = null)
+    {
+        return $this->quizRepo->search($keyword);
     }
 
 

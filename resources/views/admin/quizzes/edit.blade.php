@@ -12,7 +12,7 @@
         </ol>
     </nav>
 @endsection
-
+ 
 @section('content')
 <div class="container-fluid py-4">
     <!-- Thông báo lỗi -->

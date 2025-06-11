@@ -334,11 +334,7 @@ return [
         'icon' => 'fas fa-fw fa-users', 
         'can' => 'isAdmin',
     ],
-    [
-        'text' => 'profile',
-        'url' => 'profile',
-        'icon' => 'fas fa-fw fa-user-circle', // Changed to profile-specific icon
-    ],
+
 ],
 
     /*

@@ -19,8 +19,10 @@ class QuestionService
         protected AnswerRepositoryInterface $answerRepo
     ) {}
 
+    // Đảm bảo thứ tự không trùng khi tạo mới
     public function createQuestion(array $data): Question
     {
+        $this->ensureUniqueOrder($data['quiz_id'], $data['order']);
         Log::info('Tạo câu hỏi:', $data);
         return $this->questionRepo->create([
             'quiz_id'  => $data['quiz_id'],
@@ -30,8 +32,13 @@ class QuestionService
         ]);
     }
 
+    // Đảm bảo thứ tự không trùng khi cập nhật
     public function updateQuestion(int $questionId, array $data): void
     {
+        $question = $this->questionRepo->findById($questionId);
+        if ($question && $question->order != $data['order']) {
+            $this->ensureUniqueOrder($data['quiz_id'], $data['order'], $questionId);
+        }
         $this->questionRepo->update($questionId, [
             'quiz_id'  => $data['quiz_id'],
             'question' => $data['question'],
@@ -186,5 +193,28 @@ class QuestionService
     public function getTotalQuestionByQuizId(int $quizId): int
     {
         return $this->questionRepo->countByQuizId($quizId);
+    }
+    
+    // Hàm xử lý order không trùng
+    protected function ensureUniqueOrder($quizId, $order, $ignoreQuestionId = null)
+    {
+        $query = $this->questionRepo->query()
+            ->where('quiz_id', $quizId)
+            ->where('order', '>=', $order);
+
+        if ($ignoreQuestionId) {
+            $query->where('id', '!=', $ignoreQuestionId);
+        }
+
+        $questions = $query->orderBy('order')->get();
+
+        foreach ($questions as $q) {
+            $q->order++;
+            $q->save();
+        }
+    }
+    public function search(string $keyword = null)
+    {
+        return $this->questionRepo->search($keyword);
     }
 }

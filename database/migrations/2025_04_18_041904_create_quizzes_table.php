@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->integer('time_limit')->nullable(); 
             $table->boolean('is_public')->default(false);
+            $table->char('code', 8)->unique();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

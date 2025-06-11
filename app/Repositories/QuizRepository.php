@@ -44,4 +44,15 @@ class QuizRepository implements QuizRepositoryInterface
         }
         return false;
     }
+
+    public function search(string $keyword = null)
+        {
+         return Quiz::when($keyword, function ($query, $keyword) {
+            $query->where('name', 'like', "%{$keyword}%")
+                  ->orWhere('code', 'like', "%{$keyword}%");
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+}
+
 }

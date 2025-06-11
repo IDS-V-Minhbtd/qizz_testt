@@ -71,6 +71,16 @@ class UserController extends Controller
         $data = $request->validated();
         Log::info("UserController@update called for user ID: $id", ['data' => $data]);
 
+        // Xử lý cập nhật role nếu có
+        if (isset($data['role_id'])) {
+            // Nếu form gửi role_id (1: admin, 2: user/member)
+            $data['role'] = $data['role_id'] == 1 ? 'admin' : 'user';
+            unset($data['role_id']);
+        } elseif (isset($data['role'])) {
+            // Nếu form gửi role trực tiếp (admin/user)
+            // Không cần xử lý gì thêm
+        }
+
         try {
             if ($this->userService->update($id, $data)) {
                 Log::info("User updated successfully", ['user_id' => $id]);

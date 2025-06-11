@@ -24,6 +24,7 @@ class UserRequest extends FormRequest
                 'max:255',
                 Rule::unique('users')->ignore($userId),
             ],
+            'role' => 'nullable|string|in:admin,user', 
             'password' => 'nullable|string|min:8|confirmed', // Allow nullable passwords
         ];
     }

@@ -5,6 +5,14 @@
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <h3 class="mb-5 text-center fw-bold display-5 animate__animated animate__fadeIn" style="color: #ffffff;">
+                <form method="GET" action="{{ route('search.quizzes.index') }}" class="mb-4">
+                    <div class="input-group shadow" style="max-width: 400px; margin: 0 auto; border-radius: 25px; overflow: hidden;">
+                        <input type="text" name="search" class="form-control border-0 py-2" placeholder="Enter your join code here..." value="{{ request('search') }}" style="border-top-left-radius: 25px; border-bottom-left-radius: 25px;">
+                        <button class="btn btn-purple fw-bold" type="submit" style="border-top-right-radius: 25px; border-bottom-right-radius: 25px; background-color: #8a4af3; color: #ffffff; border: none;">
+                            Join Now
+                        </button>
+                    </div>
+                </form>
                 <i class="bi bi-book-fill me-2"></i> Danh sách Quiz Công Khai
             </h3>
 
@@ -35,6 +43,9 @@
                                             <p class="card-text mb-0" style="font-size: 0.9rem;">{{ Str::limit($quiz->description, 60) }}</p>
                                         </div>
                                     </div>
+                                    <div clas="mb-3">
+                                        <span class="badge bg-white text-dark">{{ $quiz->code }}</span>
+                                    </div>
                                     <div class="mb-3">
                                         <span class="badge bg-white text-dark">Câu hỏi: {{ $quiz->questions_count ?? 'N/A' }}</span>
                                     </div>
@@ -63,7 +74,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-             
                 <p id="quizModalBody">Bạn có chắc chắn muốn bắt đầu quiz này?</p>
             </div>
             <div class="modal-footer">

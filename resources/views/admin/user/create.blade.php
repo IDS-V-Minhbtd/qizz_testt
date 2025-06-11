@@ -3,8 +3,14 @@
 @section('title', 'Add User')
 
 @section('content_header')
-    <h1 class="text-center">Add User</h1>
-@stop
+    <h1 class="m-0">Tạo user</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">create user</li>
+        </ol>
+    </nav>
+@endsection
 
 @section('content')
     <div class="d-flex justify-content-center">

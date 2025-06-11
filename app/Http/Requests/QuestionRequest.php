@@ -13,8 +13,19 @@ class QuestionRequest extends FormRequest
 
     public function rules()
     {
+        $quizId = $this->route('quiz') ?? $this->input('quiz_id');
+        $questionId = $this->route('question');
+
+        $uniqueRule = 'unique:questions,question';
+        if ($quizId) {
+            $uniqueRule .= ',NULL,id,quiz_id,' . $quizId;
+        }
+        if ($questionId) {
+            $uniqueRule .= ',' . $questionId;
+        }
+
         $rules = [
-            'question' => 'required|string|max:255',
+            'question' => ['required', 'string', 'max:255', $uniqueRule],
             'order' => 'required|integer|min:1|max:100',
             'answer_type' => 'required|string|in:multiple_choice,text_input,true_false',
         ];
@@ -51,6 +62,7 @@ class QuestionRequest extends FormRequest
             'question.required' => 'Câu hỏi không được để trống.',
             'question.string' => 'Câu hỏi phải là chuỗi ký tự.',
             'question.max' => 'Câu hỏi không được vượt quá 255 ký tự.',
+            'question.unique' => 'Câu hỏi này đã tồn tại trong quiz này.',
 
             'order.required' => 'Thứ tự không được để trống.',
             'order.integer' => 'Thứ tự phải là số nguyên.',

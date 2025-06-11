@@ -68,4 +68,17 @@ class QuestionRepository implements QuestionRepositoryInterface
         return Question::where('quiz_id', $quizId)->count();
     }
 
+    // Trả về query builder để xử lý order
+    public function query()
+    {
+        return Question::query();
+    }
+    public function search(string $keyword = null)
+    {
+        $query = Question::query();
+        if ($keyword) {
+            $query->where('content', 'like', '%' . $keyword . '%');
+        }
+        return $query->get();
+    }
 }

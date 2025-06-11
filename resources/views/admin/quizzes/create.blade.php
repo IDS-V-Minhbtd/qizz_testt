@@ -1,5 +1,15 @@
 @extends('adminlte::page')
 
+@section('content_header')
+    <h1 class="m-0">Tạo quizz: {{ $quiz->name }}</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.quizzes.index') }}">Quizzes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">create quizz</li>
+        </ol>
+    </nav>
+@endsection
 @section('content')
 <div class="container py-5">
     <h2 class="mb-4">Tạo Quiz Mới</h2>
@@ -22,8 +32,18 @@
             <label for="name" class="form-label">Tên Quiz</label>
             <input type="text" name="name" id="name"
                 class="form-control @error('name') is-invalid @enderror"
-                value="{{ old('name') }}" >
+                value="{{ old('name') }}">
             @error('name')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="code" class="form-label">Mã Quiz (bỏ trống để tự sinh)</label>
+            <input type="text" name="code" id="code"
+                class="form-control @error('code') is-invalid @enderror"
+                value="{{ old('code') }}">
+            @error('code')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
@@ -49,12 +69,11 @@
         </div>
 
         <div class="form-check mb-3">
-    <input type="hidden" name="is_public" value="0"> {{-- Giá trị mặc định nếu không check --}}
-    <input type="checkbox" name="is_public" id="is_public"
-        class="form-check-input" value="1" {{ old('is_public') ? 'checked' : '' }}>
-    <label for="is_public" class="form-check-label">Hiển thị công khai</label>
-</div>
-
+            <input type="hidden" name="is_public" value="0">
+            <input type="checkbox" name="is_public" id="is_public"
+                class="form-check-input" value="1" {{ old('is_public') ? 'checked' : '' }}>
+            <label for="is_public" class="form-check-label">Hiển thị công khai</label>
+        </div>
 
         <button type="submit" class="btn btn-success">Tạo Quiz</button>
         <a href="{{ route('admin.quizzes.index') }}" class="btn btn-secondary">Hủy</a>

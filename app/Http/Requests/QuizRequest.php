@@ -25,6 +25,7 @@ class QuizRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'code' => 'nullable|string|max:50|unique:quizzes,code',
             'description' => 'nullable|string|max:1000',
             'time_limit' => 'nullable|integer|min:1|max:1440', // Time limit in minutes
             'is_public' => 'boolean',
@@ -40,6 +41,8 @@ class QuizRequest extends FormRequest
         return [
             'name.required' => 'The quiz name is required.',
             'name.max' => 'The quiz name must not exceed 255 characters.',
+            'code.max' => 'The quiz code must not exceed 50 characters.',
+            'code.unique' => 'The quiz code must be unique.',
             'description.max' => 'The description must not exceed 1000 characters.',
             'time_limit.integer' => 'The time limit must be a valid number.',
             'time_limit.min' => 'The time limit must be at least 1 minute.',
