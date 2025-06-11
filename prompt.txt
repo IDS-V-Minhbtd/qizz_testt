@@ -23,13 +23,13 @@ viết hàm tìm kiếm quizzes #
 thêm cột code trong quizzes #
 tối ưu giao diện trong khi làm quizzes #
 đồng bộ các giao diện trong trang admin #
-thêm các dạng câu hỏi
+thêm các dạng câu hỏi!!!!!
 sửa cái hàm thứ tự không được trùng#
 sửa câu hỏi không được trùng #
-sửa phần hàm tính tổng điểm của màn hình history
-sửa phần update role
-thêm role quizz_manager để quản lí quizz 
-thêm chức năng đăng kí quyền cấp quizz_manager 
-sửa lại màn hình results
-viết validate dữ liệu
-vết unit test cho từng tính năng
+sửa phần hàm tính tổng điểm của màn hình history#
+sửa phần update role#
+thêm role quizz_manager để quản lí quizz!!!!!
+thêm chức năng đăng kí quyền cấp quizz_manager !!!!!!
+sửa lại màn hình results#
+viết validate dữ liệu#
+vết unit test cho từng tính năng!!!!

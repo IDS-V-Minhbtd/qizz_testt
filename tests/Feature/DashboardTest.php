@@ -20,28 +20,28 @@ class DashboardTest extends TestCase
         $this->user = User::factory()->create();
     }
     
-    // /**@test giao diện dashboard của user*/
-    // public function test_user_dashboard()
-    // {
-    //     $this->actingAs($this->user);
-    //     $response = $this->get('/dashboard');
-    //     $response->assertStatus(200);
-    // }
-    // /**@test giao diện dashboard của nonuser*/
-    // public function test_nonuser_dashboard()
-    // {
-    //     $response = $this->get('/dashboard');
-    //     $response->assertStatus(302);
-    //     $response->assertRedirect('/login');
-    // }
-    // /**@test giao diện dashboard của user*/
-    // public function user_can_see_quiz_list()
-    // {
-    //     $this->actingAs($this->user);
-    //     $quiz = Quiz::factory()->create();
-    //     $response = $this->get('/dashboard');
-    //     $response->assertSee($quiz->title);
-    // }
+    /**@test giao diện dashboard của user*/
+    public function test_user_dashboard()
+    {
+        $this->actingAs($this->user);
+        $response = $this->get('/dashboard');
+        $response->assertStatus(200);
+    }
+    /**@test giao diện dashboard của nonuser*/
+    public function test_nonuser_dashboard()
+    {
+        $response = $this->get('/dashboard');
+        $response->assertStatus(302);
+        $response->assertRedirect('/login');
+    }
+    /**@test giao diện dashboard của user*/
+    public function user_can_see_quiz_list()
+    {
+        $this->actingAs($this->user);
+        $quiz = Quiz::factory()->create();
+        $response = $this->get('/dashboard');
+        $response->assertSee($quiz->title);
+    }
     
 
 }

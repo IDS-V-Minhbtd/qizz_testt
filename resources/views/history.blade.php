@@ -138,12 +138,16 @@
                     <tr>
                         <th>Tên Quiz</th>
                         <th>Ngày hoàn thành</th>
+                        <th>Thời gian làm bài</th>
                         <th>Điểm</th>
                         <th>Tỷ lệ</th>
                     </tr>
                     @forelse ($results as $result)
                         @php
-                            $total = $result->total_questions;
+                            // Nếu result không có total_questions, lấy từ quiz hoặc tính thủ công
+                            $total = $result->total_questions 
+                                ?? ($result->quiz->questions_count 
+                                    ?? ($result->quiz->questions ? $result->quiz->questions->count() : 0));
                             $score = $result->score;
                             $percent = $total > 0 ? round(($score / $total) * 100) : 0;
                             $color = $percent >= 80 ? 'green' : ($percent >= 50 ? 'orange' : 'red');
@@ -151,7 +155,8 @@
                         <tr>
                             <td>{{ $result->quiz->name }}</td>
                             <td>{{ \Carbon\Carbon::parse($result->completed_at)->format('d/m/Y') }}</td>
-                            <td>{{ $result->score }} / {{ $result->total_questions }}</td>
+                            <td>{{ $result->time_taken }} giây</td>
+                            <td>{{ $result->score }} / {{ $total }}</td>
                             <td><span class="score-tag {{ $color }}">{{ $percent }}%</span></td>
                         </tr>
                     @empty

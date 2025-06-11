@@ -39,7 +39,7 @@ Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin
     Route::delete('quizzes/{quiz}/questions/{question}', [QuestionController::class, 'destroy'])->name('quizzes.questions.destroy');
     Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
 });
-
+ 
 Route::middleware('auth')->group(function () {
     Route::post('quizz/{quiz}/submit', [UserAnswerController::class, 'submit'])->name('quizz.submit');
     Route::get('quizz/{quiz}/result', [UserAnswerController::class, 'resultByQuiz'])->name('quizz.result');
