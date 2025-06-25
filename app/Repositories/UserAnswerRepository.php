@@ -63,7 +63,7 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
     public function getAllAnswersByQuiz(int $quizId, int $userId): Collection
     {
         return $this->model->whereHas('result', function ($query) use ($quizId, $userId) {
-                $query->where('quiz_id', $quizId)
+                $query->where('quiz_id', $quizId)   
                       ->where('user_id', $userId);
             })
             ->get();

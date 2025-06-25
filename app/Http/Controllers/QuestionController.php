@@ -34,7 +34,7 @@ class QuestionController extends Controller
         Log::info('Dữ liệu đã validate trước khi gửi tới QuestionService:', $validatedData);
 
         try {
-            dd($validatedData);
+         
             $this->questionService->createWithAnswers($validatedData);
             return redirect()->route('admin.quizzes.edit', $quizId)
                 ->with('success', 'Câu hỏi đã được thêm thành công!');
@@ -74,6 +74,10 @@ class QuestionController extends Controller
         $validatedData['quiz_id'] = $quizId;
 
         Log::info('Dữ liệu gửi từ form (update):', $validatedData);
+
+        // Thêm dòng này để debug dữ liệu
+        // Xóa sau khi kiểm tra xong
+       
 
         try {
             $this->questionService->updateWithAnswers($questionId, $validatedData);

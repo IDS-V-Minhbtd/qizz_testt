@@ -138,7 +138,7 @@
                                     <td>{{ $question->order }}</td>
                                     <td>
                                         <a href="{{ route('admin.quizzes.questions.edit', [$quiz->id, $question->id]) }}" class="btn btn-warning btn-sm mr-1">
-                                            <i class="fas fa-edit"></i> Sửa
+                                            <i class="fas fa-edit"></i> Sửa 
                                         </a>
                                         <form action="{{ route('admin.quizzes.questions.destroy', [$quiz->id, $question->id]) }}" method="POST" class="d-inline delete-form">
                                             @csrf

@@ -55,8 +55,9 @@ class QuestionService
             $this->validateMultipleChoiceAnswers($data);
 
             foreach ($data['answers'] as $id => $answer) {
-                if (!empty(trim($answer['text'] ?? ''))) {
-                    $isCorrect = ((int)$data['correct_answer'] === (int)$id);
+                // Đảm bảo $answer là mảng và có key 'text'
+                if (is_array($answer) && array_key_exists('text', $answer) && !empty(trim($answer['text']))) {
+                    $isCorrect = ((string)$data['correct_answer'] === (string)$id);
                     Log::info('Chuẩn bị tạo đáp án', [
                         'question_id' => $questionId,
                         'answer_text' => $answer['text'],
@@ -167,13 +168,14 @@ class QuestionService
     protected function validateMultipleChoiceAnswers(array $data): void
     {
         if (!isset($data['answers']) || count($data['answers']) < 2) {
-            throw new Exception('Cần ít nhất hai đáp án.');
+            throw new \Exception('Cần ít nhất hai đáp án.');
         }
 
         $correctAnswerId = $data['correct_answer'] ?? null;
 
-        if (!$correctAnswerId || !array_key_exists($correctAnswerId, $data['answers'])) {
-            throw new Exception('Đáp án đúng không hợp lệ.');
+        // Sửa: kiểm tra key tồn tại bằng array_key_exists
+        if ($correctAnswerId === null || !array_key_exists($correctAnswerId, $data['answers'])) {
+            throw new \Exception('Đáp án đúng không hợp lệ.');
         }
     }
 

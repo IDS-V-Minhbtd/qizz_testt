@@ -50,7 +50,7 @@ class UserController extends Controller
 
         $this->userService->create($data);
 
-        return redirect()->route('admin.user.index')->with('success', 'User created successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
 
     public function edit($id)

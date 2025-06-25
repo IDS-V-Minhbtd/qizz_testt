@@ -32,6 +32,11 @@ class HomeController extends Controller
     {
         $keyword = $request->input('search');
         $quizzes = $this->quizService->search($keyword);
+        $data = $this->quizService->getAll();
+        foreach ($quizzes as $quiz) {
+            $quiz->questions_count = $this->questionService->getTotalQuestionByQuizId($quiz->id);
+        
+        }
         return view('home', compact('quizzes'));
     }
 }

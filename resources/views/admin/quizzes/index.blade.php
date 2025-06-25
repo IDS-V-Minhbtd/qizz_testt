@@ -18,15 +18,15 @@
                     <h3 class="card-title">Quizzes List</h3>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-bordered table-striped mb-0">
+                    <table class="table table-bordered table-striped mb-0" style="table-layout: fixed; width: 100%;">
                         <thead>
                             <tr>
                                 <th style="width: 5%">#</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Code</th>
-                                <th>Is Public</th>
-                                <th>Time Limit (minutes)</th>
+                                <th style="width: 18%;">Name</th>
+                                <th style="width: 32%;">Description</th>
+                                <th style="width: 12%;">Code</th>
+                                <th style="width: 10%;">Is Public</th>
+                                <th style="width: 13%;">Time Limit (minutes)</th>
                                 <th style="width: 210px;">Actions</th>
                             </tr>
                         </thead>
@@ -34,9 +34,9 @@
                             @forelse ($quizzes as $index => $quiz)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td>{{ $quiz->name }}</td>
-                                    <td>{{ $quiz->description }}</td>
-                                    <td>{{ $quiz->code }}</td>
+                                    <td class="text-truncate" style="max-width: 180px;">{{ Str::limit($quiz->name, 24) }}</td>
+                                    <td class="text-truncate" style="max-width: 320px;">{{ Str::limit($quiz->description, 200) }}</td>
+                                    <td class="text-truncate" style="max-width: 120px;">{{ $quiz->code }}</td>
                                     <td>{{ $quiz->is_public ? 'Yes' : 'No' }}</td>
                                     <td>{{ $quiz->time_limit }}</td>
                                     <td>
@@ -85,3 +85,47 @@
     })
 </script>
 @stop
+
+@section('css')
+    <style>
+        .card {
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .form-control, .form-check-input {
+            border-radius: 8px;
+        }
+        .btn {
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        @media (max-width: 576px) {
+            .card-tools .input-group {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .d-flex.justify-content-end {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .d-flex.justify-content-end .btn {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+@endsection

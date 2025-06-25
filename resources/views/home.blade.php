@@ -34,13 +34,16 @@
 
                     @foreach ($quizzes as $index => $quiz)
                         <div class="col-md-4 col-sm-6 mb-4">
-                            <div class="card quiz-card animate__animated animate__fadeInUp" data-aos="fade-up" style="background: {{ $gradients[$index % count($gradients)] }};">
+                            <div class="card quiz-card animate__animated animate__fadeInUp"
+                                 data-aos="fade-up"
+                                 style="background: {{ $gradients[$index % count($gradients)] }}; cursor:pointer;"
+                                 onclick="openQuizModal({{ $quiz->id }}, '{{ addslashes(Str::limit($quiz->name, 30)) }}', '{{ addslashes(Str::limit($quiz->description, 60)) }}')">
                                 <div class="card-body text-white">
                                     <div class="d-flex align-items-center mb-3">
                                         <i class="bi bi-puzzle-fill me-3" style="font-size: 2rem;"></i>
                                         <div>
-                                            <h5 class="card-title mb-1 fw-bold">{{ $quiz->name }}</h5>
-                                            <p class="card-text mb-0" style="font-size: 0.9rem;">{{ Str::limit($quiz->description, 60) }}</p>
+                                            <h5 class="card-title mb-1 fw-bold text-truncate" style="max-width: 220px;">{{ Str::limit($quiz->name, 50) }}</h5>
+                                            <p class="card-text mb-0 text-truncate" style="font-size: 0.9rem; max-width: 220px;">{{ Str::limit($quiz->description, 60) }}</p>
                                         </div>
                                     </div>
                                     <div clas="mb-3">
@@ -52,9 +55,12 @@
                                     <div class="mb-3">
                                         <span class="badge bg-white text-dark">Thời gian: {{ $quiz->time_limit }} phút</span>
                                     </div>
+                                    <!-- Xóa nút nhỏ bên trong, vì click cả card đã mở modal -->
+                                    <!--
                                     <button class="btn btn-white btn-sm w-100 quiz-btn" onclick="openQuizModal({{ $quiz->id }}, '{{ addslashes($quiz->name) }}')">
                                         <i class="bi bi-play-circle me-2 animate__animated animate__pulse animate__infinite"></i> Bắt đầu
                                     </button>
+                                    -->
                                 </div>
                             </div>
                         </div>
@@ -167,6 +173,12 @@
         border-radius: 50px;
     }
 
+    .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 576px) {
         .quiz-card {
@@ -201,12 +213,20 @@
         once: true
     });
 
-    function openQuizModal(quizId, quizName) {
+    function openQuizModal(quizId, quizName, quizDesc) {
         const modalLabel = document.getElementById('quizModalLabel');
+        const modalBody = document.getElementById('quizModalBody');
         const startBtn = document.getElementById('startQuizBtn');
         const loadingSpinner = document.getElementById('loadingSpinner');
 
-        modalLabel.innerText = 'Bắt đầu: ' + quizName;
+        // Giới hạn ký tự tên quiz trong popup (30 ký tự)
+        const limitedName = quizName.length > 30 ? quizName.substring(0, 30) + '...' : quizName;
+        // Giới hạn mô tả (60 ký tự)
+        const limitedDesc = quizDesc && quizDesc.length > 60 ? quizDesc.substring(0, 60) + '...' : quizDesc;
+
+        modalLabel.innerText = 'Bắt đầu: ' + limitedName;
+        modalBody.innerHTML = (limitedDesc ? `<div class="mb-2" style="color:#444;font-size:1rem;">${limitedDesc}</div>` : '') +
+            'Bạn có chắc chắn muốn bắt đầu quiz này?';
         startBtn.href = `/quizz/${quizId}`;
 
         // Show loading spinner on click
