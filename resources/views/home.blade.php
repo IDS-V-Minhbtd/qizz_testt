@@ -34,7 +34,7 @@
 
                     @foreach ($quizzes as $index => $quiz)
                         <div class="col-md-4 col-sm-6 mb-4">
-                            <div class="card quiz-card animate__animated animate__fadeInUp"
+                            <div class="card quiz-card animate__animated animate__fadeInUp position-relative"
                                  data-aos="fade-up"
                                  style="background: {{ $gradients[$index % count($gradients)] }}; cursor:pointer;"
                                  onclick="openQuizModal({{ $quiz->id }}, '{{ addslashes(Str::limit($quiz->name, 30)) }}', '{{ addslashes(Str::limit($quiz->description, 60)) }}')">
@@ -55,12 +55,14 @@
                                     <div class="mb-3">
                                         <span class="badge bg-white text-dark">Thời gian: {{ $quiz->time_limit }} phút</span>
                                     </div>
-                                    <!-- Xóa nút nhỏ bên trong, vì click cả card đã mở modal -->
-                                    <!--
-                                    <button class="btn btn-white btn-sm w-100 quiz-btn" onclick="openQuizModal({{ $quiz->id }}, '{{ addslashes($quiz->name) }}')">
-                                        <i class="bi bi-play-circle me-2 animate__animated animate__pulse animate__infinite"></i> Bắt đầu
-                                    </button>
-                                    -->
+                                </div>
+                                <!-- Tooltip hiển thị toàn bộ thông tin quiz -->
+                                <div class="quiz-tooltip" style="display:none;">
+                                    <div style="font-weight:bold; font-size:1.1rem;">{{ $quiz->name }}</div>
+                                    <div style="margin-bottom:6px;">{{ $quiz->description }}</div>
+                                    <div><b>Mã:</b> {{ $quiz->code }}</div>
+                                    <div><b>Số câu hỏi:</b> {{ $quiz->questions_count ?? 'N/A' }}</div>
+                                    <div><b>Thời gian:</b> {{ $quiz->time_limit }} phút</div>
                                 </div>
                             </div>
                         </div>
@@ -118,6 +120,7 @@
         border-radius: 15px;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         overflow: hidden;
+        position: relative;
     }
 
     .quiz-card:hover {
@@ -147,6 +150,7 @@
     .modal-content {
         border-radius: 20px;
         overflow: hidden;
+        
     }
 
     .bg-gradient-primary {
@@ -179,6 +183,32 @@
         white-space: nowrap;
     }
 
+    .quiz-tooltip {
+        position: absolute;
+        left: 50%;
+        top: 10px;
+        transform: translateX(-50%);
+        min-width: 260px;
+        max-width: 350px;
+        background: rgba(30,30,40,0.98);
+        color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        padding: 18px 20px;
+        z-index: 100;
+        font-size: 1rem;
+        pointer-events: none;
+        white-space: pre-line;
+        opacity: 0;
+        transition: opacity 0.18s;
+        word-break: break-word;
+    }
+
+    .quiz-card:hover .quiz-tooltip {
+        display: block;
+        opacity: 1;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 576px) {
         .quiz-card {
@@ -186,6 +216,14 @@
         }
         .quiz-btn {
             margin-top: 10px;
+        }
+        .quiz-tooltip {
+            left: 0;
+            right: 0;
+            transform: none;
+            min-width: 180px;
+            max-width: 95vw;
+            font-size: 0.95rem;
         }
     }
 
