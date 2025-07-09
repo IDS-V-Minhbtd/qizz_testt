@@ -37,6 +37,7 @@ class QuizService
     }
     public function update(int $id, array $data): bool
     {
+      
         return $this->quizRepo->update($id, $data);
     }
     public function delete(int $id): bool
@@ -46,6 +47,10 @@ class QuizService
     public function search(string $keyword = null)
     {
         return $this->quizRepo->search($keyword);
+    }
+    public function getQuizzesForManager(int $userId)
+    {
+        return $this->quizRepo->getByCreatorId($userId);
     }
 
 

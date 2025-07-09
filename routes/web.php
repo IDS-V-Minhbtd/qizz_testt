@@ -15,32 +15,48 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search.quizzes.index');
-Route::get('/createQuiz', [QuizController::class, 'create'])->name('createQuiz');
-
-
 Route::get('quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
 
+// ✅ PHÂN QUYỀN CRUD QUIZ & QUESTION CHO ADMIN + QUIZZ_MANAGER
+Route::middleware(['auth', 'isAdmin:admin,quizz_manager'])->prefix('admin')->name('admin.')->group(function () {
+    // Add alias for admin.dashboard
+    Route::get('/', fn () => view('admin.dashboard'))->name('index');
+    Route::get('/', fn () => view('admin.dashboard'))->name('dashboard'); // <-- Add this line
 
-Route::middleware(['isAdmin:admin', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', fn () => view('admin.dashboard'))->name('dashboard');
-
-
-
-    Route::resource('users', UserController::class);
-    Route::get('users', [UserController::class, 'index'])->name('users.index');
-    Route::post('users/search', [UserController::class, 'search'])->name('users.search');
-    Route::get('users/{user}/results', [UserController::class, 'showResults'])->name('users.results');
-
-
+    // CRUD quizzes
     Route::resource('quizzes', QuizController::class);
+    
+    // CRUD nested questions
     Route::resource('quizzes.questions', QuestionController::class)->shallow();
+
+    // Import quizzes (fix: use GET for import page)
+    Route::get('quizzes/{quiz}/questions/import', [QuestionController::class, 'import'])->name('questions.import');
+    Route::post('quizzes/{quiz}/questions/import', [QuestionController::class, 'importUpload'])->name('questions.import.upload');
+    Route::post('quizzes/{quiz}/questions/import-file', [QuestionController::class, 'importFile'])->name('questions.import.file'); // <-- Add this line
+    Route::get('quizzes/{quiz}/questions/import-template', [QuestionController::class, 'importTemplate'])->name('questions.import.template');
+    Route::get('quizzes/{quiz}/questions/download-template', [QuestionController::class, 'downloadTemplate'])->name('questions.download-template');
+    Route::post('quizzes/{quiz}/questions/import-text', [QuestionController::class, 'importText'])->name('questions.import.text');
+
+  
+    // Custom routes cho questions
     Route::get('quizzes/{quiz}/questions/create', [QuestionController::class, 'create'])->name('quizzes.questions.create');
     Route::get('quizzes/{quiz}/questions/{question}/edit', [QuestionController::class, 'edit'])->name('quizzes.questions.edit');
     Route::put('quizzes/{quiz}/questions/{question}/update', [QuestionController::class, 'update'])->name('quizzes.questions.update');
     Route::delete('quizzes/{quiz}/questions/{question}', [QuestionController::class, 'destroy'])->name('quizzes.questions.destroy');
+
+    // Xem kết quả
     Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
 });
- 
+
+// ✅ CHỈ ADMIN mới có quyền quản lý users
+Route::middleware(['auth', 'isadmin:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('users', UserController::class);
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
+    Route::post('users/search', [UserController::class, 'search'])->name('users.search');
+    Route::get('users/{user}/results', [UserController::class, 'showResults'])->name('users.results');
+});
+
+// ✅ USER chơi quiz, quản lý profile, history
 Route::middleware('auth')->group(function () {
     Route::post('quizz/{quiz}/submit', [UserAnswerController::class, 'submit'])->name('quizz.submit');
     Route::get('quizz/{quiz}/result', [UserAnswerController::class, 'resultByQuiz'])->name('quizz.result');
@@ -49,27 +65,13 @@ Route::middleware('auth')->group(function () {
     Route::get('profile', [UserController::class, 'profile'])->name('profile');
     Route::match(['post', 'put'], 'profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::post('profile/delete', [UserController::class, 'deleteProfile'])->name('profile.delete');
+
     Route::get('history', [UserController::class, 'history'])->name('history');
 });
 
 
 
 
-
-Route::middleware(['quizz_manager:quizz_manager'])->prefix('manager')->name('manager.')->group(function () {
-    Route::get('/dashboard', fn () => view('manager.dashboard'))->name('dashboard');
-
-    // Quản lý quiz thuộc về quizz_manager (quản lý quiz của họ hoặc nhóm của họ)
-    Route::resource('quizzes', QuizController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
-
-    // Quản lý câu hỏi trong quiz
-    Route::resource('quizzes.questions', QuestionController::class)->shallow();
-    Route::get('quizzes/{quiz}/questions/create', [QuestionController::class, 'create'])->name('quizzes.questions.create');
-    Route::get('quizzes/{quiz}/questions/{question}/edit', [QuestionController::class, 'edit'])->name('quizzes.questions.edit');
-    Route::put('quizzes/{quiz}/questions/{question}/update', [QuestionController::class, 'update'])->name('quizzes.questions.update');
-    Route::delete('quizzes/{quiz}/questions/{question}', [QuestionController::class, 'destroy'])->name('quizzes.questions.destroy');
-
-    // Xem kết quả quiz mà quizz_manager sở hữu
-    Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
-});
-
+Route::get('test', function () {
+    return view('test');
+})->name('test');

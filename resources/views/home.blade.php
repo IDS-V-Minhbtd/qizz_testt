@@ -16,11 +16,61 @@
                 <i class="bi bi-book-fill me-2"></i> Danh sách Quiz Công Khai
             </h3>
             @if(auth()->user()?->quizz_manager_until)
-    <div class="alert alert-info">
-        Bạn đang dùng quyền <strong>Quizz Manager miễn phí</strong> đến ngày {{ auth()->user()->quizz_manager_until->format('d/m/Y') }}
-    </div>
-@endif
+                <div class="alert alert-info">
+                    Bạn đang dùng quyền <strong>Quizz Manager miễn phí</strong> đến ngày {{ auth()->user()->quizz_manager_until->format('d/m/Y') }}
+                </div>
+            @endif
 
+            {{-- Hiển thị quiz theo từng catalog --}}
+            @foreach ($catalogs as $catalog)
+                @if ($catalog->quizzes->isNotEmpty())
+                    <div class="mb-5">
+                        <h4 class="text-white mb-4 border-bottom pb-2">{{ $catalog->name }}</h4>
+                        <div class="row quiz-list">
+                            @foreach ($catalog->quizzes as $index => $quiz)
+                                <div class="col-md-4 col-sm-6 mb-4">
+                                    <div class="card quiz-card animate__animated animate__fadeInUp position-relative"
+                                         data-aos="fade-up"
+                                            style="background: linear-gradient(135deg, #{{ str_pad(dechex(rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT) }}, #{{ str_pad(dechex(rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT) }}); cursor:pointer;"
+                                         onclick="openQuizModal({{ $quiz->id }}, '{{ addslashes(Str::limit($quiz->name, 30)) }}', '{{ addslashes(Str::limit($quiz->description, 60)) }}')">
+                                        <div class="card-body text-white">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <i class="bi bi-puzzle-fill me-3" style="font-size: 2rem;"></i>
+                                                <div>
+                                                    <h5 class="card-title mb-1 fw-bold text-truncate" style="max-width: 220px;" title="{{ $quiz->name }}">{{ Str::limit($quiz->name, 50) }}</h5>
+                                                    <p class="card-text mb-0 text-truncate" style="font-size: 0.9rem; max-width: 220px;" title="{{ $quiz->description }}">{{ Str::limit($quiz->description, 60) }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <span class="badge bg-white text-dark">Code: {{ $quiz->code }}</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <span class="badge bg-white text-dark">Câu hỏi: {{ $quiz->questions_count ?? 'N/A' }}</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <span class="badge bg-white text-dark">Thời gian: {{ $quiz->time_limit }} phút</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <span class="badge bg-warning text-dark">Popular: {{ $quiz->popular }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="quiz-tooltip" style="display:none;">
+                                            <div style="font-weight:bold; font-size:1.1rem;">{{ $quiz->name }}</div>
+                                            <div style="margin-bottom:6px;">{{ $quiz->description }}</div>
+                                            <div><b>Mã:</b> {{ $quiz->code }}</div>
+                                            <div><b>Số câu hỏi:</b> {{ $quiz->questions_count ?? 'N/A' }}</div>
+                                            <div><b>Thời gian:</b> {{ $quiz->time_limit }} phút</div>
+                                            <div><b>Popular:</b> {{ $quiz->popular }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endforeach
+
+            {{-- Danh sách quiz công khai còn lại --}}
             @if ($quizzes->isEmpty())
                 <div class="alert alert-info text-center animate__animated animate__fadeInUp" role="alert" style="color: #000000; background-color: #e9ecef;">
                     <i class="bi bi-info-circle me-2"></i> Hiện tại chưa có quiz nào được công khai.
@@ -51,7 +101,7 @@
                                             <p class="card-text mb-0 text-truncate" style="font-size: 0.9rem; max-width: 220px;">{{ Str::limit($quiz->description, 60) }}</p>
                                         </div>
                                     </div>
-                                    <div clas="mb-3">
+                                    <div class="mb-3">
                                         <span class="badge bg-white text-dark">{{ $quiz->code }}</span>
                                     </div>
                                     <div class="mb-3">

@@ -58,6 +58,9 @@ class UserAnswerController extends Controller
         // Pass the timeTaken argument to the service method
         $result = $this->resultService->submitQuizAndSaveResult($quizId, $answers, $userId, $timeTaken);
 
+        // Cập nhật số lượt làm quiz (popular)
+        $this->userAnswerService->updatePopularCountForAllQuizzes();
+
         return redirect()->route('quizz.result', $result->id)->with('success', 'Nộp bài thành công!');
     }
 

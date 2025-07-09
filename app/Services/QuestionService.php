@@ -220,4 +220,45 @@ class QuestionService
     {
         return $this->questionRepo->search($keyword);
     }
+
+
+
+    // Hàm import câu hỏi từ file CSV,txt
+    public function import(Request $request, $quizId)
+{
+    $request->validate([
+        'file' => 'required|mimes:csv,txt',
+    ]);
+
+    $path = $request->file('file')->getRealPath();
+    $file = fopen($path, 'r');
+
+    $header = fgetcsv($file); // Skip header row
+    $order = 1;
+
+    while (($row = fgetcsv($file)) !== false) {
+        [$questionText, $a, $b, $c, $d, $correct] = $row;
+
+        $question = Question::create([
+            'quiz_id' => $quizId,
+            'question' => $questionText,
+            'order' => $order++,
+            'answer_type' => 'single', // hoặc xử lý từ cột
+        ]);
+
+        $choices = ['A' => $a, 'B' => $b, 'C' => $c, 'D' => $d];
+
+        foreach ($choices as $key => $text) {
+            Answer::create([
+                'question_id' => $question->id,
+                'answer' => $text,
+                'is_correct' => ($key == strtoupper($correct)),
+            ]);
+        }
+    }
+
+    fclose($file);
+
+}
+
 }

@@ -74,22 +74,16 @@
 
                 <!-- Danh mục (Catalog) -->
                 <div class="form-group mb-3">
-                    <label for="catalog" class="form-label font-weight-bold">Danh mục (Catalog)</label>
-                    <input list="catalog-list" name="catalog" id="catalog" class="form-control @error('catalog') is-invalid @enderror"
-                        value="{{ old('catalog', $quiz->catalog ?? '') }}">
-                    <datalist id="catalog-list">
-                        <option value="Kiến thức chung">
-                        <option value="Lịch sử - Địa lý">
-                        <option value="Khoa học - Tự nhiên">
-                        <option value="Ngôn ngữ - Văn học">
-                        <option value="Toán học">
-                        <option value="Công nghệ - Tin học">
-                        <option value="Nghệ thuật">
-                        <option value="Giáo dục công dân">
-                        <option value="Ngoại ngữ">
-                        <option value="Kỹ năng mềm">
-                    </datalist>
-                    @error('catalog')
+                    <label for="catalog_id" class="form-label font-weight-bold">Danh mục (Catalog)</label>
+                    <select name="catalog_id" id="catalog_id" class="form-control @error('catalog_id') is-invalid @enderror">
+                        <option value="">-- Chọn danh mục --</option>
+                        @foreach ($catalogs as $cat)
+                            <option value="{{ $cat->id }}" {{ old('catalog_id', $quiz->catalog_id) == $cat->id ? 'selected' : '' }}>
+                                {{ $cat->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('catalog_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -110,10 +104,14 @@
                 </div>
 
                 <!-- Nút hành động -->
+                 
                 <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary mr-2" id="submit-btn">
                         <i class="fas fa-save"></i> Cập nhật Quiz
                     </button>
+                <a href="{{ route('admin.questions.import', $quiz->id) }}" class="btn btn-secondary mr-2">
+                         <i class="bi bi-upload me-1"></i> Import data
+                </a>
                     <a href="{{ route('admin.quizzes.questions.create', $quiz->id) }}" class="btn btn-success">
                         <i class="fas fa-plus"></i> Thêm câu hỏi
                     </a>

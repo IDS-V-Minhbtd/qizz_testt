@@ -44,4 +44,10 @@ class UserRepository implements UserRepositoryInterface
     {
         return $this->findById($id);
     }
+    public function getUserDoQuiz(int $userId, int $quizId): ?User
+    {
+        return User::where('id', $userId)->whereHas('quizzes', function ($query) use ($quizId) {
+            $query->where('quiz_id', $quizId);
+        })->first();
+    }
 }

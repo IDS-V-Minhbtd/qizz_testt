@@ -2,21 +2,16 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Enums\RoleEnum;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -25,24 +20,16 @@ class User extends Authenticatable
         'avatar',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
     public function quizzes()
     {
         return $this->hasMany(Quiz::class, 'created_by');
@@ -50,6 +37,22 @@ class User extends Authenticatable
 
     public function results()
     {
-        return $this->hasMany(Result::class);
+        return $this->hasMany(\App\Models\Result::class, 'user_id');
+    }
+///role
+
+    public function isAdmin(): bool
+    {
+        return $this->role === RoleEnum::ADMIN->value;
+    }
+
+    public function isQuizzManager(): bool
+    {
+        return $this->role === RoleEnum::QUIZZ_MANAGER->value;
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === RoleEnum::USER->value;
     }
 }

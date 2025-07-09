@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -12,12 +13,9 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        $userRole = auth()->user()->role ?? null;
+        $user = auth()->user();
 
-        // Debug log to check the user's role
-        \Log::debug('Checking user role in IsAdmin middleware', ['user_role' => $userRole, 'required_roles' => $roles]);
-
-        if (!auth()->check() || !in_array($userRole, $roles)) {
+        if (!$user || !in_array($user->role, $roles)) {
             abort(403, 'Bạn không có quyền truy cập.');
         }
 

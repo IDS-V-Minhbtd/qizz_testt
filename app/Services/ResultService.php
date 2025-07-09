@@ -8,6 +8,7 @@ use App\Repositories\Interfaces\QuestionRepositoryInterface;
 use App\Repositories\Interfaces\AnswerRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Carbon\Carbon;
 
 class ResultService
@@ -28,7 +29,7 @@ class ResultService
     return $answer && $answer->question_id === $questionId && $answer->is_correct;
 }
 
-    public function submitQuizAndSaveResult(int $quizId, array $answers, int $userId, int $timeTaken)
+    public function submitQuizAndSaveResult($quizId, $answers, $userId, $timeTaken)
 {
     return DB::transaction(function () use ($quizId, $answers, $userId, $timeTaken) {
         $quiz = $this->quizRepo->findById($quizId);
@@ -45,9 +46,10 @@ class ResultService
         if ($user->results()->count() >= 5 && !$user->quizz_manager_until) {
             $user->update([
                 'role' => 'quizz_manager',
-                'quizz_manager_until' => Carbon::now()->addDays(7),
+                'quizz_manager_until' => now()->addDays(7),
             ]);
-            session()->flash('success', 'Bạn đã được cấp quyền Quizz Manager miễn phí trong 7 ngày!');
+            // Hiển thị thông báo sau khi được cấp quyền
+            Session::flash('success', 'Bạn đã được cấp quyền Quizz Manager miễn phí trong 7 ngày!');
         }
 
         $score = 0;

@@ -7,11 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class ResultRepository implements ResultRepositoryInterface
 {
-    protected Model $model;
+    private Model $model;
 
     public function __construct(Result $model)
     {
         $this->model = $model;
+    }
+
+    // Use this method to access the model from outside if absolutely necessary
+    public function getModel(): Model
+    {
+        return $this->model;
     }
 
     public function create(array $data): Result

@@ -68,6 +68,21 @@
             @enderror
         </div>
 
+        <div class="mb-3">
+            <label for="catalog_id" class="form-label">Danh mục (Catalog)</label>
+            <select name="catalog_id" id="catalog_id" class="form-control @error('catalog_id') is-invalid @enderror">
+                <option value="">-- Chọn danh mục --</option>
+                @foreach ($catalogs as $cat)
+                    <option value="{{ $cat->id }}" {{ old('catalog_id') == $cat->id ? 'selected' : '' }}>
+                        {{ $cat->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('catalog_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="form-check mb-3">
             <input type="hidden" name="is_public" value="0">
             <input type="checkbox" name="is_public" id="is_public"

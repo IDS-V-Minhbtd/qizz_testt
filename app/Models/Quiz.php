@@ -9,7 +9,9 @@ class Quiz extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'time_limit', 'is_public', 'created_by', 'code', 'catalog'];
+    protected $fillable = [
+        'name', 'description', 'time_limit', 'is_public', 'created_by', 'code', 'popular', 'catalog_id'
+    ];
 
     public function creator()
     {
@@ -24,5 +26,9 @@ class Quiz extends Model
     public function results()
     {
         return $this->hasMany(Result::class);
+    }
+    public function catalog()
+    {
+        return $this->belongsTo(Catalog::class, 'catalog_id');
     }
 }

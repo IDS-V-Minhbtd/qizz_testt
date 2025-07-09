@@ -111,4 +111,27 @@ class UserAnswerService
             'result_id' => $result->id
         ];
     }
+    
+    public function popularQuizzesCount(): int
+    {
+        // Sử dụng getModel() thay vì truy cập trực tiếp thuộc tính model
+        return $this->resultRepo->getModel()->count();
+    }
+
+    /**
+     * Cập nhật số lượt làm quiz vào cột 'popular' cho từng quiz
+     */
+    public function updatePopularCountForAllQuizzes()
+    {
+        // Lấy danh sách quiz_id và số lần làm quiz (group by quiz_id)
+        $counts = $this->resultRepo->getModel()
+            ->selectRaw('quiz_id, COUNT(*) as total')
+            ->groupBy('quiz_id')
+            ->pluck('total', 'quiz_id');
+
+        // Cập nhật cột popular cho từng quiz
+        foreach ($counts as $quizId => $total) {
+            \App\Models\Quiz::where('id', $quizId)->update(['popular' => $total]);
+        }
+    }
 }

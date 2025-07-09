@@ -13,6 +13,13 @@ class QuestionRequest extends FormRequest
 
     public function rules()
     {
+        // Nếu có file import (import_file), chỉ validate file
+        if ($this->hasFile('import_file')) {
+            return [
+                'import_file' => 'required|file|mimes:txt,csv|max:25600',
+            ];
+        }
+
         $quizId = $this->route('quiz') ?? $this->input('quiz_id');
         $questionId = $this->route('question');
 
@@ -85,6 +92,11 @@ class QuestionRequest extends FormRequest
             'text_answer.required' => 'Đáp án văn bản không được để trống.',
             'text_answer.string' => 'Đáp án văn bản phải là chuỗi ký tự.',
             'text_answer.max' => 'Đáp án văn bản không được vượt quá 255 ký tự.',
+
+            'import_file.required' => 'Vui lòng chọn một tệp để nhập.',
+            'import_file.file' => 'Tệp nhập vào không hợp lệ.',
+            'import_file.mimes' => 'Tệp nhập vào phải có định dạng txt hoặc csv.',
+            'import_file.max' => 'Kích thước tệp nhập vào không được vượt quá 25MB.',
         ];
     }
 }

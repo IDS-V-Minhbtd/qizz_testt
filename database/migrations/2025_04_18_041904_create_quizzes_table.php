@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->integer('time_limit')->nullable(); 
             $table->boolean('is_public')->default(false);
-            $data['code'] = Str::upper(Str::random(8)); // Laravel helper
+            $table->string('code', 16)->unique(); // Add code column, unique
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'AdminLTE 3',
+    'title' => 'quizzLTE',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
+    'logo' => '<b>Quizz</b>LTE',
     'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
@@ -306,6 +306,7 @@ return [
         'topnav_right' => true,
         'icon' => 'fas fa-fw fa-search', // Added icon for search
     ],
+    
     [
         'type' => 'fullscreen-widget',
         'topnav_right' => true,
@@ -325,8 +326,8 @@ return [
         'icon' => 'fas fa-fw fa-question-circle', // Changed to quiz-related icon
         'label' => 4,
         'label_color' => 'success',
-        'can' => 'isAdmin',
     ],
+
     ['header' => 'account_settings'],
     [
         'text' => 'user management',
@@ -340,6 +341,7 @@ return [
         'icon' => 'fas fa-fw fa-users', 
         'can' => 'quizzManager',
 
+
     ],
     [
         'text' => 'Settings',
@@ -349,17 +351,15 @@ return [
     [
         'text' => 'groups management',
         'url' => 'admin/groups',
-        'icon' => 'fas fa-fw fa-users-cog', // Changed to groups icon
+        'icon' => 'fas fa-fw fa-users-cog',
         'can' => 'quizzManager',
-        'can' => 'isAdmin',
-       
     ],
-    [
-        'text' => 'Logout',
-        'url' => 'logout',
-        'icon' => 'fas fa-fw fa-sign-out-alt', // Changed to logout iconỨ
-    ],
+        [
+        'text' => 'Folders',
+        'url' => 'admin/folders',
+        'icon' => 'fas fa-fw fa-folder', 
 
+    ],
 
 ],
 
