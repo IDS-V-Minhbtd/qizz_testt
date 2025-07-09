@@ -15,6 +15,11 @@
                 </form>
                 <i class="bi bi-book-fill me-2"></i> Danh sách Quiz Công Khai
             </h3>
+            @if(auth()->user()?->quizz_manager_until)
+    <div class="alert alert-info">
+        Bạn đang dùng quyền <strong>Quizz Manager miễn phí</strong> đến ngày {{ auth()->user()->quizz_manager_until->format('d/m/Y') }}
+    </div>
+@endif
 
             @if ($quizzes->isEmpty())
                 <div class="alert alert-info text-center animate__animated animate__fadeInUp" role="alert" style="color: #000000; background-color: #e9ecef;">

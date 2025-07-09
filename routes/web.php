@@ -15,6 +15,7 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search.quizzes.index');
+Route::get('/createQuiz', [QuizController::class, 'create'])->name('createQuiz');
 
 
 Route::get('quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
@@ -50,3 +51,25 @@ Route::middleware('auth')->group(function () {
     Route::post('profile/delete', [UserController::class, 'deleteProfile'])->name('profile.delete');
     Route::get('history', [UserController::class, 'history'])->name('history');
 });
+
+
+
+
+
+Route::middleware(['quizz_manager:quizz_manager'])->prefix('manager')->name('manager.')->group(function () {
+    Route::get('/dashboard', fn () => view('manager.dashboard'))->name('dashboard');
+
+    // Quản lý quiz thuộc về quizz_manager (quản lý quiz của họ hoặc nhóm của họ)
+    Route::resource('quizzes', QuizController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+
+    // Quản lý câu hỏi trong quiz
+    Route::resource('quizzes.questions', QuestionController::class)->shallow();
+    Route::get('quizzes/{quiz}/questions/create', [QuestionController::class, 'create'])->name('quizzes.questions.create');
+    Route::get('quizzes/{quiz}/questions/{question}/edit', [QuestionController::class, 'edit'])->name('quizzes.questions.edit');
+    Route::put('quizzes/{quiz}/questions/{question}/update', [QuestionController::class, 'update'])->name('quizzes.questions.update');
+    Route::delete('quizzes/{quiz}/questions/{question}', [QuestionController::class, 'destroy'])->name('quizzes.questions.destroy');
+
+    // Xem kết quả quiz mà quizz_manager sở hữu
+    Route::get('results/{result}', [ResultController::class, 'show'])->name('results.show');
+});
+

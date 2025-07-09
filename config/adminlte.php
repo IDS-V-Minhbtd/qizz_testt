@@ -334,6 +334,32 @@ return [
         'icon' => 'fas fa-fw fa-users', 
         'can' => 'isAdmin',
     ],
+      [
+        'text' => 'Reports',
+        'url' => 'admin/reports',
+        'icon' => 'fas fa-fw fa-users', 
+        'can' => 'quizzManager',
+
+    ],
+    [
+        'text' => 'Settings',
+        'url' => 'admin/settings',
+        'icon' => 'fas fa-fw fa-cogs', // Changed to settings icon
+    ],
+    [
+        'text' => 'groups management',
+        'url' => 'admin/groups',
+        'icon' => 'fas fa-fw fa-users-cog', // Changed to groups icon
+        'can' => 'quizzManager',
+        'can' => 'isAdmin',
+       
+    ],
+    [
+        'text' => 'Logout',
+        'url' => 'logout',
+        'icon' => 'fas fa-fw fa-sign-out-alt', // Changed to logout iconỨ
+    ],
+
 
 ],
 

@@ -29,6 +29,7 @@ class QuizRequest extends FormRequest
             'description' => 'nullable|string|max:1000',
             'time_limit' => 'nullable|integer|min:1|max:1440', // Time limit in minutes
             'is_public' => 'boolean',
+            'catalog' => 'nullable|string|max:255', // New field for catalog
         ];
     }
     /**

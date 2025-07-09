@@ -102,6 +102,10 @@
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ route('createQuiz') }}">
+                                <i class="bi bi-house-door me-1"></i> Create content
+                            </a>
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('history') }}">
                                 <i class="bi bi-clock-history me-1"></i> History
                             </a>

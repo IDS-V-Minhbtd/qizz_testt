@@ -8,6 +8,7 @@ use App\Repositories\Interfaces\QuestionRepositoryInterface;
 use App\Repositories\Interfaces\AnswerRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class ResultService
 {
@@ -29,65 +30,68 @@ class ResultService
 
     public function submitQuizAndSaveResult(int $quizId, array $answers, int $userId, int $timeTaken)
 {
-    // Lấy quiz
-    $quiz = $this->quizRepo->findById($quizId);
-    if (!$quiz || !$quiz->is_public) {
-        return [
-            'success' => false,
-            'message' => 'Quiz không khả dụng.'
-        ];
-    }
-
-    // Tính điểm và thời gian làm bài
-    $score = 0;
-
-    $userAnswers = []; // Mảng để lưu tất cả câu trả lời của người dùng.
-
-    // Create a result entry for the user
-    $result = $this->resultRepo->create([
-        'user_id'     => $userId,
-        'quiz_id'     => $quizId,
-        'score'       => $score, // Initial score
-        'time_taken'  => $timeTaken, // Save time taken
-        'completed_at'=> now(),
-    ]);
-
-    foreach ($answers as $questionId => $answerId) {
-        if (is_array($answerId)) {
-            $answerId = $answerId[0] ?? null;
+    return DB::transaction(function () use ($quizId, $answers, $userId, $timeTaken) {
+        $quiz = $this->quizRepo->findById($quizId);
+        if (!$quiz || !$quiz->is_public) {
+            return [
+                'success' => false,
+                'message' => 'Quiz không khả dụng.'
+            ];
         }
 
-        if (!is_numeric($answerId)) {
-            continue;
+        $user = \App\Models\User::find($userId);
+
+        // Cấp quyền quizz_manager miễn phí nếu đủ điều kiện
+        if ($user->results()->count() >= 5 && !$user->quizz_manager_until) {
+            $user->update([
+                'role' => 'quizz_manager',
+                'quizz_manager_until' => Carbon::now()->addDays(7),
+            ]);
+            session()->flash('success', 'Bạn đã được cấp quyền Quizz Manager miễn phí trong 7 ngày!');
         }
 
-        $isCorrect = $this->isCorrect($questionId, $answerId);
-        if ($isCorrect) {
-            $score++; // Cộng điểm nếu đúng
-        }
+        $score = 0;
 
-        $userAnswers[] = [
-            'question_id' => $questionId,
-            'answer_id'   => $answerId,
-            'is_correct'  => $isCorrect,
-        ];
-
-        $this->userAnswerRepo->create([
-            'result_id'   => $result->id,
-            'question_id' => (int) $questionId,
-            'answer_id'   => (int) $answerId,
-            'is_correct'  => $isCorrect,
+        $result = $this->resultRepo->create([
+            'user_id'     => $userId,
+            'quiz_id'     => $quizId,
+            'score'       => 0, // sẽ update sau
+            'time_taken'  => $timeTaken,
+            'completed_at'=> now(),
         ]);
-    }
 
-    // Cập nhật điểm và thời gian làm bài vào kết quả
-    $this->resultRepo->update($result->id, [
-        'score'      => $score,
-        'time_taken' => $timeTaken, // Ensure time_taken is updated
-    ]);
+        foreach ($answers as $questionId => $answerId) {
+            if (is_array($answerId)) {
+                $answerId = $answerId[0] ?? null;
+            }
 
-    return $result; 
+            if (!is_numeric($answerId)) {
+                continue;
+            }
+
+            $isCorrect = $this->isCorrect($questionId, $answerId);
+            if ($isCorrect) {
+                $score++;
+            }
+
+            $this->userAnswerRepo->create([
+                'result_id'   => $result->id,
+                'question_id' => (int) $questionId,
+                'answer_id'   => (int) $answerId,
+                'is_correct'  => $isCorrect,
+            ]);
+        }
+
+        // Update điểm sau khi tính xong
+        $this->resultRepo->update($result->id, [
+            'score' => $score,
+            'time_taken' => $timeTaken,
+        ]);
+
+        return $result;
+    });
 }
+
 
 
     public function getResultWithAnswers($id)

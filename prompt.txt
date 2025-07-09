@@ -18,18 +18,25 @@ results: liên kết với users và quizzes, có score, time_taken, completed_a
 user_answers: liên kết với results và questions, có answer_id, is_correct
 
 
-cải thiện thêm giao diện trang home#
-viết hàm tìm kiếm quizzes #
-thêm cột code trong quizzes #
-tối ưu giao diện trong khi làm quizzes #
-đồng bộ các giao diện trong trang admin #
-thêm các dạng câu hỏi!!!!!
-sửa cái hàm thứ tự không được trùng#
-sửa câu hỏi không được trùng #
-sửa phần hàm tính tổng điểm của màn hình history#
-sửa phần update role#
-thêm role quizz_manager để quản lí quizz!!!!!
-thêm chức năng đăng kí quyền cấp quizz_manager !!!!!!
-sửa lại màn hình results#
-viết validate dữ liệu#
-vết unit test cho từng tính năng!!!!
+=== ƯU TIÊN CAO ===
+1. Thêm cột catalog vào quizzes
+2. Hiển thị quiz nổi bật theo catalog dựa vào số lượt làm quiz
+3. Thêm role quizz_manager
+4. Viết trang giao diện cho quizz_manager
+5. Thêm quizz_session để giới hạn thời gian hoạt động cho quiz
+6. Thêm chức năng đọc file .txt và .pdf để nhập câu hỏi, đáp án vào quiz
+7. Quizz Manager chỉ quản lý được các quiz thuộc group của họ
+8. Thêm cột groups cho quizz_manager
+
+=== ƯU TIÊN TRUNG BÌNH ===
+9. Thêm biểu đồ trực quan (biểu đồ thống kê kết quả) cho mỗi quiz
+10. Lọc kết quả theo mốc thời gian: tuần này, tháng trước, quý,...
+11. Thêm dashboard tổng quan: số người tham gia, top quiz, top người chơi, phần trăm hoàn thành
+12. Thêm tính năng duyệt quiz (chỉ admin được publish sau khi quizz_manager tạo)
+13. Cho phép mời người dùng làm quiz riêng qua mã mời/invite
+
+=== ƯU TIÊN THẤP ===
+14. Thông báo real-time (Laravel Echo + Pusher / WebSocket)
+15. Chế độ "live quiz" thi trực tiếp theo thời gian thực (giống Kahoot)
+16. Hỗ trợ đa ngôn ngữ (Laravel Lang)
+ 
