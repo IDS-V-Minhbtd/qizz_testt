@@ -1,7 +1,5 @@
 @extends('layouts.app')
 
-
-
 @section('content_header')
     <h1 class="m-0">Edit Question: {{ $question->question }}</h1>
     <nav aria-label="breadcrumb">
@@ -13,6 +11,7 @@
         </ol>
     </nav>
 @endsection
+
 @section('content')
 <div class="container" style="max-width: 800px">
     <h2 class="mb-4">Chỉnh sửa câu hỏi: {{ $quiz->name }}</h2>
@@ -27,6 +26,26 @@
             </ul>
         </div>
     @endif
+
+@php
+    $oldAnswers = collect(old('answers'))
+        ->filter(fn($item) => is_array($item) && isset($item['text']))
+        ->values()
+        ->toArray();
+
+    if (empty($oldAnswers)) {
+        $oldAnswers = $question->answers->pluck('answer')
+            ->map(fn($text) => ['text' => $text])
+            ->values()
+            ->toArray();
+    }
+
+    while (count($oldAnswers) < 2) {
+        $oldAnswers[] = ['text' => ''];
+    }
+
+    $selectedAnswerId = old('correct_answer', $question->answers->search(fn($a) => $a->is_correct) ?? 0);
+@endphp
 
     <form method="POST" action="{{ route('admin.quizzes.questions.update', [$quiz->id, $question->id]) }}">
         @csrf
@@ -57,11 +76,6 @@
         <div class="card mb-4">
             <div class="card-header fw-bold">Đáp án (Trắc nghiệm)</div>
             <div class="card-body">
-                @php
-                    $oldAnswers = old('answers', $question->answers->mapWithKeys(fn($a) => [$a->id => ['text' => $a->answer]])->toArray());
-                    $maxId = count($oldAnswers) ? max(array_keys($oldAnswers)) : 2;
-                @endphp
-
                 <div id="answers-wrapper">
                     @foreach ($oldAnswers as $id => $answer)
                         <div class="row g-2 align-items-center mb-2" data-answer-id="{{ $id }}">
@@ -93,11 +107,10 @@
                 {{-- Đáp án đúng --}}
                 <div class="mt-4">
                     <label for="correct_answer" class="form-label">Đáp án đúng <span class="text-danger">*</span></label>
-                    <select name="correct_answer" id="correct_answer" class="form-select">
+                    <select name="correct_answer" id="correct_answer" class="form-select" data-selected="{{ $selectedAnswerId }}">
                         @foreach ($oldAnswers as $id => $answer)
-                            <option value="{{ $id }}"
-                                {{ old('correct_answer', $question->answers->firstWhere('is_correct', true)?->id) == $id ? 'selected' : '' }}>
-                                Đáp án  {{ $answer['text'] ?? '' }}
+                            <option value="{{ $id }}" {{ $selectedAnswerId == $id ? 'selected' : '' }}>
+                                Đáp án {{ $answer['text'] ?? '' }}
                             </option>
                         @endforeach
                     </select>
@@ -121,37 +134,35 @@
 @endsection
 
 @section('scripts')
-@section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    let answerId = {{ $maxId }};
+    let answerId = {{ count($oldAnswers) }};
     const wrapper = document.getElementById('answers-wrapper');
     const correctSelect = document.getElementById('correct_answer');
 
     function updateAnswerLabelsAndOptions() {
         const rows = wrapper.querySelectorAll('.row[data-answer-id]');
-        correctSelect.innerHTML = ''; // Clear dropdown
+        correctSelect.innerHTML = '';
         rows.forEach((row, index) => {
             const label = row.querySelector('label');
             const input = row.querySelector('input');
-            const id = row.getAttribute('data-answer-id');
+            const id = index;
 
-            // Cập nhật label số thứ tự
+            row.setAttribute('data-answer-id', id);
+            input.setAttribute('name', `answers[${id}][text]`);
+
             if (label) {
                 label.textContent = 'Đáp án ' + (index + 1);
             }
 
-            // Thêm lại option vào dropdown
             const option = document.createElement('option');
             option.value = id;
             option.textContent = 'Đáp án ' + (input.value || '');
-            // Nếu là đáp án đang chọn (dựa vào old input hoặc default), giữ selected
-            if (parseInt(correctSelect.getAttribute('data-selected')) === parseInt(id)) {
+            if (parseInt(correctSelect.getAttribute('data-selected')) === id) {
                 option.selected = true;
             }
             correctSelect.appendChild(option);
 
-            // Gắn listener khi input thay đổi -> update option text
             input.addEventListener('input', () => {
                 const opt = correctSelect.querySelector(`option[value="${id}"]`);
                 if (opt) opt.textContent = 'Đáp án ' + input.value;
@@ -160,16 +171,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.getElementById('btn-add-answer').addEventListener('click', function () {
-        answerId++;
         const row = document.createElement('div');
         row.className = 'row g-2 align-items-center mb-2';
-        row.setAttribute('data-answer-id', answerId);
         row.innerHTML = `
             <div class="col-auto">
                 <label class="form-label mb-0">Đáp án</label>
             </div>
             <div class="col">
-                <input type="text" name="answers[${answerId}][text]" class="form-control answer-input" placeholder="Nội dung đáp án">
+                <input type="text" class="form-control answer-input" placeholder="Nội dung đáp án">
             </div>
             <div class="col-auto">
                 <button type="button" class="btn btn-outline-danger btn-remove-answer">×</button>
@@ -186,13 +195,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Ghi nhận đáp án đúng ban đầu
     correctSelect.setAttribute('data-selected', correctSelect.value);
-
-    // Gọi lần đầu để gắn sự kiện change
     updateAnswerLabelsAndOptions();
 });
 </script>
-@endsection
-
 @endsection

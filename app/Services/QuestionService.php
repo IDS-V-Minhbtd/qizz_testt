@@ -225,40 +225,49 @@ class QuestionService
 
     // Hàm import câu hỏi từ file CSV,txt
     public function import(Request $request, $quizId)
-{
-    $request->validate([
-        'file' => 'required|mimes:csv,txt',
-    ]);
-
-    $path = $request->file('file')->getRealPath();
-    $file = fopen($path, 'r');
-
-    $header = fgetcsv($file); // Skip header row
-    $order = 1;
-
-    while (($row = fgetcsv($file)) !== false) {
-        [$questionText, $a, $b, $c, $d, $correct] = $row;
-
-        $question = Question::create([
-            'quiz_id' => $quizId,
-            'question' => $questionText,
-            'order' => $order++,
-            'answer_type' => 'single', // hoặc xử lý từ cột
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt',
         ]);
 
-        $choices = ['A' => $a, 'B' => $b, 'C' => $c, 'D' => $d];
+        $path = $request->file('file')->getRealPath();
+        $file = fopen($path, 'r');
 
-        foreach ($choices as $key => $text) {
-            Answer::create([
-                'question_id' => $question->id,
-                'answer' => $text,
-                'is_correct' => ($key == strtoupper($correct)),
+        $header = fgetcsv($file); // Skip header row
+        $order = 1;
+
+        while (($row = fgetcsv($file)) !== false) {
+            // Check if all required columns exist
+            if (count($row) < 6) continue;
+            [$questionText, $a, $b, $c, $d, $correct] = $row;
+
+            // Defensive: check each answer exists
+            $choices = [];
+            foreach (['A', 'B', 'C', 'D'] as $i => $label) {
+                if (isset($row[$i+1])) {
+                    $choices[$label] = $row[$i+1];
+                }
+            }
+
+            if (!$questionText || count($choices) < 2 || !isset($row[5]) || !isset($choices[strtoupper($row[5])])) continue;
+
+            $question = Question::create([
+                'quiz_id' => $quizId,
+                'question' => $questionText,
+                'order' => $order++,
+                'answer_type' => 'single', // hoặc xử lý từ cột
             ]);
+
+            foreach ($choices as $key => $text) {
+                Answer::create([
+                    'question_id' => $question->id,
+                    'answer' => $text,
+                    'is_correct' => ($key == strtoupper($correct)),
+                ]);
+            }
         }
+
+        fclose($file);
     }
-
-    fclose($file);
-
-}
 
 }

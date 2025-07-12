@@ -8,60 +8,58 @@ class QuestionRequest extends FormRequest
 {
     public function authorize()
     {
-        return true; // Hoặc kiểm tra quyền truy cập
+        return true;
     }
 
-    public function rules()
+    /**
+     * ✅ Ghi đè dữ liệu trước khi validate
+     * Chuyển mảng answers về dạng đánh số lại từ 1 để đảm bảo correct_answer an toàn
+     */
+    protected function prepareForValidation()
     {
-        // Nếu có file import (import_file), chỉ validate file
-        if ($this->hasFile('import_file')) {
-            return [
-                'import_file' => 'required|file|mimes:txt,csv|max:25600',
-            ];
-        }
-
-        $quizId = $this->route('quiz') ?? $this->input('quiz_id');
-        $questionId = $this->route('question');
-
-        $uniqueRule = 'unique:questions,question';
-        if ($quizId) {
-            $uniqueRule .= ',NULL,id,quiz_id,' . $quizId;
-        }
-        if ($questionId) {
-            $uniqueRule .= ',' . $questionId;
-        }
-
-        $rules = [
-            'question' => ['required', 'string', 'max:255', $uniqueRule],
-            'order' => 'required|integer|min:1|max:100',
-            'answer_type' => 'required|string|in:multiple_choice,text_input,true_false',
-        ];
-
         if ($this->input('answer_type') === 'multiple_choice') {
-            $rules['answers'] = 'required|array|min:2';
-            $rules['answers.*.text'] = 'required|string|max:255';
-            $rules['correct_answer'] = [
-                'required',
-                'string', // Chấp nhận chuỗi số
-                function ($attribute, $value, $fail) {
-                    $answers = $this->input('answers', []);
-                    if (!array_key_exists($value, $answers)) {
-                        $fail('Đáp án đúng không hợp lệ: Chỉ số ' . $value . ' không tồn tại trong danh sách đáp án.');
-                    }
-                },
-            ];
-        }
+            $answers = collect($this->input('answers', []))
+                ->values() // bỏ các key ban đầu
+                ->mapWithKeys(fn($ans, $i) => [($i + 1) => $ans]) // đánh lại từ 1
+                ->toArray();
 
-        if ($this->input('answer_type') === 'text_input') {
-            $rules['text_answer'] = 'required|string|max:255';
+            $this->merge(['answers' => $answers]);
         }
-
-        if ($this->input('answer_type') === 'true_false') {
-            $rules['correct_answer'] = 'required|in:0,1';
-        }
-
-        return $rules;
     }
+
+   public function rules()
+{
+    // ✅ Normalize key của answers (0, 1, 2, ...) để tránh lỗi "Undefined array key"
+    if ($this->has('answers')) {
+        $normalized = collect($this->input('answers'))->values()->toArray();
+        $this->merge(['answers' => $normalized]);
+    }
+
+    // các rule khác giữ nguyên
+    $rules = [
+        'question' => ['required', 'string', 'max:255'],
+        'order' => 'required|integer|min:1|max:100',
+        'answer_type' => 'required|string|in:multiple_choice,text_input,true_false',
+    ];
+
+    if ($this->input('answer_type') === 'multiple_choice') {
+        $rules['answers'] = 'required|array|min:2';
+        $rules['answers.*.text'] = 'required|string|max:255';
+        $rules['correct_answer'] = [
+            'required',
+            'integer',
+            function ($attribute, $value, $fail) {
+                $answers = $this->input('answers', []);
+                if (!array_key_exists($value, $answers)) {
+                    $fail('Đáp án đúng không hợp lệ: Chỉ số ' . $value . ' không tồn tại trong danh sách đáp án.');
+                }
+            },
+        ];
+    }
+
+    return $rules;
+}
+
 
     public function messages()
     {
@@ -86,7 +84,7 @@ class QuestionRequest extends FormRequest
             'answers.*.text.max' => 'Mỗi đáp án không được vượt quá 255 ký tự.',
 
             'correct_answer.required' => 'Vui lòng chọn một đáp án đúng.',
-            'correct_answer.string' => 'Đáp án đúng phải là một chỉ số hợp lệ.',
+            'correct_answer.integer' => 'Đáp án đúng phải là một chỉ số hợp lệ.',
             'correct_answer.in' => 'Đáp án đúng cho câu hỏi Đúng/Sai phải là "0" hoặc "1".',
 
             'text_answer.required' => 'Đáp án văn bản không được để trống.',

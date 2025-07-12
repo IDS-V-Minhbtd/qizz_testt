@@ -31,13 +31,15 @@ class UserAnswerController extends Controller
     public function start($quizId)
     {
         $quiz = $this->quizService->getById($quizId);
-        
 
         if (!$quiz || !$quiz->is_public) {
             return redirect()->route('dashboard')->with('error', 'Quiz không khả dụng.');
         }
 
-        $questions = $quiz->questions()->with('answers')->orderBy('order')->get();
+        // Đảm bảo trả về answers có trường is_correct
+        $questions = $quiz->questions()->with(['answers' => function($q) {
+            $q->select('id', 'question_id', 'answer', 'is_correct');
+        }])->orderBy('order')->get();
 
         return view('quizz.index', compact('quiz', 'questions'));
     }
@@ -110,4 +112,5 @@ class UserAnswerController extends Controller
 
         return response()->json(['is_correct' => $isCorrect]);
     }
+    
 }

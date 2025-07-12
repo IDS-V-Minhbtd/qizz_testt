@@ -31,7 +31,7 @@ class QuestionController extends Controller
 
     public function store(QuestionRequest $request, $quizId)
     {
-        $validatedData = $request->validated();
+
         $validatedData['quiz_id'] = $quizId;
         
         Log::info('Dữ liệu đã validate trước khi gửi tới QuestionService:', $validatedData);
@@ -75,12 +75,10 @@ class QuestionController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
-
         Log::info('Dữ liệu gửi từ form (update):', $validatedData);
 
         // Thêm dòng này để debug dữ liệu
-        // Xóa sau khi kiểm tra xong
-       
+   
 
         try {
             $this->questionService->updateWithAnswers($questionId, $validatedData);
@@ -144,7 +142,8 @@ class QuestionController extends Controller
         foreach ($blocks as $block) {
             $lines = array_values(array_filter(array_map('trim', explode("\n", $block))));
             Log::info('Block đang xử lý (paste):', ['block' => $block, 'lines' => $lines]);
-            if (count($lines) < 6) continue;
+            // Xóa dòng kiểm tra số lượng dòng
+            // if (count($lines) < 6) continue;
 
             $questionText = array_shift($lines);
             $answers = [];
@@ -169,7 +168,8 @@ class QuestionController extends Controller
                 'correct' => $correct,
             ]);
 
-            if (!$questionText || count($answers) < 2 || !$correct || !isset($answers[$correct])) continue;
+            // Xóa dòng kiểm tra lại dữ liệu
+            // if (!$questionText || count($answers) < 2 || !$correct || !isset($answers[$correct])) continue;
 
             try {
                 $question = $this->questionService->createQuestion([
@@ -236,22 +236,19 @@ class QuestionController extends Controller
         foreach ($blocks as $block) {
             $lines = array_values(array_filter(array_map('trim', explode("\n", $block))));
             Log::info('Block đang xử lý:', ['block' => $block, 'lines' => $lines]);
-            if (count($lines) < 6) continue; // Ít nhất 6 dòng: câu hỏi, 4 đáp án, đáp án đúng
+            // Không kiểm tra số lượng dòng hoặc đáp án
 
             $questionText = array_shift($lines);
             $answers = [];
             $correct = null;
 
-            // Lấy 4 đáp án
             foreach (['A', 'B', 'C', 'D'] as $idx => $label) {
-                if (!isset($lines[$idx])) continue;
+                if (!array_key_exists($idx, $lines)) continue;
                 $ansText = preg_replace('/^[A-D]\.\s*/', '', $lines[$idx]);
                 $answers[$label] = $ansText;
             }
 
-            // Lấy đáp án đúng
             foreach ($lines as $line) {
-                // Sửa lại regex để nhận cả "Answer: B" và "Đáp án: B"
                 if (preg_match('/^(?:Đáp án|Answer)\s*[:\-]?\s*([A-D])$/iu', $line, $m)) {
                     $correct = strtoupper($m[1]);
                     break;
@@ -264,9 +261,9 @@ class QuestionController extends Controller
                 'correct' => $correct,
             ]);
 
-            if (!$questionText || count($answers) < 2 || !$correct || !isset($answers[$correct])) continue;
+            // Không kiểm tra lại số lượng đáp án hoặc đáp án đúng
+            // Truyền dữ liệu sang service, nếu lỗi sẽ được xử lý ở service hoặc validation
 
-            // Lưu vào DB
             try {
                 $question = $this->questionService->createQuestion([
                     'quiz_id' => $quizId,
@@ -274,7 +271,6 @@ class QuestionController extends Controller
                     'order' => $order++,
                     'answer_type' => 'multiple_choice',
                 ]);
-                // Chỉ tạo 1 lần cho tất cả đáp án
                 $answersForService = [];
                 foreach ($answers as $label => $ansText) {
                     $answersForService[$label] = ['text' => $ansText];

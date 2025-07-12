@@ -1,4 +1,3 @@
-
 @extends('layouts.combined')
 
 @section('content')
@@ -37,28 +36,31 @@
                     </div>
                     <div class="card-body text-white p-4">
                         <p class="fw-bold" style="font-size: 1.2rem;">{{ $question->question }}</p>
-                        @foreach($question->answers as $answer)
-                            <div class="form-check mb-3">
-                                <input class="form-check-input"
-                                    type="radio"
-                                    name="answers[{{ $question->id }}]"
-                                    value="{{ $answer->id }}"
-                                    id="answer-{{ $answer->id }}"
-                                    >
-                                <label class="form-check-label" for="answer-{{ $answer->id }}" style="font-size: 1rem;">
-                                    {{ $answer->answer }}
-                                </label>
-                            </div>
-                        @endforeach
+                        <div class="row g-3 answer-grid">
+                            @foreach($question->answers as $answer)
+                                <div class="col-md-6">
+                                    <div class="answer-option form-check p-3 rounded-3" data-answer-id="{{ $answer->id }}" data-is-correct="{{ $answer->is_correct }}" style="background: rgba(255, 255, 255, 0.1); cursor: pointer; transition: all 0.3s ease;">
+                                        <input class="form-check-input d-none"
+                                            type="radio"
+                                            name="answers[{{ $question->id }}]"
+                                            value="{{ $answer->id }}"
+                                            id="answer-{{ $answer->id }}">
+                                        <label class="form-check-label w-100" for="answer-{{ $answer->id }}" style="font-size: 1rem;">
+                                            {{ $answer->answer }}
+                                        </label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             @endforeach
 
             <div class="text-end mt-4">
-                <button type="button" class="btn btn-secondary rounded-pill px-4" id="next-btn" style="transition: all 0.3s ease;">
+                <button type="button" class="btn btn-secondary rounded-pill px-4 d-none" id="next-btn" style="transition: all 0.3s ease;">
                     Câu tiếp theo
                 </button>
-                <button type="submit" class="btn btn-success rounded-pill px-4 d-none" id="submit-btn" style="transition: all 0.3s ease;">
+                <button type="submit" class="btn btn-success rounded-pill px-4" id="submit-btn" style="transition: all 0.3s ease;">
                     Nộp bài
                 </button>
             </div>
@@ -69,7 +71,6 @@
 
 @section('styles')
 <style>
-    /* Full-width background */
     .full-width-bg {
         background: linear-gradient(135deg, #1a1030, #2c1f3b);
         min-height: 100vh;
@@ -92,6 +93,30 @@
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     }
 
+    .answer-option {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .answer-option:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        transform: scale(1.02);
+    }
+
+    .answer-option.correct {
+        background: #28a745 !important;
+        border-color: #28a745 !important;
+    }
+
+    .answer-option.incorrect {
+        background: #dc3545 !important;
+        border-color: #dc3545 !important;
+    }
+
+    .answer-option.selected {
+        border: 2px solid #00c6ff !important;
+    }
+
     .btn-secondary, .btn-success {
         font-weight: 600;
         padding: 10px 20px;
@@ -107,7 +132,6 @@
         transform: scale(1.03);
     }
 
-    /* Responsive adjustments */
     @media (max-width: 576px) {
         .display-5 {
             font-size: 1.8rem;
@@ -119,9 +143,11 @@
             width: 100%;
             margin-bottom: 10px;
         }
+        .answer-grid .col-md-6 {
+            width: 100%;
+        }
     }
 
-    /* Adjust alert style */
     .alert {
         border-radius: 10px;
     }
@@ -136,7 +162,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const totalQuestions = {{ $questions->count() }};
-    const timeLimit = {{ $quiz->time_limit * 60 }}; // Convert minutes to seconds
+    const timeLimit = {{ $quiz->time_limit * 60 }};
     let currentIndex = 0;
     let startTime = Date.now();
     let timeRemaining = timeLimit;
@@ -171,8 +197,61 @@ document.addEventListener("DOMContentLoaded", function () {
         if (index === totalQuestions - 1) {
             nextBtn.classList.add('d-none');
             submitBtn.classList.remove('d-none');
+        } else {
+            nextBtn.classList.remove('d-none');
+            submitBtn.classList.add('d-none');
         }
     };
+
+    // Handle answer selection
+    document.querySelectorAll('.answer-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const questionBlock = this.closest('.question-block');
+            const input = this.querySelector('input[type="radio"]');
+            const answerId = this.dataset.answerId;
+            const isCorrect = this.dataset.isCorrect === '1';
+
+            // Clear previous selections
+            questionBlock.querySelectorAll('.answer-option').forEach(opt => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+
+            // Mark as selected
+            this.classList.add('selected');
+            input.checked = true;
+
+            // Disable further clicks
+            questionBlock.querySelectorAll('.answer-option').forEach(opt => {
+                opt.style.pointerEvents = 'none';
+            });
+
+            // Apply color feedback
+            questionBlock.querySelectorAll('.answer-option').forEach(opt => {
+                if (opt.dataset.isCorrect === '1') {
+                    opt.classList.add('correct');
+                }
+                if (opt.dataset.answerId === answerId && !isCorrect) {
+                    opt.classList.add('incorrect');
+                }
+            });
+
+            // Nếu là câu cuối cùng thì tự động submit
+            if (currentIndex === totalQuestions - 1) {
+                setTimeout(() => {
+                    quizForm.submit();
+                }, 500);
+            } else if (currentIndex < totalQuestions - 1) {
+                setTimeout(() => {
+                    currentIndex++;
+                    showQuestion(currentIndex);
+                    questionBlocks[currentIndex].querySelectorAll('.answer-option').forEach(opt => {
+                        opt.style.pointerEvents = 'auto';
+                        opt.classList.remove('correct', 'incorrect', 'selected');
+                    });
+                }, 500);
+            }
+        });
+    });
 
     nextBtn.addEventListener('click', () => {
         const currentBlock = questionBlocks[currentIndex];
@@ -185,11 +264,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentIndex < totalQuestions - 1) {
             currentIndex++;
             showQuestion(currentIndex);
+            questionBlocks[currentIndex].querySelectorAll('.answer-option').forEach(opt => {
+                opt.style.pointerEvents = 'auto';
+                opt.classList.remove('correct', 'incorrect', 'selected');
+            });
         }
     });
 
     quizForm.addEventListener('submit', function(event) {
-        timeTakenInput.value = timeLimit - timeRemaining; // Update time_taken before submission
+        timeTakenInput.value = timeLimit - timeRemaining;
         let allAnswered = true;
 
         questionBlocks.forEach((block) => {
