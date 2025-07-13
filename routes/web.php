@@ -18,7 +18,7 @@ Route::get('/search', [HomeController::class, 'search'])->name('search.quizzes.i
 Route::get('quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
 
 // ✅ PHÂN QUYỀN CRUD QUIZ & QUESTION CHO ADMIN + QUIZZ_MANAGER
-Route::middleware(['auth', 'isAdmin:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'isAdmin:admin,quizz_manager'])->prefix('admin')->name('admin.')->group(function () {
 
     // Add alias for admin.dashboard
     Route::get('/', fn () => view('admin.dashboard'))->name('index');
