@@ -41,6 +41,9 @@ class UserAnswerController extends Controller
             $q->select('id', 'question_id', 'answer', 'is_correct');
         }])->orderBy('order')->get();
 
+        // Xáo trộn câu hỏi mỗi lần làm bài
+        $questions = $questions->shuffle()->values();
+
         return view('quizz.index', compact('quiz', 'questions'));
     }
 

@@ -2,12 +2,13 @@ tóm tắt dự án Laravel Quiz App của bạn:
 
 Kiến trúc đang sử dụng: Service + Repository + repositoryInterface
 
+các role : user, admin , quizz master 
 
 Các bảng trong database:
 
 users: bảng mặc định của Laravel, thêm cột role (enum: user, admin)
 
-quizzes: có các cột name, description, quizz_code, time_limit, is_public, created_by
+quizzes: có các cột name, description, quizz_code, time_limit, is_public, created_by, code ,catalog_id 
 
 catalog: có cột id và name
 
