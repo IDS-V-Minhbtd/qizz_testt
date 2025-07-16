@@ -23,3 +23,5 @@ RUN composer install --no-dev --optimize-autoloader
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# 👇 THÊM DÒNG NÀY Ở CUỐI FILE
+CMD ["apache2-foreground"]
