@@ -13,7 +13,6 @@ class QuestionRequest extends FormRequest
 
     /**
      * ✅ Ghi đè dữ liệu trước khi validate
-     * Chuyển mảng answers về dạng đánh số lại từ 1 để đảm bảo correct_answer an toàn
      */
     protected function prepareForValidation()
     {
@@ -27,39 +26,40 @@ class QuestionRequest extends FormRequest
         }
     }
 
-   public function rules()
-{
-    // ✅ Normalize key của answers (0, 1, 2, ...) để tránh lỗi "Undefined array key"
-    if ($this->has('answers')) {
-        $normalized = collect($this->input('answers'))->values()->toArray();
-        $this->merge(['answers' => $normalized]);
-    }
+    public function rules()
+    {
+        // ✅ Normalize key của answers
+        if ($this->has('answers')) {
+            $normalized = collect($this->input('answers'))->values()->toArray();
+            $this->merge(['answers' => $normalized]);
+        }
 
-    // các rule khác giữ nguyên
-    $rules = [
-        'question' => ['required', 'string', 'max:255'],
-        'order' => 'required|integer|min:1|max:100',
-        'answer_type' => 'required|string|in:multiple_choice,text_input,true_false',
-    ];
+        $rules = [
+            'question' => ['required', 'string', 'max:255'],
+            'order' => 'required|integer|min:1|max:100',
+            'answer_type' => 'required|string|in:multiple_choice,text_input,true_false',
 
-    if ($this->input('answer_type') === 'multiple_choice') {
-        $rules['answers'] = 'required|array|min:2';
-        $rules['answers.*.text'] = 'required|string|max:255';
-        $rules['correct_answer'] = [
-            'required',
-            'integer',
-            function ($attribute, $value, $fail) {
-                $answers = $this->input('answers', []);
-                if (!array_key_exists($value, $answers)) {
-                    $fail('Đáp án đúng không hợp lệ: Chỉ số ' . $value . ' không tồn tại trong danh sách đáp án.');
-                }
-            },
+            // ✅ Rule cho ảnh
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 2MB
         ];
+
+        if ($this->input('answer_type') === 'multiple_choice') {
+            $rules['answers'] = 'required|array|min:2';
+            $rules['answers.*.text'] = 'required|string|max:255';
+            $rules['correct_answer'] = [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) {
+                    $answers = $this->input('answers', []);
+                    if (!array_key_exists($value, $answers)) {
+                        $fail('Đáp án đúng không hợp lệ: Chỉ số ' . $value . ' không tồn tại trong danh sách đáp án.');
+                    }
+                },
+            ];
+        }
+
+        return $rules;
     }
-
-    return $rules;
-}
-
 
     public function messages()
     {
@@ -95,6 +95,11 @@ class QuestionRequest extends FormRequest
             'import_file.file' => 'Tệp nhập vào không hợp lệ.',
             'import_file.mimes' => 'Tệp nhập vào phải có định dạng txt hoặc csv.',
             'import_file.max' => 'Kích thước tệp nhập vào không được vượt quá 25MB.',
+
+            // ✅ Thêm lỗi cho ảnh
+            'picture.image' => 'Tệp tải lên phải là ảnh.',
+            'picture.mimes' => 'Ảnh phải có định dạng jpeg, png, jpg, gif hoặc webp.',
+            'picture.max' => 'Kích thước ảnh không được vượt quá 2MB.',
         ];
     }
 }

@@ -95,4 +95,14 @@ class UserAnswerRepository implements UserAnswerRepositoryInterface
             ->where('is_correct', true)
             ->count();
     }
+    public function CheckCorrectAnswer(int $questionId, int $answerId): bool
+    {
+        $answer = Answer::find($answerId);
+        if (!$answer) {
+            return false;
+        }
+
+        // Kiểm tra xem câu trả lời có đúng với câu hỏi không
+        return $answer->question_id === $questionId && $answer->is_correct;
+    }
 }

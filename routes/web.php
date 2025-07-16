@@ -16,6 +16,11 @@ Auth::routes();
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [HomeController::class, 'search'])->name('search.quizzes.index');
 Route::get('quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
+Route::middleware(['auth'])->group(function () {
+   Route::post('/quiz/check-answer', [QuizController::class, 'checkAnswer'])->name('check.answer');
+});
+
+
 
 // ✅ PHÂN QUYỀN CRUD QUIZ & QUESTION CHO ADMIN + QUIZZ_MANAGER
 Route::middleware(['auth', 'isAdmin:admin,quizz_manager'])->prefix('admin')->name('admin.')->group(function () {

@@ -134,4 +134,9 @@ class UserAnswerService
             \App\Models\Quiz::where('id', $quizId)->update(['popular' => $total]);
         }
     }
+
+    public function CheckCorrectAnswer(int $questionId, int $answerId): bool
+    {
+        return $this->userAnswerRepo->CheckCorrectAnswer($questionId, $answerId);
+    }
 }

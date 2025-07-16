@@ -14,21 +14,31 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.quizzes.questions.store', $quiz->id) }}">
+    {{-- Thêm enctype để upload file --}}
+    <form method="POST" action="{{ route('admin.quizzes.questions.store', $quiz->id) }}" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="answer_type" value="multiple_choice">
 
         <div class="mb-3">
             <label for="question" class="form-label">Nội dung câu hỏi <span class="text-danger">*</span></label>
-            <textarea name="question" id="question" rows="3" class="form-control" >{{ old('question') }}</textarea>
+            <textarea name="question" id="question" rows="3" class="form-control">{{ old('question') }}</textarea>
             @error('question')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+        {{-- Thêm phần upload ảnh --}}
+        <div class="mb-3">
+            <label for="picture" class="form-label">Ảnh minh họa (nếu có)</label>
+            <input type="file" name="picture" id="picture" class="form-control">
+            @error('picture')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
 
         <div class="mb-3">
             <label for="order" class="form-label">Thứ tự <span class="text-danger">*(không cần nhập để tự động sắp xếp thứ tự)</span></label>
-            <input type="number" name="order" id="order" class="form-control" value="{{ old('order', 1) }}" min="1" >
+            <input type="number" name="order" id="order" class="form-control" value="{{ old('order', 1) }}" min="1">
             @error('order')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
@@ -44,7 +54,7 @@
                 @foreach ($oldAnswers as $id => $answer)
                     <div class="input-group mb-2" data-answer-id="{{ $id }}">
                         <span class="input-group-text">Đáp án {{ $id }}</span>
-                        <input type="text" name="answers[{{ $id }}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="{{ $answer['text'] }}" >
+                        <input type="text" name="answers[{{ $id }}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="{{ $answer['text'] }}">
                         @if ($id > 2)
                             <button type="button" class="btn btn-danger btn-remove-answer">×</button>
                         @endif
@@ -62,7 +72,7 @@
 
         <div class="mb-3">
             <label for="correct_answer" class="form-label">Đáp án đúng <span class="text-danger">*</span></label>
-            <select name="correct_answer" id="correct_answer" class="form-select" >
+            <select name="correct_answer" id="correct_answer" class="form-select">
                 @foreach ($oldAnswers as $id => $answer)
                     <option value="{{ $id }}" {{ old('correct_answer', 1) == $id ? 'selected' : '' }}>
                         Đáp án {{ $id }}: {{ $answer['text'] }}
@@ -86,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const addAnswerBtn = document.getElementById('btn-add-answer');
     const correctAnswerSelect = document.getElementById('correct_answer');
 
-    // Tính ID lớn nhất hiện tại
     let answerCounter = Math.max(...Array.from(answersWrapper.children).map(div => parseInt(div.dataset.answerId) || 0), 0);
 
     function updateCorrectAnswerDropdown() {
@@ -117,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         answerDiv.dataset.answerId = answerCounter;
         answerDiv.innerHTML = `
             <span class="input-group-text">Đáp án ${answerCounter}</span>
-            <input type="text" name="answers[${answerCounter}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="${text}" >
+            <input type="text" name="answers[${answerCounter}][text]" class="form-control answer-input" placeholder="Nội dung đáp án" value="${text}">
             <button type="button" class="btn btn-danger btn-remove-answer">×</button>
         `;
         answersWrapper.appendChild(answerDiv);
@@ -129,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Cập nhật dropdown khi text thay đổi
         answerDiv.querySelector('input').addEventListener('input', updateCorrectAnswerDropdown);
 
         updateCorrectAnswerDropdown();
@@ -139,7 +147,6 @@ document.addEventListener('DOMContentLoaded', function () {
         addAnswer();
     });
 
-    // Gán sự kiện cho các đáp án hiện tại
     answersWrapper.querySelectorAll('.btn-remove-answer').forEach(btn => {
         btn.addEventListener('click', function () {
             if (confirm('Bạn có chắc chắn muốn xóa đáp án này?')) {

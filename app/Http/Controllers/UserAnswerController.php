@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\UserAnswerService;
 use App\Services\QuizService;
+
 use App\Services\ResultService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -106,14 +107,30 @@ class UserAnswerController extends Controller
     /**
      * Kiểm tra đáp án đúng sai (AJAX)
      */
-    public function checkAnswer(Request $request)
-    {
-        $questionId = $request->input('question_id');
-        $answerId = $request->input('answer_id');
 
-        $isCorrect = $this->userAnswerService->isCorrect($questionId, $answerId);
 
-        return response()->json(['is_correct' => $isCorrect]);
+public function checkAnswer(Request $request)
+{
+    $questionId = $request->input('question_id');
+    $answerId = $request->input('answer_id');
+
+    if (!$questionId || !$answerId) {
+        return redirect()->back()->with('error', 'Thiếu thông tin câu hỏi hoặc đáp án.');
     }
-    
+
+    try {
+        $isCorrect = $this->userAnswerService->CheckCorrectAnswer($questionId, $answerId);
+
+        // Chuyển hướng lại với kết quả
+        return redirect()->back()->with([
+            'question_id' => $questionId,
+            'answer_id' => $answerId,
+            'is_correct' => $isCorrect,
+        ]);
+
+    } catch (\Throwable $e) {
+        return redirect()->back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+    }
+}
+
 }

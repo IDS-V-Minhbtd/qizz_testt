@@ -6,7 +6,7 @@ các role : user, admin , quizz master
 
 Các bảng trong database:
 
-users: bảng mặc định của Laravel, thêm cột role (enum: user, admin)
+users: bảng mặc định của Laravel, thêm cột role (enum: user, admin,quizz manager)
 
 quizzes: có các cột name, description, quizz_code, time_limit, is_public, created_by, code ,catalog_id 
 
@@ -21,22 +21,3 @@ results: liên kết với users và quizzes, có score, time_taken, completed_a
 user_answers: liên kết với results và questions, có answer_id, is_correct
 
 
-=== ƯU TIÊN CAO ===
-1. Thêm cột catalog vào quizzes//
-2. Hiển thị quiz nổi bật theo catalog dựa vào số lượt làm quiz
-3. Thêm role quizz_manager//
-4. Viết trang giao diện cho quizz_manager//
-6. Thêm chức năng đọc file .txt và  để nhập câu hỏi, đáp án vào quiz// tạm xong
-7. Quizz Manager chỉ quản lý được các quiz thuộc group của họ
-8. Thêm cột groups cho quizz_manager
-
-=== ƯU TIÊN TRUNG BÌNH ===
-9. Thêm biểu đồ trực quan (biểu đồ thống kê kết quả) cho mỗi quiz
-10. Lọc kết quả theo mốc thời gian: tuần này, tháng trước, quý,...
-11. Thêm dashboard tổng quan: số người tham gia, top quiz, top người chơi, phần trăm hoàn thành
-13. Cho phép mời người dùng làm quiz riêng qua mã mời/invite
-
-=== ƯU TIÊN THẤP ===
-14. Thông báo real-time (Laravel Echo + Pusher / WebSocket)
-16. Hỗ trợ đa ngôn ngữ (Laravel Lang)
- 

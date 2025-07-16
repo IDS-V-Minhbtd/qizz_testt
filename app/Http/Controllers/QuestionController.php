@@ -71,26 +71,44 @@ class QuestionController extends Controller
         return view('admin.quizzes.question.edit', compact('quiz', 'question', 'answers'));
     }
 
-    public function update(QuestionRequest $request, $quizId, $questionId)
-    {
-        $validatedData = $request->validated();
-        $validatedData['quiz_id'] = $quizId;
-        Log::info('Dữ liệu gửi từ form (update):', $validatedData);
 
-        // Thêm dòng này để debug dữ liệu
-   
 
-        try {
-            $this->questionService->updateWithAnswers($questionId, $validatedData);
-            return redirect()->route('admin.quizzes.edit', $quizId)
-                ->with('success', 'Cập nhật câu hỏi thành công!');
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi cập nhật câu hỏi: ' . $e->getMessage());
-            return redirect()->back()
-                ->withErrors(['error' => 'Không thể cập nhật câu hỏi: ' . $e->getMessage()])
-                ->withInput();
+public function update(QuestionRequest $request, $quizId, $questionId)
+{
+    $validatedData = $request->validated();
+    $validatedData['quiz_id'] = $quizId;
+
+    try {
+        // Lấy lại câu hỏi hiện tại
+        $question = $this->questionService->getByQuizIdAndQuestionId($quizId, $questionId);
+
+        // Nếu có ảnh mới, xử lý upload
+        if ($request->hasFile('picture')) {
+            // Xóa ảnh cũ nếu có
+            if ($question && $question->picture) {
+                Storage::disk('public')->delete($question->picture);
+            }
+
+            // Lưu ảnh mới
+            $path = $request->file('picture')->store('questions', 'public');
+            $validatedData['picture'] = $path;
         }
+
+        // Gọi service cập nhật
+        $this->questionService->updateWithAnswers($questionId, $validatedData);
+
+        return redirect()
+            ->route('admin.quizzes.questions.edit', [$quizId, $questionId])
+            ->with('success', 'Cập nhật câu hỏi thành công!');
+    } catch (\Exception $e) {
+        Log::error('Lỗi khi cập nhật câu hỏi: ' . $e->getMessage());
+
+        return redirect()->back()
+            ->withErrors(['error' => 'Không thể cập nhật câu hỏi: ' . $e->getMessage()])
+            ->withInput();
     }
+}
+
 
     public function destroy($quizId, $questionId)
     {

@@ -22,4 +22,6 @@ interface UserAnswerRepositoryInterface
     public function getAllAnswersByQuiz(int $quizId, int $userId): Collection;
 
     public function deleteAnswers(int $quizId, int $userId): void;
+
+    public function CheckCorrectAnswer(int $questionId, int $answerId): bool;
 }

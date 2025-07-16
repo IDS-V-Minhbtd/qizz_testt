@@ -30,14 +30,20 @@
                     <span class="badge bg-secondary me-2">Câu {{ $loop->iteration }}</span>
                     <span class="fw-semibold fs-5">{{ $question->question }}</span>
                 </div>
-                <div class="row g-3">
+                    @if ($question->picture)
+    <div class="mb-3 text-center">
+        <img src="{{ asset('storage/' . $question->picture) }}" class="img-fluid rounded border border-2 shadow-sm" style="max-height: 250px;">
+
+    </div>
+    @endif
+
+                <div class="row g-3 align-items-center">
                     @foreach($question->answers as $answer)
                     <div class="col-md-6">
-                        <label class="answer-card">
-                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $answer->id }}" class="d-none">
-                            <div class="card-content d-flex align-items-center p-3 rounded-3">
-                                <div class="check-icon me-3"><i class="bi bi-check-circle-fill"></i></div>
-                                <div class="answer-text flex-grow-1">{{ $answer->answer }}</div>
+                        <label class="answer-card d-flex align-items-center">
+                            <input type="radio" name="answers[{{ $question->id }}]" value="{{ $answer->id }}" class="me-2">
+                            <div class="card-content d-inline-flex align-items-center p-2 rounded-3 flex-grow-1">
+                                <span class="answer-text">{{ $answer->answer }}</span>
                             </div>
                         </label>
                     </div>
@@ -46,11 +52,14 @@
             </div>
             @endforeach
 
-            <div class="d-flex justify-content-end mt-4">
-                <button type="button" id="next-btn" class="btn btn-outline-primary rounded-pill px-4 me-2">Câu tiếp theo</button>
-                <button type="submit" id="submit-btn" class="btn btn-gradient rounded-pill px-4 fw-bold d-none">
-                    <i class="bi bi-send me-1"></i> Nộp bài
-                </button>
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" id="prev-btn" class="btn btn-outline-secondary rounded-pill px-4" style="display: none;">Quay lại</button>
+                <div>
+                    <button type="button" id="next-btn" class="btn btn-outline-primary rounded-pill px-4 me-2">Câu tiếp theo</button>
+                    <button type="submit" id="submit-btn" class="btn btn-gradient rounded-pill px-4 fw-bold d-none">
+                        <i class="bi bi-send me-1"></i> Nộp bài
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -66,6 +75,7 @@
 .quiz-main-card {
     background: #fffdfc;
     border: 2px solid #d7d4ec;
+    border-radius: 16px;
 }
 .text-gradient {
     background: linear-gradient(90deg, #6366f1, #38bdf8);
@@ -74,7 +84,9 @@
 }
 .answer-card {
     cursor: pointer;
-    display: block;
+    display: flex;
+    align-items: center;
+    width: 100%;
     user-select: none;
 }
 .card-content {
@@ -82,29 +94,28 @@
     border: 2px solid transparent;
     transition: all 0.3s ease;
     box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    width: 100%;
 }
 .card-content:hover {
     background: #e0f2fe;
     border-color: #3b82f6;
 }
-.answer-card.selected .card-content {
+.col-md-6.selected {
+    background: transparent; /* Loại bỏ nền cho col-md-6, áp dụng vào card-content */
+}
+.col-md-6.selected .card-content {
     background: #dbeafe !important;
     border-color: #2563eb !important;
     box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
 }
-.answer-card.selected .check-icon {
-    opacity: 1;
-    color: #2563eb;
-    transform: scale(1.2);
-}
-.check-icon {
-    font-size: 1.4rem;
-    color: #ccc;
-    opacity: 0;
-    transition: 0.3s ease;
-}
 .answer-text {
     font-size: 1rem;
+    color: #333;
+}
+input[type="radio"] {
+    margin-right: 10px;
+    transform: scale(1.3);
+    accent-color: #2563eb;
 }
 .btn-gradient {
     background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
@@ -128,6 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const blocks = document.querySelectorAll('.question-block');
     const timerEl = document.getElementById('timer');
     const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
     const submitBtn = document.getElementById('submit-btn');
     const timeTakenInput = document.getElementById('time-taken');
     const form = document.getElementById('quiz-form');
@@ -149,18 +161,36 @@ document.addEventListener("DOMContentLoaded", function () {
         if (remain <= 0) form.submit();
     }
 
+    // Hàm đánh dấu toàn bộ đáp án đã chọn (Cách 2)
+    function markAllSelectedAnswers() {
+        document.querySelectorAll('.question-block').forEach(block => {
+            block.querySelectorAll('.col-md-6').forEach(col => {
+                const input = col.querySelector('input[type="radio"]');
+                if (input.checked) {
+                    col.classList.add('selected');
+                } else {
+                    col.classList.remove('selected');
+                }
+            });
+        });
+    }
+
     setInterval(updateTimer, 1000);
 
-    // Chọn đáp án
+    // Cách 1: Thêm class selected khi chọn đáp án trong câu hỏi hiện tại
     document.querySelectorAll('.answer-card input[type="radio"]').forEach(radio => {
         radio.addEventListener('change', function () {
             const block = this.closest('.question-block');
-            block.querySelectorAll('.answer-card').forEach(label => label.classList.remove('selected'));
-            const label = this.closest('.answer-card');
-            if (this.checked && label) label.classList.add('selected');
+            block.querySelectorAll('.col-md-6').forEach(col => col.classList.remove('selected'));
+            const col = this.closest('.col-md-6');
+            if (this.checked && col) {
+                col.classList.add('selected');
+                markAllSelectedAnswers(); // Gọi Cách 2 để cập nhật toàn bộ
+            }
         });
     });
 
+    // Chuyển câu tiếp theo
     nextBtn.addEventListener('click', () => {
         const current = blocks[currentIndex];
         const selected = current.querySelector('input[type="radio"]:checked');
@@ -173,6 +203,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentIndex < total) {
             blocks[currentIndex].style.display = 'block';
             updateProgress();
+            markAllSelectedAnswers(); // Cập nhật đánh dấu cho tất cả câu hỏi
+            prevBtn.style.display = 'inline-block';
         }
         if (currentIndex === total - 1) {
             nextBtn.classList.add('d-none');
@@ -180,6 +212,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // Quay lại câu trước
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            blocks[currentIndex].style.display = 'none';
+            currentIndex--;
+            blocks[currentIndex].style.display = 'block';
+            updateProgress();
+            markAllSelectedAnswers(); // Cập nhật đánh dấu khi quay lại
+            prevBtn.style.display = currentIndex === 0 ? 'none' : 'inline-block';
+            nextBtn.classList.remove('d-none');
+            submitBtn.classList.add('d-none');
+        }
+    });
+
+    // Xử lý nộp bài
     form.addEventListener('submit', function (e) {
         let ok = true;
         blocks.forEach(block => {
@@ -190,11 +237,14 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!ok) {
             e.preventDefault();
             alert('Bạn chưa trả lời hết các câu hỏi!');
+        } else {
+            markAllSelectedAnswers(); // Đánh dấu lại trước khi nộp
         }
     });
 
+    // Đánh dấu ban đầu khi tải trang
+    markAllSelectedAnswers();
     updateProgress();
 });
 </script>
 @endsection
-

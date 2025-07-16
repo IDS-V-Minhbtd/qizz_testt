@@ -44,6 +44,7 @@ class QuestionService
             'question' => $data['question'],
             'order'    => $data['order'] ?? 0,
             'type'     => $data['answer_type'],
+             'picture'  => $data['picture'] ?? $question->picture, 
         ]);
     }
 
@@ -122,14 +123,18 @@ class QuestionService
     }
 
     public function updateWithAnswers(int $questionId, array $data): Question
-    {
-        return DB::transaction(function () use ($questionId, $data) {
-            $this->updateQuestion($questionId, $data);
-            $this->updateAnswersForQuestion($questionId, $data);
-            return $this->questionRepo->findById($questionId);
-        });
-    }
+{
+    return DB::transaction(function () use ($questionId, $data) {
+        if (request()->hasFile('picture')) {
+            $path = request()->file('picture')->store('questions', 'public');
+            $data['picture'] = $path;
+        }
 
+        $this->updateQuestion($questionId, $data);
+        $this->updateAnswersForQuestion($questionId, $data);
+        return $this->questionRepo->findById($questionId);
+    });
+}
     public function getById(int $id)
     {
         return $this->questionRepo->findById($id);
