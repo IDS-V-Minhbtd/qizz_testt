@@ -14,14 +14,14 @@ return new class extends Migration
     public function up()
     {
         Schema::create('results', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('quiz_id')->constrained()->onDelete('cascade');
-            $table->float('score');
-            $table->integer('time_taken'); // in seconds
-            $table->timestamp('completed_at')->nullable();
-            $table->timestamps();
-        });
+    $table->id();
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('quiz_id')->constrained()->cascadeOnDelete();
+    $table->integer('score')->default(0);
+    $table->integer('time_taken')->nullable();
+    $table->timestamp('completed_at')->nullable();
+    $table->timestamps();
+});
     }
 
     /**

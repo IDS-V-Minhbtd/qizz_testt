@@ -14,15 +14,17 @@ return new class extends Migration
     public function up()
     {
         Schema::create('quizzes', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->integer('time_limit')->nullable(); 
-            $table->boolean('is_public')->default(false);
-            $table->string('code', 16)->unique(); // Add code column, unique
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->timestamps();
-        });
+    $table->id();
+    $table->string('name');
+    $table->text('description')->nullable();
+    $table->integer('time_limit')->nullable();
+    $table->boolean('is_public')->default(false);
+    $table->boolean('popular')->default(false);
+    $table->foreignId('lesson_id')->nullable()->constrained()->nullOnDelete();
+    $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+    $table->timestamps();
+});
+
     }
 
     /**

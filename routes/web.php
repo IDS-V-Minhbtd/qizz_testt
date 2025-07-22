@@ -8,6 +8,9 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\UserAnswerController;
+use App\Http\Controllers\FlashcardContronller;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\LessonController;
 
 Route::get('/', fn () => view('welcome'));
 
@@ -20,20 +23,28 @@ Route::middleware(['auth'])->group(function () {
    Route::post('/quiz/check-answer', [QuizController::class, 'checkAnswer'])->name('check.answer');
 });
 
-
-
-// ✅ PHÂN QUYỀN CRUD QUIZ & QUESTION CHO ADMIN + QUIZZ_MANAGER
+//  CHỈ ADMIN và QUIZZ MANAGER mới có quyền quản lý quizzes và questions
 Route::middleware(['auth', 'isAdmin:admin,quizz_manager'])->prefix('admin')->name('admin.')->group(function () {
 
     // Add alias for admin.dashboard
     Route::get('/', fn () => view('admin.dashboard'))->name('index');
-    Route::get('/', fn () => view('admin.dashboard'))->name('dashboard'); // <-- Add this line
+    Route::get('/', fn () => view('admin.dashboard'))->name('dashboard');
 
     // CRUD quizzes
     Route::resource('quizzes', QuizController::class);
     
     // CRUD nested questions
-    Route::resource('quizzes.questions', QuestionController::class)->shallow();
+    Route::resource('quizzes.questions', QuestionController::class);
+
+    //  crud flashcard 
+    Route::resource('quizzes.flashcards', FlashcardContronller::class);
+
+    // crud course
+    Route::resource('courses', CourseController::class);
+
+
+    // crud lesson
+    Route::resource('lessons', LessonController::class);
 
     // Import quizzes (fix: use GET for import page)
     Route::get('quizzes/{quiz}/questions/import', [QuestionController::class, 'import'])->name('questions.import');
@@ -74,9 +85,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('history', [UserController::class, 'history'])->name('history');
 });
-
-
-
 
 Route::get('test', function () {
     return view('test');

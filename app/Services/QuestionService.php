@@ -29,6 +29,7 @@ class QuestionService
             'question' => $data['question'],
             'order'    => $data['order'] ?? 0,
             'type'     => $data['answer_type'],
+            'image'    => $data['image'] ?? null, // đổi từ picture sang image
         ]);
     }
 
@@ -44,7 +45,7 @@ class QuestionService
             'question' => $data['question'],
             'order'    => $data['order'] ?? 0,
             'type'     => $data['answer_type'],
-             'picture'  => $data['picture'] ?? $question->picture, 
+            'image'    => $data['image'] ?? $question->image, // đổi từ picture sang image
         ]);
     }
 
@@ -123,18 +124,18 @@ class QuestionService
     }
 
     public function updateWithAnswers(int $questionId, array $data): Question
-{
-    return DB::transaction(function () use ($questionId, $data) {
-        if (request()->hasFile('picture')) {
-            $path = request()->file('picture')->store('questions', 'public');
-            $data['picture'] = $path;
-        }
+    {
+        return DB::transaction(function () use ($questionId, $data) {
+            if (request()->hasFile('image')) { // đổi từ picture sang image
+                $path = request()->file('image')->store('questions', 'public');
+                $data['image'] = $path;
+            }
 
-        $this->updateQuestion($questionId, $data);
-        $this->updateAnswersForQuestion($questionId, $data);
-        return $this->questionRepo->findById($questionId);
-    });
-}
+            $this->updateQuestion($questionId, $data);
+            $this->updateAnswersForQuestion($questionId, $data);
+            return $this->questionRepo->findById($questionId);
+        });
+    }
     public function getById(int $id)
     {
         return $this->questionRepo->findById($id);

@@ -13,10 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('user_answers', function (Blueprint $table) {
-            $table->dropColumn('answer');
-        });
-        
+        Schema::create('flashcards', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('lesson_id')->constrained()->cascadeOnDelete();
+    $table->string('front');
+    $table->string('back');
+    $table->timestamps();
+});
+
     }
 
     /**
@@ -26,8 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('user_answers', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('flashcards');
     }
 };

@@ -38,9 +38,7 @@ class QuestionRequest extends FormRequest
             'question' => ['required', 'string', 'max:255'],
             'order' => 'required|integer|min:1|max:100',
             'answer_type' => 'required|string|in:multiple_choice,text_input,true_false',
-
-            // ✅ Rule cho ảnh
-            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 2MB
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 2MB
         ];
 
         if ($this->input('answer_type') === 'multiple_choice') {
@@ -97,9 +95,10 @@ class QuestionRequest extends FormRequest
             'import_file.max' => 'Kích thước tệp nhập vào không được vượt quá 25MB.',
 
             // ✅ Thêm lỗi cho ảnh
-            'picture.image' => 'Tệp tải lên phải là ảnh.',
-            'picture.mimes' => 'Ảnh phải có định dạng jpeg, png, jpg, gif hoặc webp.',
-            'picture.max' => 'Kích thước ảnh không được vượt quá 2MB.',
+            'image.image' => 'Tệp tải lên phải là ảnh.',
+            'image.mimes' => 'Ảnh phải có định dạng jpeg, png, jpg, gif hoặc webp.',
+            'image.max' => 'Kích thước ảnh không được vượt quá 2MB.',
         ];
     }
 }
+    

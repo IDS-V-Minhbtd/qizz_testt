@@ -29,9 +29,9 @@
 
         {{-- Thêm phần upload ảnh --}}
         <div class="mb-3">
-            <label for="picture" class="form-label">Ảnh minh họa (nếu có)</label>
-            <input type="file" name="picture" id="picture" class="form-control">
-            @error('picture')
+            <label for="image" class="form-label">Ảnh minh họa (nếu có)</label>
+            <input type="file" name="image" id="image" class="form-control">
+            @error('image')
                 <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>

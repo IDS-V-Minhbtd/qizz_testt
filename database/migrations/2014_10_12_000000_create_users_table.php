@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->string('avatar')->nullable();
             $table->string('role')->default('user'); // Add this line if the role column does not exist
             $table->timestamps();
         });
@@ -30,8 +31,10 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-        Schema::dropIfExists('users');
-    }
+  public function down()
+{
+    Schema::disableForeignKeyConstraints();
+    Schema::dropIfExists('users');
+    Schema::enableForeignKeyConstraints();
+}
 };

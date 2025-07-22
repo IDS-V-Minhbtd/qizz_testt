@@ -14,13 +14,13 @@ return new class extends Migration
     public function up()
     {
         Schema::create('user_answers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('result_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('question_id')->constrained()->onDelete('cascade');
-            $table->text('answer')->nullable(); // Ensure the 'answer' field is nullable
-            $table->boolean('is_correct')->default(false);
-            $table->timestamps();
-        });
+    $table->id();
+    $table->foreignId('result_id')->constrained()->cascadeOnDelete();
+    $table->foreignId('question_id')->constrained()->cascadeOnDelete();
+    $table->string('answer')->nullable();
+    $table->boolean('is_correct')->default(false);
+    $table->timestamps();
+});
     }
 
     /**

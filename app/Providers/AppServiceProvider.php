@@ -23,6 +23,9 @@ use App\Repositories\UserAnswerRepository;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\UserRepository;
 
+use App\Repositories\Interfaces\CourseRepositoryInterface;
+use App\Repositories\CourseRepository;
+
 
 
 // Services
@@ -31,6 +34,7 @@ use App\Services\QuestionService;
 use App\Services\ResultService;
 use App\Services\UserAnswerService;
 use App\Services\UserService;
+use App\Services\CourseService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -43,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ResultRepositoryInterface::class, ResultRepository::class);
         $this->app->bind(UserAnswerRepositoryInterface::class, UserAnswerRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(CourseRepositoryInterface::class, CourseRepository::class);
 
 
         $this->app->bind(QuizService::class, function ($app) {
@@ -84,6 +89,12 @@ class AppServiceProvider extends ServiceProvider
                 $app->make(UserRepositoryInterface::class),
                 $app->make(ResultRepositoryInterface::class),
                 $app->make(QuizRepositoryInterface::class)
+            );
+        });
+
+        $this->app->bind(CourseService::class, function ($app) {
+            return new CourseService(
+                $app->make(CourseRepositoryInterface::class)
             );
         });
     }

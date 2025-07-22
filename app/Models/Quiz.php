@@ -10,25 +10,31 @@ class Quiz extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'description', 'time_limit', 'is_public', 'created_by', 'code', 'popular', 'catalog_id'
+        'name',
+        'description',
+        'quizz_code',
+        'time_limit',
+        'is_public',
+        'created_by',
+        'code',
+        'catalog_id',
     ];
 
-    public function creator()
+    // Một quiz thuộc về một catalog
+    public function catalog()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(Catalog::class);
     }
 
+    // Một quiz có nhiều câu hỏi
     public function questions()
     {
         return $this->hasMany(Question::class);
     }
 
+    // Một quiz có nhiều kết quả
     public function results()
     {
         return $this->hasMany(Result::class);
-    }
-    public function catalog()
-    {
-        return $this->belongsTo(Catalog::class, 'catalog_id');
     }
 }

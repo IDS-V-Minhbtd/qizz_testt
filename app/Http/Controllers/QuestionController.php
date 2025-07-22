@@ -31,13 +31,12 @@ class QuestionController extends Controller
 
     public function store(QuestionRequest $request, $quizId)
     {
-
+        $validatedData = $request->validated(); // <-- lấy toàn bộ dữ liệu đã validate
         $validatedData['quiz_id'] = $quizId;
-        
+
         Log::info('Dữ liệu đã validate trước khi gửi tới QuestionService:', $validatedData);
 
         try {
-         
             $this->questionService->createWithAnswers($validatedData);
             return redirect()->route('admin.quizzes.edit', $quizId)
                 ->with('success', 'Câu hỏi đã được thêm thành công!');
@@ -71,44 +70,36 @@ class QuestionController extends Controller
         return view('admin.quizzes.question.edit', compact('quiz', 'question', 'answers'));
     }
 
+    public function update(QuestionRequest $request, $quizId, $questionId)
+    {
+        $validatedData = $request->validated();
+        $validatedData['quiz_id'] = $quizId;
 
+        try {
+            $question = $this->questionService->getByQuizIdAndQuestionId($quizId, $questionId);
 
-public function update(QuestionRequest $request, $quizId, $questionId)
-{
-    $validatedData = $request->validated();
-    $validatedData['quiz_id'] = $quizId;
-
-    try {
-        // Lấy lại câu hỏi hiện tại
-        $question = $this->questionService->getByQuizIdAndQuestionId($quizId, $questionId);
-
-        // Nếu có ảnh mới, xử lý upload
-        if ($request->hasFile('picture')) {
-            // Xóa ảnh cũ nếu có
-            if ($question && $question->picture) {
-                Storage::disk('public')->delete($question->picture);
+            // Nếu có ảnh mới, xử lý upload
+            if ($request->hasFile('image')) { // đổi từ picture sang image
+                if ($question && $question->image) { // đổi từ picture sang image
+                    Storage::disk('public')->delete($question->image);
+                }
+                $path = $request->file('image')->store('questions', 'public');
+                $validatedData['image'] = $path;
             }
 
-            // Lưu ảnh mới
-            $path = $request->file('picture')->store('questions', 'public');
-            $validatedData['picture'] = $path;
+            $this->questionService->updateWithAnswers($questionId, $validatedData);
+
+            return redirect()
+                ->route('admin.quizzes.questions.edit', [$quizId, $questionId])
+                ->with('success', 'Cập nhật câu hỏi thành công!');
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi cập nhật câu hỏi: ' . $e->getMessage());
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Không thể cập nhật câu hỏi: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        // Gọi service cập nhật
-        $this->questionService->updateWithAnswers($questionId, $validatedData);
-
-        return redirect()
-            ->route('admin.quizzes.questions.edit', [$quizId, $questionId])
-            ->with('success', 'Cập nhật câu hỏi thành công!');
-    } catch (\Exception $e) {
-        Log::error('Lỗi khi cập nhật câu hỏi: ' . $e->getMessage());
-
-        return redirect()->back()
-            ->withErrors(['error' => 'Không thể cập nhật câu hỏi: ' . $e->getMessage()])
-            ->withInput();
     }
-}
-
 
     public function destroy($quizId, $questionId)
     {

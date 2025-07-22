@@ -34,7 +34,7 @@
         ->toArray();
 
     if (empty($oldAnswers)) {
-        $oldAnswers = $question->answers->pluck('answer')
+        $question->answers->pluck('answer')
             ->map(fn($text) => ['text' => $text])
             ->values()
             ->toArray();
@@ -53,20 +53,20 @@
 
    {{-- Ảnh minh họa --}}
 <div class="mb-3">
-    <label for="picture" class="form-label">Ảnh minh họa</label>
+    <label for="image" class="form-label">Ảnh minh họa</label>
 
     {{-- Nếu có ảnh hiện tại thì hiển thị --}}
     <div class="mb-2">
-        @if ($question->picture)
-            <img src="{{ asset('storage/' . $question->picture) }}" alt="Ảnh hiện tại"
+        @if ($question->image)
+            <img src="{{ asset('storage/' . $question->image) }}" alt="Ảnh hiện tại"
                  class="img-fluid rounded border" style="max-height: 200px;">
         @else
             <div class="text-muted fst-italic">Chưa có ảnh minh họa</div>
         @endif
     </div>
 
-    <input type="file" name="picture" id="picture" class="form-control" accept="image/*">
-    @error('picture')
+    <input type="file" name="image" id="image" class="form-control" accept="image/*">
+    @error('image')
         <div class="text-danger">{{ $message }}</div>
     @enderror
 </div>

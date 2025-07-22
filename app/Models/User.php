@@ -35,10 +35,14 @@ class User extends Authenticatable
         return $this->hasMany(Quiz::class, 'created_by');
     }
 
+    // Một user có nhiều kết quả
     public function results()
     {
-        return $this->hasMany(\App\Models\Result::class, 'user_id');
+        return $this->hasMany(Result::class);
     }
+
+    // Nếu có thêm các quan hệ khác, bổ sung tại đây
+
 ///role
 
     public function isAdmin(): bool

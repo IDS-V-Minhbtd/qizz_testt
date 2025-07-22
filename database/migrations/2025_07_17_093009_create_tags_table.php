@@ -11,26 +11,22 @@ return new class extends Migration
      *
      * @return void
      */
-// database/migrations/xxxx_add_quizz_manager_until_to_users_table.php
 public function up()
 {
-    Schema::table('users', function (Blueprint $table) {
-        $table->timestamp('quizz_manager_until')->nullable()->after('role');
+    Schema::create('tags', function (Blueprint $table) {
+        $table->id();
+        $table->string('name')->unique();
+        $table->timestamps();
     });
 }
-
-public function down()
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->dropColumn('quizz_manager_until');
-    });
-}
-
 
     /**
      * Reverse the migrations.
      *
      * @return void
      */
-
+    public function down()
+    {
+        Schema::dropIfExists('tags');
+    }
 };

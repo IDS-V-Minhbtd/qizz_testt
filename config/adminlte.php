@@ -298,70 +298,94 @@ return [
     |
     */
 
-    'menu' => [
-    // Navbar items:
+  'menu' => [
+
+    // Navbar Items (Topbar)
     [
         'type' => 'navbar-search',
-        'text' => 'search',
+        'text' => 'Search...',
         'topnav_right' => true,
-        'icon' => 'fas fa-fw fa-search', // Added icon for search
+        'icon' => 'fas fa-search',
     ],
-    
     [
         'type' => 'fullscreen-widget',
         'topnav_right' => true,
-        'icon' => 'fas fa-fw fa-expand', // Icon for fullscreen toggle
+        'icon' => 'fas fa-expand',
     ],
 
-    // Sidebar items:
+    // Sidebar Search
     [
         'type' => 'sidebar-menu-search',
-        'text' => 'search',
-        'icon' => 'fas fa-fw fa-search', // Added icon for sidebar search
+        'text' => 'Search menu...',
+        'icon' => 'fas fa-search',
     ],
 
+
+
+    // --- Sidebar Section: Course Management ---
+    ['header' => 'COURSE MANAGEMENT'],
     [
-        'text' => 'quizz management',
-        'url' => 'admin/quizzes',   
-        'icon' => 'fas fa-fw fa-question-circle', // Changed to quiz-related icon
-        'label' => 4,
-        'label_color' => 'success',
+        'text' => 'Courses',
+        'url' => 'admin/courses',
+        'icon' => 'fas fa-book',
+    ],
+    [
+        'text' => 'Lessons',
+        'url' => 'admin/lessons',
+        'icon' => 'fas fa-chalkboard-teacher',
+    ],
+    [
+        'text' => 'Flashcards',
+        'url' => 'admin/flashcards',
+        'icon' => 'fas fa-clone',
+    ],
+        [
+        'text' => 'Quizzes',
+        'url' => 'admin/quizzes',
+        'icon' => 'fas fa-question-circle',
     ],
 
-    ['header' => 'account_settings'],
+
+    // --- Sidebar Section: Quiz Management ---
+    ['header' => 'QUIZ MANAGEMENT'],
     [
-        'text' => 'user management',
+        'text' => 'Quizzes',
+        'url' => 'admin/quizzes',
+        'icon' => 'fas fa-question-circle',
+    ],
+    [
+        'text' => 'Results',
+        'url' => 'admin/results',
+        'icon' => 'fas fa-poll',
+    ],
+
+    // --- Sidebar Section: User & Reports ---
+    ['header' => 'USER & REPORTS'],
+    [
+        'text' => 'User Management',
         'url' => 'admin/users',
-        'icon' => 'fas fa-fw fa-users', 
+        'icon' => 'fas fa-users',
         'can' => 'isAdmin',
     ],
-      [
-        'text' => 'Reports',
+    [
+        'text' => 'Progress Reports',
         'url' => 'admin/reports',
-        'icon' => 'fas fa-fw fa-users', 
-        'can' => 'quizzManager',
-
-
+        'icon' => 'fas fa-chart-line',
     ],
+
+    // --- Sidebar Section: System ---
+    ['header' => 'SYSTEM'],
     [
         'text' => 'Settings',
         'url' => 'admin/settings',
-        'icon' => 'fas fa-fw fa-cogs', // Changed to settings icon
+        'icon' => 'fas fa-cogs',
+        'can' => 'isAdmin',
     ],
-    [
-        'text' => 'groups management',
-        'url' => 'admin/groups',
-        'icon' => 'fas fa-fw fa-users-cog',
-        'can' => 'quizzManager',
-    ],
-        [
-        'text' => 'Folders',
-        'url' => 'admin/folders',
-        'icon' => 'fas fa-fw fa-folder', 
-
-    ],
-
 ],
+
+      
+
+
 
     /*
     |--------------------------------------------------------------------------

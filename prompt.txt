@@ -1,23 +1,74 @@
-tóm tắt dự án Laravel Quiz App của bạn:
+Khái quát dự án:
+Laravel Quiz + Course App là ứng dụng web cho phép người dùng tạo, quản lý và tham gia các bài kiểm tra trắc nghiệm, xây dựng khóa học trực tuyến, học qua flashcard, và theo dõi tiến độ học tập. Hệ thống hỗ trợ nhiều vai trò (user, admin, quizz_master) với phân quyền rõ ràng.
 
-Kiến trúc đang sử dụng: Service + Repository + repositoryInterface
+Cấu trúc tổng quan dự án:
+- Backend: Laravel
+- Kiến trúc: Service Layer, Repository, Repository Interface
+- Phân quyền:
+    + user: Người học/làm bài kiểm tra
+    + admin: Quản trị hệ thống
+    + quizz_master: Người tạo nội dung (quiz, course, flashcard...)
 
-các role : user, admin , quizz master 
+Cơ sở dữ liệu - Các bảng chính:
+- users: Lưu thông tin người dùng, trường quan trọng: role (enum: user, admin, quizz_master), avatar, quizz_manager_until. Quan hệ: tạo courses/quizzes/flashcards, ghi nhận kết quả (results), theo dõi tiến độ (progresses).
+- tags: Phân loại khóa học, trường: id, name, created_by. Quan hệ: liên kết với courses qua tag_id.
+- courses: Thông tin khóa học, trường: id, title, description, created_by, tag_id, is_public. Quan hệ: thuộc users/tags, gồm lessons, ghi nhận tiến độ học (progresses).
+- lessons: Bài học thuộc một khóa học, trường: id, course_id, title, content, video_url, order. Quan hệ: thuộc courses, có thể chứa quizzes/flashcards, ghi nhận tiến độ học (progresses).
+- quizzes: Bài kiểm tra trắc nghiệm, trường: id, lesson_id, name, description, code, time_limit, is_public, created_by, popular. Quan hệ: thuộc lessons, tạo bởi users, gồm questions/results.
+- questions: Câu hỏi trong mỗi quiz, trường: id, quiz_id, question, order, answer_type, picture. Quan hệ: gồm answers, ghi nhận trả lời (user_answers).
+- answers: Các đáp án cho mỗi câu hỏi, trường: id, question_id, answer, is_correct.
+- results: Kết quả làm bài của người dùng, trường: id, user_id, quiz_id, score, time_taken, completed_at. Quan hệ: gồm nhiều user_answers.
+- user_answers: Lưu đáp án người dùng đã chọn, trường: id, result_id, question_id, answer_id, is_correct.
+- flashcards: Thẻ ghi nhớ để học tập, trường: id, lesson_id, question, answer, is_public, created_by.
+- progresses: Ghi nhận tiến độ học, trường: id, user_id, course_id, lesson_id, progress_percent, last_viewed_at.
 
-Các bảng trong database:
+Tóm tắt mối quan hệ:
+- Một Course có nhiều Lesson
+- Một Lesson có thể có Quiz và Flashcard
+- Một Quiz có nhiều Question, mỗi Question có nhiều Answer
+- Một User làm Quiz sẽ tạo ra Result, trong đó có nhiều UserAnswer
+- Progress ghi nhận trạng thái hoàn thành của mỗi Lesson trong Course theo User
 
-users: bảng mặc định của Laravel, thêm cột role (enum: user, admin,quizz manager)
+Các tính năng chính:
+Hỗ trợ học viên
+| Tính năng                    | Mô tả                                                            |
+| ---------------------------- | ---------------------------------------------------------------- |
+1| **Lịch sử học tập**          | Xem các khóa học/quiz đã tham gia, số lần làm, điểm cao nhất.    |
+2| **Ghi chú cá nhân**          | Ghi chú riêng trong mỗi bài học hoặc flashcard.                  |
+3| **Bookmark**                 | Đánh dấu câu hỏi hoặc bài học để ôn lại.                         |
+4| **Chế độ ôn tập thông minh** | Gợi ý ôn lại quiz dựa trên lỗi sai trước đó (spaced repetition). |
+5| **Quiz Practice Mode**       | Làm quiz thử không tính điểm, xem đáp án từng câu.               |
+6| **Quiz Review Mode**         | Xem lại các câu đã làm, kèm đáp án và lời giải.                  |
+7| **Bộ từ vựng**               | Học từ vựng theo từng khóa (kết hợp từ flashcard).               |
 
-quizzes: có các cột name, description, quizz_code, time_limit, is_public, created_by, code ,catalog_id 
+Quản lý và tạo nội dung (Admin / Quizz Master)
+| Tính năng                         | Mô tả                                                |
+| --------------------------------- | ---------------------------------------------------- |
+8| **Import quiz từ file**           | Nhập câu hỏi từ Excel, CSV, TXT.                     |
+9| **Clone quiz hoặc câu hỏi**       | Tạo bản sao quiz để chỉnh sửa.                       |
+10| **Phân quyền người tạo nội dung** | Cho phép nhiều quizz master tạo trong cùng khóa học. |
+11| **Phân loại độ khó quiz/câu hỏi** | Thêm cột difficulty và tag.                          |
+12| **Thêm giải thích câu hỏi**       | Hiển thị lời giải sau khi làm bài.                   |
 
-catalog: có cột id và name
+Thống kê và đánh giá
+| Tính năng                       | Mô tả                                             |
+| ------------------------------- | ------------------------------------------------- |
+13| **Dashboard học viên**          | Số quiz đã làm, điểm trung bình, tiến độ học tập. |
+14| **Dashboard khóa học**          | Tổng số quiz, lượt tham gia, quiz phổ biến nhất.  |
+15| **Thống kê từng quiz**          | Số lượt làm, câu sai nhiều, điểm trung bình.      |
+16| **Bảng xếp hạng (leaderboard)** | Xếp hạng người học theo điểm cao.                 |
 
-questions: liên kết với quizzes, có question và order, Answer_tpye
+Hỗ trợ cộng đồng / chia sẻ
+| Tính năng                    | Mô tả                                  |
+| ---------------------------- | -------------------------------------- |
+17| **Bình luận quiz / bài học** | Cho phép thảo luận hoặc hỏi đáp.       |
+18| **Chia sẻ quiz / flashcard** | Gửi link public, nhúng iframe.         |
+19| **Bộ đề công khai theo tag** | Người dùng tìm kiếm bộ đề theo chủ đề. |
 
-answers: liên kết với questions, có answer, is_correct
+Gợi ý thứ tự phát triển tính năng:
+1. Nên bắt đầu với các chức năng cốt lõi: Quản lý quiz, câu hỏi, đáp án, và chức năng làm quiz (tức là các bảng quizzes, questions, answers, user_answers, results).
+2. Sau đó phát triển các tính năng cho học viên như: Lịch sử học tập, Quiz Practice Mode, Quiz Review Mode.
+3. Tiếp theo là các tính năng quản trị: Import quiz từ file, phân quyền, clone quiz/câu hỏi.
+4. Cuối cùng bổ sung các tính năng nâng cao: Chế độ ôn tập thông minh, dashboard, leaderboard, chia sẻ, bình luận.
 
-results: liên kết với users và quizzes, có score, time_taken, completed_at
-
-user_answers: liên kết với results và questions, có answer_id, is_correct
-
-
+=> Tính năng nên phát triển đầu tiên: **Quản lý quiz, câu hỏi, đáp án và chức năng làm quiz** (bao gồm tạo quiz, thêm câu hỏi, trả lời quiz, lưu kết quả).
