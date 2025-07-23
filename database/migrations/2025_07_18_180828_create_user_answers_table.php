@@ -14,13 +14,13 @@ return new class extends Migration
     public function up()
     {
         Schema::create('user_answers', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('result_id')->constrained()->cascadeOnDelete();
-    $table->foreignId('question_id')->constrained()->cascadeOnDelete();
-    $table->string('answer')->nullable();
-    $table->boolean('is_correct')->default(false);
-    $table->timestamps();
-});
+            $table->id();
+            $table->foreignId('result_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('question_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('answer_id')->nullable()->constrained('answers')->nullOnDelete(); // thêm dòng này
+            $table->boolean('is_correct')->default(false);
+            $table->timestamps();
+        });
     }
 
     /**

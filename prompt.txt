@@ -21,6 +21,7 @@ Cơ sở dữ liệu - Các bảng chính:
 - user_answers: Lưu đáp án người dùng đã chọn, trường: id, result_id, question_id, answer_id, is_correct.
 - flashcards: Thẻ ghi nhớ để học tập, trường: id, lesson_id, question, answer, is_public, created_by.
 - progresses: Ghi nhận tiến độ học, trường: id, user_id, course_id, lesson_id, progress_percent, last_viewed_at.
+- catalogs: phân loại các quizz lẻ với khóa học :id , name  .
 
 Tóm tắt mối quan hệ:
 - Một Course có nhiều Lesson

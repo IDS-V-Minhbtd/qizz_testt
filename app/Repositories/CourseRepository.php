@@ -44,4 +44,14 @@ class CourseRepository implements CourseRepositoryInterface
     {
         return Course::where('created_by', $userId)->get();
     }
+
+    public function allWithRelations(array $relations = [])
+    {
+        return Course::with($relations)->get();
+    }
+
+    public function findByIdWithRelations($id, array $relations = [])
+    {
+        return Course::with($relations)->find($id);
+    }
 }

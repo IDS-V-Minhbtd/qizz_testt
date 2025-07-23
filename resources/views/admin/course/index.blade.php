@@ -20,7 +20,7 @@
             <thead class="table-light">
                 <tr>
                     <th>#</th>
-                    <th>Title</th>
+                    <th>name</th>
                     <th>Tag</th>
                     <th>Created By</th>
                     <th>Public</th>
@@ -32,7 +32,7 @@
                 @forelse ($courses as $index => $course)
                     <tr>
                         <td>{{ $index + 1 }}</td>
-                        <td class="fw-semibold">{{ $course->title }}</td>
+                        <td class="fw-semibold">{{ $course->name }}</td>
                         <td>{{ $course->tag->name ?? '-' }}</td>
                         <td>{{ $course->creator->name ?? 'N/A' }}</td>
                         <td>

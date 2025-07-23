@@ -10,9 +10,12 @@ class Course extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title',
+        'name', 
         'description',
         'created_by',
+        'tag_id',
+        'image',
+        'slug',
         'is_public',
     ];
 
@@ -32,5 +35,11 @@ class Course extends Model
     public function progresses()
     {
         return $this->hasMany(Progress::class);
+    }
+
+    // Thêm quan hệ với Tag
+    public function tag()
+    {
+        return $this->belongsTo(\App\Models\Tag::class, 'tag_id');
     }
 }

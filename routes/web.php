@@ -43,6 +43,7 @@ Route::middleware(['auth', 'isAdmin:admin,quizz_manager'])->prefix('admin')->nam
     Route::resource('courses', CourseController::class);
 
 
+    
     // crud lesson
     Route::resource('lessons', LessonController::class);
 
