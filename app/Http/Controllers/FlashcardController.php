@@ -14,48 +14,58 @@ class FlashcardController extends Controller
         $this->flashcardService = $flashcardService;
     }
 
-    public function index()
+    // Danh sách flashcard theo lesson
+    public function index($lessonId = null)
     {
+        if ($lessonId) {
+            $flashcards = $this->flashcardService->getByLessonId($lessonId);
+            return view('flashcards.index', compact('flashcards', 'lessonId'));
+        }
         $flashcards = $this->flashcardService->getAll();
         return view('flashcards.index', compact('flashcards'));
     }
 
-    public function create()
+    // Hiển thị form tạo flashcard cho lesson
+    public function create($lessonId)
     {
-        return view('flashcards.create');
+        return view('flashcards.create', compact('lessonId'));
     }
 
-    public function store(Request $request)
+    // Lưu flashcard mới cho lesson
+    public function store(Request $request, $lessonId)
     {
         $data = $request->validate([
-            'lesson_id' => 'required|exists:lessons,id',
             'front' => 'required|string',
             'back' => 'required|string',
         ]);
+        $data['lesson_id'] = $lessonId;
         $this->flashcardService->create($data);
-        return redirect()->route('flashcards.index');
+        return redirect()->route('admin.lessons.flashcards.index', $lessonId)->with('success', 'Tạo flashcard thành công!');
     }
 
-    public function edit($id)
+    // Hiển thị form sửa flashcard cho lesson
+    public function edit($lessonId, $id)
     {
         $flashcard = $this->flashcardService->getById($id);
-        return view('flashcards.edit', compact('flashcard'));
+        return view('flashcards.edit', compact('flashcard', 'lessonId'));
     }
 
-    public function update(Request $request, $id)
+    // Cập nhật flashcard cho lesson
+    public function update(Request $request, $lessonId, $id)
     {
         $data = $request->validate([
-            'lesson_id' => 'required|exists:lessons,id',
             'front' => 'required|string',
             'back' => 'required|string',
         ]);
+        $data['lesson_id'] = $lessonId;
         $this->flashcardService->update($id, $data);
-        return redirect()->route('flashcards.index');
+        return redirect()->route('admin.lessons.flashcards.index', $lessonId)->with('success', 'Cập nhật flashcard thành công!');
     }
 
-    public function destroy($id)
+    // Xóa flashcard theo lesson
+    public function destroy($lessonId, $id)
     {
         $this->flashcardService->delete($id);
-        return redirect()->route('flashcards.index');
+        return redirect()->route('admin.lessons.flashcards.index', $lessonId)->with('success', 'Xóa flashcard thành công!');
     }
 }

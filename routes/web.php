@@ -8,7 +8,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\UserAnswerController;
-use App\Http\Controllers\FlashcardContronller;
+use App\Http\Controllers\FlashcardController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\LessonController;
 
@@ -36,8 +36,10 @@ Route::middleware(['auth', 'isAdmin:admin,quizz_manager'])->prefix('admin')->nam
     // CRUD nested questions
     Route::resource('quizzes.questions', QuestionController::class);
 
-    //  crud flashcard 
-    Route::resource('quizzes.flashcards', FlashcardContronller::class);
+    // CRUD flashcard theo lesson
+    Route::resource('lessons.flashcards', FlashcardController::class);
+    // CRUD flashcard tổng hợp
+    Route::resource('flashcards', FlashcardController::class);
 
     // crud course
     Route::resource('courses', CourseController::class);

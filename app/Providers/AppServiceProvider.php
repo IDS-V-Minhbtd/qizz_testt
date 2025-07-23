@@ -32,6 +32,8 @@ use App\Repositories\TagRepository;
 use App\Repositories\Interfaces\CatalogRepositoryInterface;
 use App\Repositories\CatalogRepository;
 
+use App\Repositories\Interfaces\LessonRepositoryInterface;
+use App\Repositories\LessonRepository;
 
 
 // Services
@@ -58,6 +60,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CourseRepositoryInterface::class, CourseRepository::class);
         $this->app->bind(TagRepositoryInterface::class, TagRepository::class);
         $this->app->bind(CatalogRepositoryInterface::class, CatalogRepository::class);
+        $this->app->bind(
+            \App\Repositories\Interfaces\LessonRepositoryInterface::class,
+            \App\Repositories\LessonRepository::class
+        );
 
 
         $this->app->bind(QuizService::class, function ($app) {

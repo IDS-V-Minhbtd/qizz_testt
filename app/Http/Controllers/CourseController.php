@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CourseRequest;
 use App\Services\CourseService;
+use App\Services\LessonService;
 
 class CourseController extends Controller
 {
     protected CourseService $courseService;
+    protected LessonService $lessonService;
 
-    public function __construct(CourseService $courseService)
+    public function __construct(CourseService $courseService, LessonService $lessonService)
     {
         $this->courseService = $courseService;
+        $this->lessonService = $lessonService;
     }
 
     public function index()
@@ -36,10 +39,11 @@ class CourseController extends Controller
     {
         $course = $this->courseService->getById($id);
         $tags = $this->courseService->getAllTags();
-        return view('admin.course.edit', compact('course', 'tags'));
+        $lessons = $this->lessonService->getByCourseId($id);
+        return view('admin.course.edit', compact('course', 'tags', 'lessons'));
     }
 
-    public function store(StoreCourseRequest $request)
+    public function store(CourseRequest $request)
     {
         $data = $request->validated();
 
@@ -51,7 +55,7 @@ class CourseController extends Controller
         return redirect()->route('admin.courses.index')->with('success', 'Course created successfully.');
     }
 
-    public function update(UpdateCourseRequest $request, $id)
+    public function update(CourseRequest $request, $id)
     {
         $data = $request->validated();
 

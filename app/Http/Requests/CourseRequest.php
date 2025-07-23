@@ -25,13 +25,21 @@ class CourseRequest extends FormRequest
             'description' => 'nullable|string',
             'created_by' => 'nullable|exists:users,id',
             'tag_id' => 'nullable|exists:tags,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'is_public' => 'nullable|boolean',
+            // Chỉ validate image nếu là file upload
+            'image' => 'nullable',
             'slug' => 'required|string',
         ];
 
+        // Nếu có file upload thì mới validate là ảnh
+        if ($this->hasFile('image')) {
+            $rules['image'] = 'image|mimes:jpeg,png,jpg,gif,svg|max:2048';
+        }
+
         // Adjust slug uniqueness rule for update vs. create
-        if ($this->route('id')) {
-            $rules['slug'] .= '|unique:courses,slug,' . $this->route('id');
+        $courseId = $this->route('course') ?? $this->route('id');
+        if ($courseId) {
+            $rules['slug'] .= '|unique:courses,slug,' . $courseId;
         } else {
             $rules['slug'] .= '|unique:courses,slug';
         }

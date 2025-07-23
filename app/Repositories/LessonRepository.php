@@ -7,41 +7,36 @@ use App\Repositories\Interfaces\LessonRepositoryInterface;
 
 class LessonRepository implements LessonRepositoryInterface
 {
-    public function create(array $data): Lesson
-    {
-        return Lesson::create($data);
-    }
-
-    public function findById(int $id): ?Lesson
-    {
-        return Lesson::find($id);
-    }
-
-    public function update(int $id, array $data): bool
-    {
-        $lesson = $this->findById($id);
-        if ($lesson) {
-            return $lesson->update($data);
-        }
-        return false;
-    }
-
-    public function delete(int $id): bool
-    {
-        $lesson = $this->findById($id);
-        if ($lesson) {
-            return $lesson->delete();
-        }
-        return false;
-    }
-
-    public function all(): iterable
+    public function all()
     {
         return Lesson::all();
     }
 
-    public function findByCourseId(int $courseId): iterable
+    public function find($id)
     {
-        return Lesson::where('course_id', $courseId)->orderBy('order')->get();
+        return Lesson::findOrFail($id);
+    }
+
+    public function create(array $data)
+    {
+        return Lesson::create($data);
+    }
+
+    public function update($id, array $data)
+    {
+        $lesson = $this->find($id);
+        $lesson->update($data);
+        return $lesson;
+    }
+
+    public function delete($id)
+    {
+        $lesson = $this->find($id);
+        return $lesson->delete();
+    }
+
+    public function findByCourseId($courseId)
+    {
+        return Lesson::where('course_id', $courseId)->orderBy('order_index')->get();
     }
 }
