@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Services\UserAnswerService;
+use App\Services\QuizService;
+
+use App\Services\ResultService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
+class UserAnswerController extends Controller
+{
+    protected UserAnswerService $userAnswerService;
+    protected QuizService $quizService;
+    protected ResultService $resultService;
+
+    public function __construct(
+        UserAnswerService $userAnswerService,
+        QuizService $quizService,
+        ResultService $resultService
+    ) {
+        $this->userAnswerService = $userAnswerService;
+        $this->quizService = $quizService;
+        $this->resultService = $resultService;
+    }
+
+    /**
+     * Hiển thị trang bắt đầu làm quiz
+     */
+    public function start($quizId)
+    {
+        $quiz = $this->quizService->getById($quizId);
+
+        if (!$quiz || !$quiz->is_public) {
+            return redirect()->route('dashboard')->with('error', 'Quiz không khả dụng.');
+        }
+
+        // Đảm bảo trả về answers có trường is_correct
+        $questions = $quiz->questions()->with(['answers' => function($q) {
+            $q->select('id', 'question_id', 'answer', 'is_correct');
+        }])->orderBy('order')->get();
+
+        // Xáo trộn câu hỏi mỗi lần làm bài
+        $questions = $questions->shuffle()->values();
+
+        return view('quizz.index', compact('quiz', 'questions'));
+    }
+
+    /**
+     * Gửi toàn bộ bài làm và lưu kết quả
+     */
+    public function submit(Request $request, $quizId)
+    {
+        $userId = Auth::id();
+        $answers = $request->input('answers');
+        $timeTaken = $request->input('time_taken'); // Retrieve time_taken from the request
+
+        if (!is_array($answers)) {
+            return redirect()->back()->with('error', 'Dữ liệu không hợp lệ.');
+        }
+
+        // Pass the timeTaken argument to the service method
+        $result = $this->resultService->submitQuizAndSaveResult($quizId, $answers, $userId, $timeTaken);
+
+        // Cập nhật số lượt làm quiz (popular)
+        $this->userAnswerService->updatePopularCountForAllQuizzes();
+
+        return redirect()->route('quizz.result', $result->id)->with('success', 'Nộp bài thành công!');
+    }
+
+    /**
+     * Hiển thị kết quả quiz theo result_id
+     */
+    public function result($resultId)
+    {
+        $result = $this->resultService->getResultById($resultId);
+
+        if (!$result || $result->user_id !== Auth::id()) {
+            return redirect()->route('dashboard')->with('error', 'Không tìm thấy kết quả.');
+        }
+
+        return view('quizz.result', compact('result'));
+    }
+
+    /**
+     * Hiển thị kết quả quiz theo quiz_id
+     */
+    public function resultByQuiz($quizId)
+    {
+        $userId = Auth::id();
+
+        $result = $this->resultService->getResultWithAnswers($quizId, $userId);
+
+        if (!$result) {
+            return redirect()->route('dashboard')->with('error', 'Không tìm thấy kết quả.');
+        }
+
+        // Load quan hệ nếu cần
+        $result->load('quiz', 'userAnswers.question', 'userAnswers.answer');
+
+        return view('quizz.result', compact('result'));
+    }
+
+
+    /**
+     * Kiểm tra đáp án đúng sai (AJAX)
+     */
+
+
+public function checkAnswer(Request $request)
+{
+    $questionId = $request->input('question_id');
+    $answerId = $request->input('answer_id');
+
+    if (!$questionId || !$answerId) {
+        return redirect()->back()->with('error', 'Thiếu thông tin câu hỏi hoặc đáp án.');
+    }
+
+    try {
+        $isCorrect = $this->userAnswerService->CheckCorrectAnswer($questionId, $answerId);
+
+        // Chuyển hướng lại với kết quả
+        return redirect()->back()->with([
+            'question_id' => $questionId,
+            'answer_id' => $answerId,
+            'is_correct' => $isCorrect,
+        ]);
+
+    } catch (\Throwable $e) {
+        return redirect()->back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+    }
+}
+
+}

@@ -1,0 +1,325 @@
+Khái quát dự án:
+Laravel Quiz + Course App là ứng dụng web cho phép người dùng tạo, quản lý và tham gia các bài kiểm tra trắc nghiệm, xây dựng khóa học trực tuyến, học qua flashcard, và theo dõi tiến độ học tập. Hệ thống hỗ trợ nhiều vai trò (user, admin, quizz_master) với phân quyền rõ ràng.
+
+Cấu trúc tổng quan dự án:
+- Backend: Laravel
+- Kiến trúc: Service Layer, Repository, Repository Interface
+Giao diện người dùng:
+
+
+1. Màn hình Đăng nhập:
+Email: Trường nhập liệu cho email.
+Mật khẩu: Trường nhập liệu cho mật khẩu.
+Nút Đăng nhập: Nút để gửi thông tin đăng nhập.
+Link "Quên mật khẩu": Liên kết đưa người dùng đến trang khôi phục mật khẩu.
+Link "Đăng ký": Liên kết đưa người dùng đến trang đăng ký tài khoản mới.
+2. Màn hình Đăng ký:
+Tên: Trường nhập liệu cho tên người dùng.
+Email: Trường nhập liệu cho email.
+Mật khẩu: Trường nhập liệu cho mật khẩu.
+Xác nhận mật khẩu: Trường nhập liệu để xác nhận lại mật khẩu.
+Nút Đăng ký: Nút để gửi thông tin đăng ký.
+Link "Đã có tài khoản? Đăng nhập": Liên kết đưa người dùng trở lại màn hình đăng nhập.
+3. Màn hình Bảng điều khiển (Dashboard):
+Thống kê tổng quan: Hiển thị các chỉ số quan trọng như số lượng bài quiz đã làm, điểm trung bình.
+Danh sách quiz đã làm gần đây: Hiển thị các bài quiz người dùng đã hoàn thành gần đây.
+Bảng xếp hạng top người chơi: Hiển thị danh sách những người chơi có điểm số cao nhất.
+4. Màn hình Danh sách Quiz:
+Tên Quiz: Tên của bài quiz.
+Mô tả: Mô tả ngắn gọn về bài quiz.
+Số câu hỏi: Số lượng câu hỏi trong bài quiz.
+Thời gian làm bài (nếu có): Giới hạn thời gian để hoàn thành bài quiz.
+Nút "Làm quiz": Nút để bắt đầu làm bài quiz.
+Nút "Xem kết quả": Nút để xem kết quả của bài quiz đã làm.
+Nút "Xem chi tiết" (dành cho Admin): Nút để quản trị viên xem chi tiết thông tin về bài quiz.
+5. Màn hình Chi tiết Quiz (dành cho Admin):
+Thông tin quiz: Hiển thị các thông tin cơ bản về bài quiz.
+Danh sách câu hỏi: Hiển thị tất cả các câu hỏi trong bài quiz.
+Thống kê kết quả: Thống kê kết quả làm bài của người dùng.
+Nút "Chỉnh sửa": Nút để chỉnh sửa thông tin bài quiz.
+Nút "Xóa": Nút để xóa bài quiz.
+6. Màn hình Quiz (khi làm bài):
+Tên Quiz: Tên của bài quiz đang làm.
+Mô tả: Mô tả về bài quiz.
+Bộ đếm thời gian (nếu có): Hiển thị thời gian còn lại.
+Thanh tiến độ: Hiển thị tiến độ hoàn thành bài quiz.
+Danh sách câu hỏi:
+Câu hỏi: Nội dung của câu hỏi.
+Ô nhập câu trả lời: Trường để người dùng nhập câu trả lời.
+Nút "Trả lời": Nút để gửi câu trả lời.
+Kết quả cuối cùng:
+Tổng điểm: Tổng số điểm đạt được.
+Số câu đúng/sai: Số lượng câu trả lời đúng và sai.
+Thời gian hoàn thành: Thời gian người dùng đã bỏ ra để hoàn thành bài quiz.
+Nút "Xem đáp án": Nút để xem đáp án đúng của các câu hỏi.
+Nút "Chia sẻ kết quả": Nút để chia sẻ kết quả lên mạng xã hội hoặc các nền tảng khác.
+7. Màn hình Danh sách Khóa học (Courses):
+Tên khóa học: Hiển thị tên từng khóa học.
+Mô tả: Mô tả ngắn gọn về khóa học.
+Tag: Thể loại hoặc chủ đề của khóa học.
+Số lượng bài học (Lesson): Hiển thị tổng số bài học trong khóa.
+Số lượng quiz: Tổng số quiz thuộc khóa học.
+Nút "Xem chi tiết": Chuyển đến trang chi tiết khóa học.
+Nút "Tham gia học" hoặc "Tiếp tục học": Bắt đầu hoặc tiếp tục học khóa này.
+Nút "Chỉnh sửa"/"Xóa" (dành cho Admin/Quizz Master): Quản lý khóa học.
+8. Màn hình Chi tiết Khóa học:
+Thông tin tổng quan: Tên, mô tả, tag, số lượng bài học, số lượng quiz.
+Danh sách bài học (Lesson): Hiển thị từng bài học trong khóa, trạng thái hoàn thành, nút "Vào học".
+Danh sách quiz: Liệt kê các quiz thuộc khóa học, trạng thái đã làm/chưa làm, nút "Làm quiz".
+Danh sách flashcard: Liệt kê các bộ flashcard thuộc khóa học/bài học.
+Tiến độ học tập: Thanh tiến trình thể hiện % hoàn thành khóa học.
+Nút "Chỉnh sửa"/"Xóa" (dành cho Admin/Quizz Master): Quản lý khóa học.
+9. Màn hình Bài học (Lesson):
+Tiêu đề bài học.
+Nội dung bài học: Văn bản, hình ảnh, video (nếu có).
+Danh sách quiz liên quan: Hiển thị các quiz thuộc bài học, nút "Làm quiz".
+Danh sách flashcard: Hiển thị các flashcard thuộc bài học, nút "Học flashcard".
+Nút "Đánh dấu hoàn thành": Đánh dấu bài học đã học xong.
+Nút "Ghi chú": Cho phép người dùng ghi chú cá nhân cho bài học.
+Nút "Chỉnh sửa"/"Xóa" (dành cho Admin/Quizz Master): Quản lý bài học.
+10. Màn hình Flashcard:
+Tiêu đề bộ flashcard (theo bài học hoặc khóa học).
+Danh sách flashcard: Hiển thị từng thẻ, có thể lật mặt trước/sau.
+Nút "Tiếp theo"/"Quay lại": Chuyển giữa các flashcard.
+Thanh tiến trình: Hiển thị số flashcard đã học/đã xem.
+Nút "Thêm flashcard" (dành cho Admin/Quizz Master): Thêm flashcard mới vào bộ.
+Nút "Chỉnh sửa"/"Xóa" flashcard (dành cho Admin/Quizz Master).
+11. Màn hình Quản lý nội dung (Admin/Quizz Master):
+Quản lý quiz: Danh sách quiz, nút thêm/sửa/xóa quiz.
+Quản lý câu hỏi: Danh sách câu hỏi theo quiz, nút thêm/sửa/xóa câu hỏi.
+Quản lý khóa học: Danh sách khóa học, nút thêm/sửa/xóa khóa học.
+Quản lý bài học: Danh sách bài học theo khóa, nút thêm/sửa/xóa bài học.
+Import quiz: Nút nhập quiz từ file Excel/CSV/TXT.
+Clone quiz/câu hỏi: Nút tạo bản sao quiz/câu hỏi để chỉnh sửa.
+12. Màn hình Thống kê & Dashboard (Admin/Quizz Master):
+Thống kê tổng số quiz, số lượng người dùng, số lượt làm quiz.
+Thống kê từng quiz: Số lượt làm, điểm trung bình, câu sai nhiều nhất.
+Thống kê khóa học: Số học viên, tiến độ trung bình, quiz phổ biến nhất.
+Bảng xếp hạng (leaderboard): Top người học theo điểm số, số quiz đã làm.
+Biểu đồ tiến độ học tập, biểu đồ điểm số.
+13. Màn hình Lịch sử học tập:
+Danh sách các khóa học/quiz đã tham gia.
+Số lần làm quiz, điểm cao nhất, tiến độ học tập.
+Nút "Xem lại kết quả", "Làm lại quiz", "Xem chi tiết khóa học".
+14. Màn hình Ghi chú cá nhân:
+Danh sách ghi chú theo bài học hoặc flashcard.
+Nút "Thêm ghi chú", "Sửa", "Xóa" ghi chú.
+Hiển thị ghi chú khi học bài hoặc ôn flashcard.
+16. Màn hình Bình luận/Thảo luận:
+Danh sách bình luận theo quiz hoặc bài học.
+Form nhập bình luận mới.
+Nút "Trả lời", "Xóa" (nếu là admin/quizz master hoặc chủ bình luận).
+
+
+
+
+Kỹ thuật:Cơ sở dữ liệu:
+
+
+1. Bảng `users` (sử dụng bảng `users` của Laravel):
+`id`: Khóa chính, tự động tăng.
+`name`: Tên người dùng.
+`email`: Email người dùng (duy nhất).
+`password`: Mật khẩu đã mã hóa.
+`role`: Vai trò của người dùng (`enum`: 'user', 'admin', 'quizz_manager').
+`avatar`: Đường dẫn đến ảnh đại diện của người dùng.
+`created_at`: Thời gian tạo bản ghi.
+`updated_at`: Thời gian cập nhật bản ghi cuối cùng.
+2. Bảng `quizzes` (tạo mới):
+`id`: Khóa chính, tự động tăng.
+`name`: Tên bài quiz.
+`description`: Mô tả bài quiz.
+`code`: Mã duy nhất của bài quiz.
+`time_limit`: Thời gian giới hạn làm bài (đơn vị phút, có thể null).
+‘Catalogs’: phân loại quiz
+`is_public`: Trạng thái công khai của quiz (boolean).
+`created_by`: ID của người tạo quiz (khóa ngoại liên kết với bảng `users`).
+‘Lesson_id ’ : liên kết với bài học (có thể null để tạo quizz lẻ)
+3. Bảng `questions` (tạo mới):
+`id`: Khóa chính, tự động tăng.
+`quiz_id`: Khóa ngoại, liên kết với bảng `quizzes`.
+`question`: Nội dung câu hỏi (kiểu text).
+‘picture’ :hình ảnh minh họa.
+`order`: Thứ tự của câu hỏi trong bài quiz (số nguyên).
+4. Bảng `answers` (tạo mới):
+`id`: Khóa chính, tự động tăng.
+`question_id`: Khóa ngoại, liên kết với bảng `questions`.
+`answer`: Nội dung câu trả lời (kiểu text).
+`is_correct`: Xác định câu trả lời đúng (kiểu boolean).
+5. Bảng `results` (tạo mới):
+`id`: Khóa chính, tự động tăng.
+`user_id`: Khóa ngoại, liên kết với bảng `users`.
+`quiz_id`: Khóa ngoại, liên kết với bảng `quizzes`.
+`score`: Điểm số đạt được (kiểu số).
+`time_taken`: Thời gian hoàn thành bài quiz (đơn vị giây).
+`completed_at`: Thời gian hoàn thành bài quiz.
+6. Bảng `user_answers` (tạo mới):
+`id`: Khóa chính, tự động tăng.
+`result_id`: Khóa ngoại, liên kết với bảng `results`.
+`question_id`: Khóa ngoại, liên kết với bảng `questions`.
+`answer`: Câu trả lời của người dùng (kiểu text).
+`is_correct`: Xác định câu trả lời của người dùng có đúng không (boolean).
+`created_at`: Thời gian tạo bản ghi.
+`updated_at`: Thời gian cập nhật bản ghi cuối cùng.
+7. Bảng `flashcard`:
+`id`: Khóa chính, tự động tăng.
+`front`: Nội dung mặt trước của flashcard.
+`back`: Nội dung mặt sau của flashcard.
+`lesson_id`: Khóa ngoại, liên kết với bảng `lessons`.
+8. Bảng `course`:
+`id`: Khóa chính, tự động tăng.
+`name`: Tên khóa học.
+`description`: Mô tả khóa học.
+`image`: Đường dẫn đến ảnh bìa khóa học (có thể null).
+`slug`: Chuỗi định danh URL thân thiện (duy nhất).
+`created_by`: ID của người tạo khóa học (khóa ngoại liên kết với bảng `users`).
+`created_at`: Thời gian tạo bản ghi.
+`updated_at`: Thời gian cập nhật bản ghi cuối cùng.
+ 9. Bảng `lessons`:
+`id`: Khóa chính, tự động tăng.
+`course_id`: Khóa ngoại, liên kết với bảng `course`.
+`title`: Tiêu đề bài học.
+`content`: Nội dung bài học (kiểu text).
+`youtube_url`: URL video Youtube (có thể null).
+`order_index`: Thứ tự bài học trong khóa học.
+`created_at`: Thời gian tạo bản ghi.
+`updated_at`: Thời gian cập nhật bản ghi cuối cùng.
+10. Bảng `tags`:
+`id`: Khóa chính, tự động tăng.
+`name`: Tên thẻ (tag).
+12. Bảng `catalogs` :
+`id`: Khóa chính, tự động tăng.
+`name`: Tên danh mục.
+
+
+13. Bảng `progress`:
+`id`: Khóa chính, tự động tăng.
+`user_id`: Khóa ngoại, liên kết với bảng `users`.
+`course_id`: Khóa ngoại, liên kết với bảng `course`.
+`lesson_id`: Khóa ngoại, liên kết với bảng `lessons` (có thể null nếu chỉ theo dõi tiến độ khóa học chung).
+`progress_percent`: Phần trăm tiến độ hoàn thành (số nguyên từ 0-100).
+`last_viewed_at`: Thời gian xem gần đây nhất.
+
+ Luồng hoạt động của trang tạo khóa học
+
+-Trang tạo khóa học hoạt động theo trình tự các bước như sau, tất cả đều nằm trong một form duy nhất, giúp người dùng có thể nhập liệu từng bước, lưu tạm trên trình duyệt và submit toàn bộ lên server khi hoàn thành.
+
+
+bước 1: Xác nhận chuyên môn
+-Hệ thống hiển thị màn hình đầu tiên, hỏi người dùng về mức độ chuyên môn trong lĩnh vực định giảng dạy.
+
+-Người dùng chọn mức độ phù hợp (Beginner, Intermediate, Expert).
+
+-Nhấn “Next Step” để chuyển sang bước tiếp theo.
+
+Bước 2: 
+-Nhập thông tin cơ bản khóa học
+Gồm các trường sau:
+
++Tên khóa học
+
++Mô tả ngắn gọn
+
++Ảnh đại diện khóa học (upload hoặc chọn)
+
++Lĩnh vực chuyên môn (chọn từ danh sách có sẵn)
+
+Nhấn “Next Step” để tiếp tục.
+	
+Bước 3: Lên kế hoạch và tạo nội dung khóa học
+🔹 Plan your course
+-Người tạo điền các thông tin:
+
+-Học viên sẽ nhận được gì sau khóa học?
+
+-Khóa học phù hợp với đối tượng nào?
+
+-Yêu cầu kiến thức/kỹ năng trước khi học là gì?
+
+🔹 Create content
+-Cho phép tạo cấu trúc nội dung khóa học theo dạng:
+
+-Section (Chương)
+
+-Trong mỗi section có nhiều Lesson (Bài học)
+
+-Hỗ trợ thao tác: thêm/xóa/sửa Section & Lesson ngay trên giao diện.
+
+-Hệ thống có thể lưu tạm nội dung này trên máy người dùng (localStorage) phòng trường hợp mất kết nối hoặc tải lại trang.
+b4 
+Bước 4: Chứng minh chuyên môn
+Nếu người dùng chọn mức độ chuyên môn cao (Expert), hệ thống yêu cầu:
+
+Tải lên chứng chỉ chuyên môn hoặc
+
+Liên kết đến hồ sơ chuyên gia (LinkedIn, CV, v.v.)
+
+Nhấn “Next Step” để chuyển sang bước kiểm tra.
+
+Bước 5: Xem lại và xác nhận
+Toàn bộ nội dung khóa học được hiển thị dưới dạng bản xem trước.
+
+Người dùng kiểm tra lại đầy đủ trước khi nhấn Submit để gửi về server.
+
+
+Giao diện sidebar
+Tạo lại thanh điều hướng bên trái (sidebar) để hiển thị các bước:
+
+
+-Thông tin khóa học
+
+-Nội dung
+
+-Chuyên môn
+
+-Kiểm tra & Submit(là phần nhắn tin phản hồi của admin về tình trạng kiểm tra và dánh giá)
+
+Mỗi bước có thể click để quay lại sửa nội dung đã nhập.
+
+
+
+thêm bảng ngôn ngữ
+tạo them bang level , popular cho course 
+
+
+
+theem role instructor 
+
+
+mô tả chức năng: 
+quizz manager có thể tạo quizz lẻ hoặc tạo course . trong course thì lại có nhiều quizz và lessons và flashcard
+ 
+Các tính năng chính:
+Hỗ trợ học viên
+| Tính năng                    | Mô tả                                                            |
+| ---------------------------- | ---------------------------------------------------------------- |
+1| **Lịch sử học tập**          | Xem các khóa học/quiz đã tham gia, số lần làm, điểm cao nhất.    |
+3| **Bookmark**                 | Đánh dấu câu hỏi hoặc bài học để ôn lại.                         |
+4| **Chế độ ôn tập thông minh** | Gợi ý ôn lại quiz dựa trên lỗi sai trước đó (spaced repetition). |
+5| **Quiz Practice Mode**       | Làm quiz thử không tính điểm, xem đáp án từng câu.               |
+6| **Quiz Review Mode**         | Xem lại các câu đã làm, kèm đáp án và lời giải.                  |
+
+Quản lý và tạo nội dung (Admin / Quizz Master)
+| Tính năng                         | Mô tả                                                |
+| --------------------------------- | ---------------------------------------------------- |
+9| **Clone quiz hoặc câu hỏi**       | Tạo bản sao quiz để chỉnh sửa.                       |
+10| **Phân quyền người tạo nội dung** | Cho phép nhiều quizz master tạo trong cùng khóa học. |
+11| **Phân loại độ khó quiz/câu hỏi** | Thêm cột difficulty và tag.                          |
+12| **Thêm giải thích câu hỏi**       | Hiển thị lời giải sau khi làm bài.                   |
+
+Thống kê và đánh giá
+| Tính năng                       | Mô tả                                             |
+| ------------------------------- | ------------------------------------------------- |
+13| **Dashboard học viên**          | Số quiz đã làm, điểm trung bình, tiến độ học tập. |
+14| **Dashboard khóa học**          | Tổng số quiz, lượt tham gia, quiz phổ biến nhất.  |
+15| **Thống kê từng quiz**          | Số lượt làm, câu sai nhiều, điểm trung bình.      |
+16| **Bảng xếp hạng (leaderboard)** | Xếp hạng người học theo điểm cao.                 |
+
+Hỗ trợ cộng đồng / chia sẻ
+| Tính năng                    | Mô tả                                  |
+| ---------------------------- | -------------------------------------- |
+17| **Bình luận quiz / bài học** | Cho phép thảo luận hoặc hỏi đáp.       |
+18| **Chia sẻ quiz / flashcard** | Gửi link public, nhúng iframe.         |
+19| **Bộ đề công khai theo tag** | Người dùng tìm kiếm bộ đề theo chủ đề. |
+
+

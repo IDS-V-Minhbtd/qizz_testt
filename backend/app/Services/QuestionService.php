@@ -1,0 +1,279 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Question;
+use Illuminate\Support\Facades\DB;
+use App\Repositories\Interfaces\AnswerRepositoryInterface;
+use App\Repositories\Interfaces\QuestionRepositoryInterface;
+use App\Repositories\Interfaces\QuizRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
+use Exception;
+
+class QuestionService
+{
+    public function __construct(
+        protected QuestionRepositoryInterface $questionRepo,
+        protected QuizRepositoryInterface $quizRepo,
+        protected AnswerRepositoryInterface $answerRepo
+    ) {}
+
+    // Đảm bảo thứ tự không trùng khi tạo mới
+    public function createQuestion(array $data): Question
+    {
+        $this->ensureUniqueOrder($data['quiz_id'], $data['order']);
+        Log::info('Tạo câu hỏi:', $data);
+        return $this->questionRepo->create([
+            'quiz_id'  => $data['quiz_id'],
+            'question' => $data['question'],
+            'order'    => $data['order'] ?? 0,
+            'type'     => $data['answer_type'],
+            'image'    => $data['image'] ?? null, // đổi từ picture sang image
+        ]);
+    }
+
+    // Đảm bảo thứ tự không trùng khi cập nhật
+    public function updateQuestion(int $questionId, array $data): void
+    {
+        $question = $this->questionRepo->findById($questionId);
+        if ($question && $question->order != $data['order']) {
+            $this->ensureUniqueOrder($data['quiz_id'], $data['order'], $questionId);
+        }
+        $this->questionRepo->update($questionId, [
+            'quiz_id'  => $data['quiz_id'],
+            'question' => $data['question'],
+            'order'    => $data['order'] ?? 0,
+            'type'     => $data['answer_type'],
+            'image'    => $data['image'] ?? $question->image, // đổi từ picture sang image
+        ]);
+    }
+
+    public function createAnswersForQuestion(int $questionId, array $data): void
+    {
+        $answerType = $data['answer_type'] ?? null;
+
+        if ($answerType === 'multiple_choice') {
+            $this->validateMultipleChoiceAnswers($data);
+
+            foreach ($data['answers'] as $id => $answer) {
+                // Đảm bảo $answer là mảng và có key 'text'
+                if (is_array($answer) && array_key_exists('text', $answer) && !empty(trim($answer['text']))) {
+                    $isCorrect = ((string)$data['correct_answer'] === (string)$id);
+                    Log::info('Chuẩn bị tạo đáp án', [
+                        'question_id' => $questionId,
+                        'answer_text' => $answer['text'],
+                        'correct_answer' => $data['correct_answer'],
+                        'id' => $id,
+                        'is_correct' => $isCorrect
+                    ]);
+                    try {
+                        $this->answerRepo->create([
+                            'question_id' => $questionId,
+                            'answer' => $answer['text'],
+                            'is_correct' => $isCorrect,
+                        ]);
+                        Log::info('Đáp án đã được lưu', ['answer_text' => $answer['text']]);
+                    } catch (\Exception $e) {
+                        Log::error('Lỗi khi lưu đáp án: ' . $e->getMessage(), [
+                            'answer_text' => $answer['text'],
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        throw $e; // Ném lỗi để transaction rollback
+                    }
+                }
+            }
+
+        } elseif ($answerType === 'text_input') {
+            $this->validateTextInputAnswer($data);
+
+            $this->answerRepo->create([
+                'question_id' => $questionId,
+                'answer' => $data['text_answer'],
+                'is_correct' => true,
+            ]);
+
+        } elseif ($answerType === 'true_false') {
+            $this->validateTrueFalseAnswer($data);
+
+            $correct = (int)$data['correct_answer'] === 1;
+            $this->answerRepo->createMany([
+                ['question_id' => $questionId, 'answer' => 'Đúng', 'is_correct' => $correct],
+                ['question_id' => $questionId, 'answer' => 'Sai', 'is_correct' => !$correct],
+            ]);
+
+        } else {
+            throw new Exception('Loại câu hỏi không hợp lệ.');
+        }
+    }
+
+    public function updateAnswersForQuestion(int $questionId, array $data): void
+    {
+        $this->answerRepo->deleteByQuestionId($questionId);
+        $this->createAnswersForQuestion($questionId, $data);
+    }
+
+    public function createWithAnswers(array $data): Question
+    {
+        return DB::transaction(function () use ($data) {
+
+            $question = $this->createQuestion($data);
+            $this->createAnswersForQuestion($question->id, $data);
+            return $this->questionRepo->findById($question->id);
+        });
+    }
+
+    public function updateWithAnswers(int $questionId, array $data): Question
+    {
+        return DB::transaction(function () use ($questionId, $data) {
+            if (request()->hasFile('image')) { // đổi từ picture sang image
+                $path = request()->file('image')->store('questions', 'public');
+                $data['image'] = $path;
+            }
+
+            $this->updateQuestion($questionId, $data);
+            $this->updateAnswersForQuestion($questionId, $data);
+            return $this->questionRepo->findById($questionId);
+        });
+    }
+    public function getById(int $id)
+    {
+        return $this->questionRepo->findById($id);
+    }
+
+    public function delete(int $id)
+    {
+        return $this->questionRepo->delete($id);
+    }
+
+    public function getByQuizId(int $quizId)
+    {
+        return $this->questionRepo->findByQuizId($quizId); 
+    }
+
+    public function getAnswerByQuestionId(int $questionId)
+    {
+        return $this->answerRepo->getByQuestionId($questionId);
+    }
+
+    public function getByQuizIdAndQuestionId(int $quizId, int $questionId)
+    {
+        return $this->questionRepo->findByQuizIdAndQuestionId($quizId, $questionId);
+    }
+
+    public function getQuizById(int $quizId)
+    {
+        return $this->quizRepo->findById($quizId);
+    }
+
+    public function paginateByQuizId(int $quizId, int $perPage = 10): LengthAwarePaginator
+    {
+        return $this->questionRepo->paginateByQuizId($quizId, $perPage);
+    }
+
+    protected function validateMultipleChoiceAnswers(array $data): void
+    {
+        if (!isset($data['answers']) || count($data['answers']) < 2) {
+            throw new \Exception('Cần ít nhất hai đáp án.');
+        }
+
+        $correctAnswerId = $data['correct_answer'] ?? null;
+
+        // Sửa: kiểm tra key tồn tại bằng array_key_exists
+        if ($correctAnswerId === null || !array_key_exists($correctAnswerId, $data['answers'])) {
+            throw new \Exception('Đáp án đúng không hợp lệ.');
+        }
+    }
+
+    protected function validateTextInputAnswer(array $data): void
+    {
+        if (empty(trim($data['text_answer'] ?? ''))) {
+            throw new Exception('Đáp án văn bản không được để trống.');
+        }
+    }
+
+    protected function validateTrueFalseAnswer(array $data): void
+    {
+        if (!in_array($data['correct_answer'] ?? '', ['0', '1'], true)) {
+            throw new Exception('Đáp án đúng cho câu hỏi Đúng/Sai không hợp lệ.');
+        }
+    }
+
+    public function getTotalQuestionByQuizId(int $quizId): int
+    {
+        return $this->questionRepo->countByQuizId($quizId);
+    }
+    
+    // Hàm xử lý order không trùng
+    protected function ensureUniqueOrder($quizId, $order, $ignoreQuestionId = null)
+    {
+        $query = $this->questionRepo->query()
+            ->where('quiz_id', $quizId)
+            ->where('order', '>=', $order);
+
+        if ($ignoreQuestionId) {
+            $query->where('id', '!=', $ignoreQuestionId);
+        }
+
+        $questions = $query->orderBy('order')->get();
+
+        foreach ($questions as $q) {
+            $q->order++; 
+            $q->save();
+        }
+    }
+    public function search(string $keyword = null)
+    {
+        return $this->questionRepo->search($keyword);
+    }
+
+
+
+    // Hàm import câu hỏi từ file CSV,txt
+    public function import(Request $request, $quizId)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt',
+        ]);
+
+        $path = $request->file('file')->getRealPath();
+        $file = fopen($path, 'r');
+
+        $header = fgetcsv($file); // Skip header row
+        $order = 1;
+
+        while (($row = fgetcsv($file)) !== false) {
+            // Check if all required columns exist
+            if (count($row) < 6) continue;
+            [$questionText, $a, $b, $c, $d, $correct] = $row;
+
+            // Defensive: check each answer exists
+            $choices = [];
+            foreach (['A', 'B', 'C', 'D'] as $i => $label) {
+                if (isset($row[$i+1])) {
+                    $choices[$label] = $row[$i+1];
+                }
+            }
+
+            if (!$questionText || count($choices) < 2 || !isset($row[5]) || !isset($choices[strtoupper($row[5])])) continue;
+
+            $question = Question::create([
+                'quiz_id' => $quizId,
+                'question' => $questionText,
+                'order' => $order++,
+                'answer_type' => 'single', // hoặc xử lý từ cột
+            ]);
+
+            foreach ($choices as $key => $text) {
+                Answer::create([
+                    'question_id' => $question->id,
+                    'answer' => $text,
+                    'is_correct' => ($key == strtoupper($correct)),
+                ]);
+            }
+        }
+
+        fclose($file);
+    }
+
+}
