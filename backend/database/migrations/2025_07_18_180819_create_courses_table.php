@@ -13,18 +13,22 @@ return new class extends Migration
      */
     public function up()
     {
-    Schema::create('courses', function (Blueprint $table) {
-    $table->id();
-    $table->string('name');
-    $table->text('description')->nullable();
-    $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-    $table->timestamps();
-    $table->foreignId('tag_id')->nullable()->constrained('tags')->nullOnDelete();
-    $table->string('image')->nullable();
-    $table->string('slug')->unique();
-});
-
-
+        Schema::create('courses', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('image')->nullable();
+            $table->unsignedBigInteger('created_by');
+            $table->unsignedBigInteger('field_id')->nullable(); // Cần thêm cột này
+            $table->string('level')->nullable();
+            $table->text('target')->nullable();
+            $table->text('requirement')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->timestamps();
+        
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('field_id')->references('id')->on('tags')->nullOnDelete();
+        });
     }
 
     /**

@@ -19,9 +19,11 @@ return new class extends Migration
     $table->text('description')->nullable();
     $table->integer('time_limit')->nullable();
     $table->boolean('is_public')->default(false);
-    $table->boolean('popular')->default(false);
+    $table->boolean('popular')->default(0);
     $table->foreignId('lesson_id')->nullable()->constrained()->nullOnDelete();
     $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+    $table->foreignId('catalog_id')->nullable()->constrained()->nullOnDelete();
+    $table->string('code')->nullable();
     $table->timestamps();
 });
 

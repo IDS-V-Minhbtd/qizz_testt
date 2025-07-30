@@ -18,6 +18,8 @@ class Quiz extends Model
         'created_by',
         'code',
         'catalog_id',
+        'lesson_id',   // thêm dòng này
+        'popular',     // thêm dòng này
     ];
 
     // Một quiz thuộc về một catalog

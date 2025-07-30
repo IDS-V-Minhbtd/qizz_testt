@@ -7,7 +7,7 @@ use App\Http\Requests\QuizRequest;
 use App\Services\QuizService;
 use App\Models\Answer;
 
-class QuizController extends Controller
+class QuizApiController extends Controller
 {
     protected $quizService;
 
@@ -18,17 +18,26 @@ class QuizController extends Controller
 
     public function index()
     {
-        $quizzes = $this->quizService->getAllQuizzes();
-        return response()->json($quizzes);
+        $quizzes = $this->quizService->getAll();
+        return response()->json([
+            'status' => 'success',
+            'data' => $quizzes
+        ]);
     }
 
     public function show($id)
     {
-        $quiz = $this->quizService->getQuizById($id);
+        $quiz = $this->quizService->getById($id);
         if (!$quiz) {
-            return response()->json(['message' => 'Quiz not found'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Quiz not found'
+            ], 404);
         }
-        return response()->json($quiz);
+        return response()->json([
+            'status' => 'success',
+            'data' => $quiz
+        ]);
     }
     public function create(Request $request)
     {
@@ -38,8 +47,12 @@ class QuizController extends Controller
             'duration' => 'required|integer|min:1',
         ]);
 
-        $quiz = $this->quizService->createQuiz($validatedData);
-        return response()->json($quiz, 201);
+        $quiz = $this->quizService->create($validatedData);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Quiz created successfully!',
+            'data' => $quiz
+        ], 201);
     }
     public function update(Request $request, $id)
     {
@@ -49,18 +62,30 @@ class QuizController extends Controller
             'duration' => 'required|integer|min:1',
         ]);
 
-        $quiz = $this->quizService->updateQuiz($id, $validatedData);
-        if (!$quiz) {
-            return response()->json(['message' => 'Quiz not found'], 404);
+        $updated = $this->quizService->update($id, $validatedData);
+        if (!$updated) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Quiz not found'
+            ], 404);
         }
-        return response()->json($quiz);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Quiz updated successfully!'
+        ]);
     }
     public function destroy($id)
     {
-        $deleted = $this->quizService->deleteQuiz($id);
+        $deleted = $this->quizService->delete($id);
         if (!$deleted) {
-            return response()->json(['message' => 'Quiz not found'], 404);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Quiz not found'
+            ], 404);
         }
-        return response()->json(['message' => 'Quiz deleted successfully']);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Quiz deleted successfully!'
+        ]);
     }
 }
