@@ -25,7 +25,6 @@ return new class extends Migration
             $table->text('requirement')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
-        
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('field_id')->references('id')->on('tags')->nullOnDelete();
         });
