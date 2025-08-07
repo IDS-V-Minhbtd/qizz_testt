@@ -6,6 +6,7 @@ use App\Models\Quiz;
 use App\Models\Catalog;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class QuizRepository implements QuizRepositoryInterface
 {
@@ -58,6 +59,10 @@ class QuizRepository implements QuizRepositoryInterface
     public function getByCreatorId(int $userId): LengthAwarePaginator
     {
         return Quiz::where('created_by', $userId)->paginate(10);
+    }
+    public function getCatalogs(): iterable
+    {
+        return Catalog::all();
     }
 
 }

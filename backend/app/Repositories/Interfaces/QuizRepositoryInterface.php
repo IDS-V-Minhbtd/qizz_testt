@@ -15,4 +15,5 @@ interface QuizRepositoryInterface
     public function delete(int $id): bool;
     public function search(string $keyword = null): LengthAwarePaginator;
     public function getByCreatorId(int $userId): LengthAwarePaginator;
+    public function getCatalogs(): iterable;
 }

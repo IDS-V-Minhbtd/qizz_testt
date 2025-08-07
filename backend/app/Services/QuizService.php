@@ -52,6 +52,10 @@ class QuizService
     {
         return $this->quizRepo->getByCreatorId($userId);
     }
+    public function getCatalogs(): iterable
+    {
+        return $this->quizRepo->getCatalogs();
+    }
 
 
   

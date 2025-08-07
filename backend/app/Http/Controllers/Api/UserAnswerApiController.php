@@ -2,86 +2,167 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\UserAnswerService;
+use App\Services\QuizService;
 use App\Services\ResultService;
-use App\Models\Answer;
+use App\Http\Resources\ResultResource;
+use App\Http\Resources\UserAnswerResource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 
 class UserAnswerApiController extends Controller
 {
     protected $userAnswerService;
+    protected $quizService;
     protected $resultService;
 
-    public function __construct(UserAnswerService $userAnswerService, ResultService $resultService)
-    {
+    public function __construct(
+        UserAnswerService $userAnswerService,
+        QuizService $quizService,
+        ResultService $resultService
+    ) {
         $this->userAnswerService = $userAnswerService;
+        $this->quizService = $quizService;
         $this->resultService = $resultService;
     }
 
-    // Kiểm tra câu trả lời đúng/sai
-    public function checkAnswer(Request $request)
+    /**
+     * Lấy thông tin quiz để bắt đầu làm bài
+     */
+    public function start($quizId)
     {
-        $validated = $request->validate([
-            'question_id' => 'required|exists:questions,id',
-            'answer_id' => 'required|exists:answers,id',
-        ]);
+        $quiz = $this->quizService->getById($quizId);
 
-        $questionId = $validated['question_id'];
-        $answerId = $validated['answer_id'];
-
-        // Fetch the correct answer for the question
-        $correctAnswer = $this->answerRepo->getByQuestionId($questionId)
-            ->firstWhere('is_correct', true);
-
-        if (!$correctAnswer) {
+        if (!$quiz || !$quiz->is_public) {
             return response()->json([
                 'success' => false,
-                'message' => 'No correct answer found for this question.',
-            ], 400);
+                'message' => 'Quiz không khả dụng.'
+            ], 404);
         }
 
-        // Check if the provided answer is correct
-        $isCorrect = $correctAnswer->id === $answerId;
+        // Lấy câu hỏi và đáp án, xáo trộn câu hỏi
+        $questions = $quiz->questions()->with(['answers' => function ($q) {
+            $q->select('id', 'question_id', 'answer', 'is_correct');
+        }])->orderBy('order')->get()->shuffle()->values();
 
         return response()->json([
             'success' => true,
-            'correct' => $isCorrect,
-            'message' => $isCorrect ? 'Correct answer!' : 'Wrong answer!',
-        ]);
+            'data' => [
+                'quiz' => [
+                    'id' => $quiz->id,
+                    'name' => $quiz->name,
+                    'description' => $quiz->description,
+                    'time_limit' => $quiz->time_limit,
+                ],
+                'questions' => $questions
+            ]
+        ], 200);
     }
 
-    // Nộp toàn bộ kết quả quiz
-    public function submit(Request $request)
-{
-    $data = $request->validate([
-        'quiz_id' => 'required|integer|exists:quizzes,id',
-        'score' => 'required|integer',
-        'time_taken' => 'required|integer',
-        'answers' => 'required|array',
-        'answers.*.question_id' => 'required|integer|exists:questions,id',
-        'answers.*.answer_id' => 'required|integer|exists:answers,id',
-        'answers.*.is_correct' => 'required|boolean',
-    ]);
+    /**
+     * Gửi bài làm và lưu kết quả
+     */
+    public function submit(Request $request, $quizId)
+    {
+        $userId = Auth::id();
+        $answers = $request->input('answers');
+        $timeTaken = $request->input('time_taken');
 
-    $userId = Auth::id();
+        if (!is_array($answers)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ.'
+            ], 400);
+        }
 
-    // ✅ Tạo result trước
-    $result = $this->resultService->createResult($data);
+        try {
+            $result = $this->resultService->submitQuizAndSaveResult($quizId, $answers, $userId, $timeTaken);
+            $this->userAnswerService->updatePopularCountForAllQuizzes();
 
-    // ✅ Lưu từng câu trả lời
-    foreach ($data['answers'] as $answer) {
-        $this->userAnswerService->saveAnswer([
-            'quiz_id' => $data['quiz_id'],
-            'question_id' => $answer['question_id'],
-            'answer_id' => $answer['answer_id'],
-            'user_id' => $userId,
-            'is_correct' => $answer['is_correct'],
-            'result_id' => $result->id,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Nộp bài thành công!',
+                'data' => new ResultResource($result)
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Submit quiz error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    return response()->json(['result_id' => $result->id], 201);
-}
+    /**
+     * Lấy kết quả quiz theo result_id
+     */
+    public function result($resultId)
+    {
+        $result = $this->resultService->getResultById($resultId);
 
+        if (!$result || $result->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy kết quả.'
+            ], 404);
+        }
+
+        $result->load('quiz', 'userAnswers.question', 'userAnswers.answer');
+        return new ResultResource($result);
+    }
+
+    /**
+     * Lấy kết quả quiz theo quiz_id
+     */
+    public function resultByQuiz($quizId)
+    {
+        $userId = Auth::id();
+        $result = $this->resultService->getResultWithAnswers($quizId, $userId);
+
+        if (!$result) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy kết quả.'
+            ], 404);
+        }
+
+        $result->load('quiz', 'userAnswers.question', 'userAnswers.answer');
+        return new ResultResource($result);
+    }
+
+    /**
+     * Kiểm tra đáp án đúng/sai (AJAX)
+     */
+    public function checkAnswer(Request $request)
+    {
+        $questionId = $request->input('question_id');
+        $answerId = $request->input('answer_id');
+
+        if (!$questionId || !$answerId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Thiếu thông tin câu hỏi hoặc đáp án.'
+            ], 400);
+        }
+
+        try {
+            $isCorrect = $this->userAnswerService->CheckCorrectAnswer($questionId, $answerId);
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'question_id' => $questionId,
+                    'answer_id' => $answerId,
+                    'is_correct' => $isCorrect
+                ]
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Check answer error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

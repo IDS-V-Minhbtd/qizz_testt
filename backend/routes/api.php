@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\Api\QuizApiController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\CourseController;
@@ -139,4 +140,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::get('/pending', [AdminController::class, 'pendingContent']);
     Route::post('/approve/{type}/{id}', [AdminController::class, 'approve']);
     Route::post('/reject/{type}/{id}', [AdminController::class, 'reject']);
+});
+
+// ========== QUIZ API WITH THROTTLE ==========
+Route::middleware('throttle:60,1')->group(function () {
+    Route::apiResource('quiz', QuizApiController::class);
 });

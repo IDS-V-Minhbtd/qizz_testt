@@ -47,4 +47,23 @@ class Handler extends ExceptionHandler
             //
         });
     }
+public function render($request, Throwable $exception)
+{
+    if ($request->expectsJson()) {
+        $status = 500;
+        if ($exception instanceof \Illuminate\Validation\ValidationException) {
+            $status = 422;
+        } elseif ($exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+            $status = 404;
+        }
+        return response()->json([
+            'status' => 'error',
+            'message' => $exception->getMessage()
+        ], $status);
+    }
+    return parent::render($request, $exception);
+}
+
+
+
 }

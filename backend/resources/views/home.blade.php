@@ -23,16 +23,8 @@
 
             {{-- Hiển thị tối đa 4 catalog, sắp xếp theo popular --}}
             @php
-                /**
-                 * Sắp xếp catalog theo popular giảm dần, lấy tối đa 4 catalog đầu tiên.
-                 *
-                 * @param \Illuminate\Support\Collection $catalogs
-                 * @return \Illuminate\Support\Collection
-                 */
-                function getSortedCatalogs($catalogs) {
-                    return $catalogs->sortByDesc('popular')->take(4);
-                }
-                $sortedCatalogs = getSortedCatalogs($catalogs);
+                // Sắp xếp catalog theo popular giảm dần, lấy tối đa 4 catalog đầu tiên.
+                $sortedCatalogs = $catalogs->sortByDesc('popular')->take(4);
             @endphp
             @foreach ($sortedCatalogs as $catalog)
                 @if ($catalog->quizzes->isNotEmpty())

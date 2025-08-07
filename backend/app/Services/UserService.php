@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\Interfaces\ResultRepositoryInterface;
 use App\Repositories\Interfaces\QuizRepositoryInterface;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class UserService
 {
@@ -21,19 +24,28 @@ class UserService
         QuizRepositoryInterface $quizRepo
     ) {
         $this->userRepo = $userRepo;
-        $this->resultRepo = $resultRepo; 
+        $this->resultRepo = $resultRepo;
         $this->quizRepo = $quizRepo;
     }
 
-    // Lấy danh sách user có phân trang
     public function listUsers($perPage = 10)
     {
         return $this->userRepo->paginate($perPage);
     }
 
-    // Tạo user mới, hash password tự động
-    public function create(array $data)
+    public function getUserById(int $id)
     {
+        return $this->userRepo->findById($id);
+    }
+
+    public function createUser(array $data)
+    {
+        if (!isset($data['role_id'])) {
+            $data['role_id'] = 2; // Default role
+        }
+
+        $data['username'] = $data['name']; // Nếu DB dùng username
+
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
@@ -41,9 +53,18 @@ class UserService
         return $this->userRepo->create($data);
     }
 
-    // Cập nhật user, hash password nếu có thay đổi
-    public function update(int $id, array $data): bool
+    public function updateUser(int $id, array $data): bool
     {
+        $user = $this->getUserById($id);
+        if (!$user) {
+            throw new \Exception('User not found');
+        }
+
+        if (isset($data['role_id'])) {
+            $data['role'] = $data['role_id'] == 1 ? 'admin' : 'user';
+            unset($data['role_id']);
+        }
+
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
@@ -53,52 +74,63 @@ class UserService
         return $this->userRepo->update($id, $data);
     }
 
-    // Xóa user
     public function delete(int $id): bool
     {
+        $user = $this->getUserById($id);
+        if (!$user) {
+            throw new \Exception('User not found');
+        }
+
         return $this->userRepo->delete($id);
     }
 
-    // Lấy user theo id
-    public function getUserById(int $id)
-    {
-        return $this->userRepo->findById($id);
-    }
-
-    // Tìm user theo username
     public function findByUsername(string $username)
     {
         return $this->userRepo->findByUsername($username);
     }
 
-    // Lấy profile user hiện tại
     public function getProfile()
     {
         $user = Auth::user();
+        if (!$user) {
+            throw new \Exception('User not authenticated');
+        }
         return $this->userRepo->findProfile($user->id);
     }
 
-    //     Xử lý upload avatar dùng chung
-    protected function handleAvatarUpload(?UploadedFile $avatar): ?string
+    protected function handleAvatarUpload(?UploadedFile $avatar, ?string $oldAvatar = null): ?string
     {
         if ($avatar && $avatar->isValid()) {
+            if ($oldAvatar) {
+                Storage::disk('public')->delete($oldAvatar);
+            }
             return $avatar->store('avatars', 'public');
         }
-
         return null;
     }
 
-    //     Cập nhật profile gồm avatar + password
-    public function updateProfile(int $id, array $data): bool
+    public function updateProfile(int $id, Request $request)
     {
-        $user = Auth::user();
-        if (!$user || $user->id !== $id) {
-            return false;
+        $user = $this->getUserById($id);
+        if (!$user || !Auth::user() || Auth::user()->id !== $id) {
+            throw new \Exception('Unauthorized or user not found');
         }
 
-        // Xử lý avatar nếu có
-        if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
-            $avatarPath = $this->handleAvatarUpload($data['avatar']);
+        $data = $request->only(['name', 'email', 'password', 'avatar']);
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8',
+            'avatar' => 'nullable|image|max:2048',
+        ];
+
+        $validator = Validator::make($data, $rules);
+        if ($validator->fails()) {
+            throw new \Exception($validator->errors()->first());
+        }
+
+        if (isset($data['avatar']) && $data['avatar'] instanceof UploadedFile) {
+            $avatarPath = $this->handleAvatarUpload($data['avatar'], $user->avatar);
             if ($avatarPath) {
                 $data['avatar'] = $avatarPath;
             } else {
@@ -108,27 +140,30 @@ class UserService
             unset($data['avatar']);
         }
 
-        // Xử lý mật khẩu nếu có
-        if (!empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
+        if (empty($data['password'])) {
             unset($data['password']);
+        } else {
+            $data['password'] = Hash::make($data['password']);
         }
 
-        return $this->userRepo->update($id, $data);
+        $this->userRepo->update($id, $data);
+        return $this->getUserById($id);
     }
 
-    //     Xoá profile của user hiện tại
-    public function profileDelete(int $id): bool
+    public function deleteProfile(int $id): bool
     {
-        $user = Auth::user();
-        if (!$user || $user->id !== $id) {
-            return false;
+        $user = $this->getUserById($id);
+        if (!$user || !Auth::user() || Auth::user()->id !== $id) {
+            throw new \Exception('Unauthorized or user not found');
         }
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
         return $this->userRepo->delete($id);
     }
 
-    //     Lấy kết quả của user theo ID
     public function getResultsByUserId(int $id)
     {
         return $this->resultRepo->showResults($id);

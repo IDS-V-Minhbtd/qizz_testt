@@ -96,8 +96,5 @@ public function importTemplate(Quiz $quiz)
     return view('admin.questions.import_template', compact('quiz'));
 }
 
-public function downloadTemplate()
-{
-    return response()->download(public_path('templates/question_import_template.xlsx'));
-}
+
 }
