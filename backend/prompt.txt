@@ -1,0 +1,40 @@
+seeding data: sudo docker exec -it laravel_app php artisan db:seed --class=FieldTagCatalogSeeder
+token Ib9z11jVueu3CNNGHlNPaTM1JptqS9saGHcVb8G6d7857502
+
+mô tả chức năng: 
+quizz manager có thể tạo quizz lẻ hoặc tạo course . trong course thì lại có nhiều quizz và lessons và flashcard
+ 
+Các tính năng chính:
+Hỗ trợ học viên
+| Tính năng                    | Mô tả                                                            |
+| ---------------------------- | ---------------------------------------------------------------- |
+1| **Lịch sử học tập**          | Xem các khóa học/quiz đã tham gia, số lần làm, điểm cao nhất.    |
+3| **Bookmark**                 | Đánh dấu câu hỏi hoặc bài học để ôn lại.                         |
+4| **Chế độ ôn tập thông minh** | Gợi ý ôn lại quiz dựa trên lỗi sai trước đó (spaced repetition). |
+5| **Quiz Practice Mode**       | Làm quiz thử không tính điểm, xem đáp án từng câu.               |
+6| **Quiz Review Mode**         | Xem lại các câu đã làm, kèm đáp án và lời giải.                  |
+
+Quản lý và tạo nội dung (Admin / Quizz Master)
+| Tính năng                         | Mô tả                                                |
+| --------------------------------- | ---------------------------------------------------- |
+9| **Clone quiz hoặc câu hỏi**       | Tạo bản sao quiz để chỉnh sửa.                       |
+10| **Phân quyền người tạo nội dung** | Cho phép nhiều quizz master tạo trong cùng khóa học. |
+11| **Phân loại độ khó quiz/câu hỏi** | Thêm cột difficulty và tag.                          |
+12| **Thêm giải thích câu hỏi**       | Hiển thị lời giải sau khi làm bài.                   |
+
+Thống kê và đánh giá
+| Tính năng                       | Mô tả                                             |
+| ------------------------------- | ------------------------------------------------- |
+13| **Dashboard học viên**          | Số quiz đã làm, điểm trung bình, tiến độ học tập. |
+14| **Dashboard khóa học**          | Tổng số quiz, lượt tham gia, quiz phổ biến nhất.  |
+15| **Thống kê từng quiz**          | Số lượt làm, câu sai nhiều, điểm trung bình.      |
+16| **Bảng xếp hạng (leaderboard)** | Xếp hạng người học theo điểm cao.                 |
+
+Hỗ trợ cộng đồng / chia sẻ
+| Tính năng                    | Mô tả                                  |
+| ---------------------------- | -------------------------------------- |
+17| **Bình luận quiz / bài học** | Cho phép thảo luận hoặc hỏi đáp.       |
+18| **Chia sẻ quiz / flashcard** | Gửi link public, nhúng iframe.         |
+19| **Bộ đề công khai theo tag** | Người dùng tìm kiếm bộ đề theo chủ đề. |
+
+
