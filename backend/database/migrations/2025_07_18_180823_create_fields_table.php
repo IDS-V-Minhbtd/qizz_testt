@@ -17,8 +17,6 @@ return new class extends Migration
             $table->id(); // Khóa chính, tự động tăng
             $table->unsignedBigInteger('tag_id'); // Khóa ngoại tới tags
             $table->string('name'); // Tên lĩnh vực/tag
-         
-
             // Ràng buộc khóa ngoại
             $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
         });

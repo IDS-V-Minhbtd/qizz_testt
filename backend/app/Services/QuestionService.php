@@ -122,14 +122,12 @@ class QuestionService
                     'quiz_id' => $quizId,
                     'question' => $questionText,
                     'order' => $order++,
-                    'type' => 'multiple_choice',
                 ]);
                 $answersForService = [];
                 foreach ($answers as $label => $ansText) {
                     $answersForService[$label] = ['text' => $ansText];
                 }
                 $this->createAnswersForQuestion($question->id, [
-                    'answer_type' => 'multiple_choice',
                     'answers' => $answersForService,
                     'correct_answer' => $correct,
                 ]);
@@ -217,14 +215,12 @@ class QuestionService
                     'quiz_id' => $quizId,
                     'question' => $questionText,
                     'order' => $order++,
-                    'type' => 'multiple_choice',
                 ]);
                 $answersForService = [];
                 foreach ($answers as $label => $ansText) {
                     $answersForService[$label] = ['text' => $ansText];
                 }
                 $this->createAnswersForQuestion($question->id, [
-                    'answer_type' => 'multiple_choice',
                     'answers' => $answersForService,
                     'correct_answer' => $correct,
                 ]);
@@ -263,44 +259,25 @@ class QuestionService
             'quiz_id'  => $data['quiz_id'],
             'question' => $data['question'],
             'order'    => $data['order'] ?? 0,
-            'type'     => $data['answer_type'],
             'image'    => $data['image'] ?? $question->image,
         ]);
     }
 
     protected function createAnswersForQuestion(int $questionId, array $data): void
     {
-        switch ($data['answer_type']) {
-            case 'multiple_choice':
-                foreach ($data['answers'] as $id => $answer) {
-                    if (!empty(trim($answer['text'] ?? ''))) {
-                        $this->answerRepo->create([
-                            'question_id' => $questionId,
-                            'answer' => $answer['text'],
-                            'is_correct' => ((string)$data['correct_answer'] === (string)$id),
-                        ]);
-                    }
+        // Logic tạo đáp án cho câu hỏi trắc nghiệm (đa lựa chọn)
+        if (isset($data['answers']) && is_array($data['answers']) && isset($data['correct_answer'])) {
+            foreach ($data['answers'] as $index => $answer) {
+                if (!empty(trim($answer['text'] ?? ''))) {
+                    // correct_answer từ request là index dựa trên 1
+                    $isCorrect = ((int)$data['correct_answer'] === ($index + 1));
+                    $this->answerRepo->create([
+                        'question_id' => $questionId,
+                        'answer' => $answer['text'],
+                        'is_correct' => $isCorrect,
+                    ]);
                 }
-                break;
-
-            case 'text_input':
-                $this->answerRepo->create([
-                    'question_id' => $questionId,
-                    'answer' => $data['text_answer'],
-                    'is_correct' => true,
-                ]);
-                break;
-
-            case 'true_false':
-                $correct = (int)$data['correct_answer'] === 1;
-                $this->answerRepo->createMany([
-                    ['question_id' => $questionId, 'answer' => 'Đúng', 'is_correct' => $correct],
-                    ['question_id' => $questionId, 'answer' => 'Sai', 'is_correct' => !$correct],
-                ]);
-                break;
-
-            default:
-                throw new Exception('Loại câu hỏi không hợp lệ.');
+            }
         }
     }
 

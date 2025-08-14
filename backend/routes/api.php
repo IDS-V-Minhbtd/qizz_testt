@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\QuizController;
+
 use App\Http\Controllers\Api\QuizApiController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AnswerController;
@@ -12,9 +12,6 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\FlashcardController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ProgressController;
-use App\Http\Controllers\CommentController;
-use App\Http\Controllers\NoteController;
-use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,10 +21,10 @@ use App\Http\Controllers\AdminController;
 
 // ========== AUTH ==========
 Route::prefix('auth')->group(function () {
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-    Route::get('me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+    Route::post('register', [AuthApiController::class, 'register']);
+    Route::post('login', [AuthApiController::class, 'login']);
+    Route::post('logout', [AuthApiController::class, 'logout'])->middleware('auth:sanctum');
+    Route::get('me', [AuthApiController::class, 'me'])->middleware('auth:sanctum');
 });
 
 // ========== USER ==========
@@ -38,15 +35,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ========== QUIZZES ==========
 Route::prefix('quizzes')->group(function () {
-    Route::get('/', [QuizController::class, 'index']);
-    Route::get('/{id}', [QuizController::class, 'show']);
-
     Route::middleware(['auth:sanctum', 'role:quizz_manager,admin'])->group(function () {
-        Route::post('/', [QuizController::class, 'store']);
-        Route::put('/{id}', [QuizController::class, 'update']);
-        Route::delete('/{id}', [QuizController::class, 'destroy']);
-        Route::post('/import', [QuizController::class, 'import']);
-        Route::post('/clone/{id}', [QuizController::class, 'clone']);
+        Route::get('/', [QuizApiController::class, 'index']);
+        Route::get('/{id}', [QuizApiController::class, 'show']);
+        Route::post('/', [QuizApiController::class, 'store']);
+        Route::put('/{id}', [QuizApiController::class, 'update']);
+        Route::delete('/{id}', [QuizApiController::class, 'destroy']);
+        Route::post('/import', [QuizApiController::class, 'import']);
+        Route::post('/clone/{id}', [QuizApiController::class, 'clone']);
     });
 
     // Questions & answers nested
@@ -120,29 +116,4 @@ Route::middleware('auth:sanctum')->prefix('progress')->group(function () {
     Route::get('/{courseId}', [ProgressController::class, 'show']);
 });
 
-// ========== COMMENTS ==========
-Route::middleware('auth:sanctum')->prefix('comments')->group(function () {
-    Route::post('/', [CommentController::class, 'store']);
-    Route::delete('/{id}', [CommentController::class, 'destroy']);
-});
 
-// ========== NOTES ==========
-Route::middleware('auth:sanctum')->prefix('notes')->group(function () {
-    Route::get('/', [NoteController::class, 'index']);
-    Route::post('/', [NoteController::class, 'store']);
-    Route::put('/{id}', [NoteController::class, 'update']);
-    Route::delete('/{id}', [NoteController::class, 'destroy']);
-});
-
-// ========== ADMIN DASHBOARD ==========
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/stats', [AdminController::class, 'stats']);
-    Route::get('/pending', [AdminController::class, 'pendingContent']);
-    Route::post('/approve/{type}/{id}', [AdminController::class, 'approve']);
-    Route::post('/reject/{type}/{id}', [AdminController::class, 'reject']);
-});
-
-// ========== QUIZ API WITH THROTTLE ==========
-Route::middleware('throttle:60,1')->group(function () {
-    Route::apiResource('quiz', QuizApiController::class);
-});

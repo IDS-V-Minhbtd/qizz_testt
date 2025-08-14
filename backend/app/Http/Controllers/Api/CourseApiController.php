@@ -8,8 +8,7 @@ use App\Services\CourseService;
 use App\Services\LessonService;
 use App\Http\Resources\CourseResource;
 use App\Http\Controllers\Controller;
-use App\Models\Tag;
-use App\Models\Field;
+
 
 class CourseApiController extends Controller
 {
@@ -23,19 +22,15 @@ class CourseApiController extends Controller
         $this->lessonService = $lessonService;
     }
 
-    /**
-     * Get data for creating a course (tags and fields)
-     */
     public function create()
     {
-        $tags = Tag::select('id', 'name')->get();
-        $fields = Field::select('id', 'name', 'tag_id')->get();
+        $tags = $this->courseService->getAllTags();
+        $fields = $this->courseService->getAllFields();
         return response()->json([
             'success' => true,
             'data' => [
                 'tags' => $tags,
-                'fields' => $fields,
-                'levels' => ['Beginner', 'Intermediate', 'Expert']
+                'fields' => $fields
             ]
         ], 200);
     }
@@ -159,4 +154,6 @@ class CourseApiController extends Controller
             'message' => 'Khóa học đã được xóa thành công.'
         ], 200);
     }
-}
+
+
+} 

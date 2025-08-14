@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Repositories\CourseRepository;
-use App\Models\Tag;
-use App\Models\Field;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -54,7 +52,7 @@ class CourseService
     public function getAllTags(): Collection
     {
         Log::info('Fetching all tags');
-        return Tag::select('id', 'name')->get();
+        return $this->courseRepository->getTags(0); 
     }
 
     /**
@@ -109,7 +107,7 @@ class CourseService
         return $course;
     }
 
-    /**
+    /** 
      * Update a course
      *
      * @param int $id

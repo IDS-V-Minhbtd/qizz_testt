@@ -1,40 +1,75 @@
 <?php
-namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequest;
+namespace App\Http\Controllers\Api;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Controller;
 
-class AuthController extends Controller
+class AuthApiController extends Controller
 {
-    /**
-     * Hiển thị form đăng nhập.
-     */
-    public function showLoginForm()
+    public function register(Request $request)
     {
-        return view('auth.login'); // Trả về view đăng nhập (Tạo file auth/login.blade.php)
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'role'     => 'user', // Default role
+        ]);
+
+        $token = $user->createToken('api_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type'   => 'Bearer',
+            'user'         => $user
+        ], 201);
     }
 
-    /**
-     * Xử lý đăng nhập.
-     */
-    public function login(LoginRequest $request)
+    public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required'
+        ]);
 
-        if (Auth::attempt($credentials)) {
-            return redirect()->route('dashboard')->with('success', 'Đăng nhập thành công!');
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Email hoặc mật khẩu không đúng.'
+            ], 401);
         }
 
-        return back()->withErrors(['email' => 'Email hoặc mật khẩu không đúng.']);
+        $token = $user->createToken('api_token')->plainTextToken;
+
+        return response()->json([
+            'access_token' => $token,
+            'token_type'   => 'Bearer',
+            'user'         => $user
+        ]);
     }
 
-    /**
-     * Xử lý đăng xuất.
-     */
     public function logout(Request $request)
     {
-        Auth::logout();
-        return redirect()->route('login')->with('success', 'Bạn đã đăng xuất.');
+        $request->user()->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Đăng xuất thành công.'
+        ]);
+    }
+
+    public function me(Request $request)
+    {
+        return response()->json($request->user());
     }
 }

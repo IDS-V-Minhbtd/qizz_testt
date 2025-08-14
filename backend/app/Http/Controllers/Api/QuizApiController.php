@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\QuizService;
 use App\Services\QuestionService;
 use App\Http\Requests\QuizRequest;
-use App\Http\Resources\QuizResource;
+use App\Http\Controllers\Controller;
 
-class QuizController extends Controller
+class QuizApiController extends Controller
 {
     protected QuizService $quizService;
     protected QuestionService $questionService;
@@ -23,66 +22,52 @@ class QuizController extends Controller
     public function index()
     {
         $user = auth()->user();
-
         if ($user->role === 'quizz_manager') {
             $quizzes = $this->quizService->getQuizzesForManager($user->id);
         } else {
             $quizzes = $this->quizService->getAll();
         }
-
-        return QuizResource::collection($quizzes);
+        return response()->json($quizzes);
     }
 
     public function store(QuizRequest $request)
     {
-        $quiz = $this->quizService->create($request->validated());
+        $validatedData = $request->validated();
+        $quiz = $this->quizService->create($validatedData);
 
-        return response()->json([
-            'message' => 'Quiz created successfully!',
-            'data' => new QuizResource($quiz),
-        ], 201);
+        return response()->json($quiz, 201);
     }
 
     public function show($id)
     {
         $quiz = $this->quizService->getById($id);
-        $catalog = $this->quizService->getCatalogs();
-        $quiz->load(['catalog', 'questions']);
-
-        return new QuizResource($quiz);
+        return response()->json($quiz);
     }
 
     public function update(QuizRequest $request, $id)
     {
-        $quiz = $this->quizService->update($id, $request->validated());
+        $validatedData = $request->validated();
+        $quiz = $this->quizService->update($id, $validatedData);
 
-        return response()->json([
-            'message' => 'Quiz updated successfully!',
-            'data' => new QuizResource($quiz),
-        ]);
+        return response()->json($quiz);
     }
 
     public function destroy($id)
     {
         $this->quizService->delete($id);
 
-        return response()->json([
-            'message' => 'Quiz deleted successfully!',
-        ]);
+        return response()->json(['message' => 'Quiz deleted successfully!'], 204);
     }
 
-    // Optional: Get import view info if needed via API
-    public function importInfo($id)
+    public function import(Request $request)
     {
-        $quiz = Quiz::with('questions')->findOrFail($id);
-        return response()->json([
-            'quiz' => new QuizResource($quiz),
-        ]);
+        // Implement your import logic here to return JSON
+        return response()->json(['message' => 'Quiz import initiated.', 'file' => $request->file('file')->getClientOriginalName() ?? 'No file provided']);
     }
 
-    // Download template file (React có thể tải bằng link này)
-    public function downloadTemplate()
+    public function clone($id)
     {
-        return response()->download(public_path('templates/question_import_template.xlsx'));
+        // Implement your clone logic here to return JSON
+        return response()->json(['message' => 'Quiz cloned successfully!', 'cloned_quiz_id' => $id]);
     }
 }

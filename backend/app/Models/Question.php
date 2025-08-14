@@ -13,7 +13,6 @@ class Question extends Model
         'quiz_id',
         'question',
         'order',
-        'answer_type',
         'picture',
     ];
 

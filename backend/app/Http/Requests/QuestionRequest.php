@@ -11,19 +11,9 @@ class QuestionRequest extends FormRequest
         return true;
     }
 
-    /**
-     * ✅ Ghi đè dữ liệu trước khi validate
-     */
     protected function prepareForValidation()
     {
-        if ($this->input('answer_type') === 'multiple_choice') {
-            $answers = collect($this->input('answers', []))
-                ->values() // bỏ các key ban đầu
-                ->mapWithKeys(fn($ans, $i) => [($i + 1) => $ans]) // đánh lại từ 1
-                ->toArray();
-
-            $this->merge(['answers' => $answers]);
-        }
+        // Nếu có logic prepareForValidation khác không liên quan đến answer_type, giữ lại ở đây
     }
 
     public function rules()
@@ -37,11 +27,10 @@ class QuestionRequest extends FormRequest
         $rules = [
             'question' => ['required', 'string', 'max:255'],
             'order' => 'required|integer|min:1|max:100',
-            'answer_type' => 'required|string|in:multiple_choice,text_input,true_false',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // 2MB
         ];
 
-        if ($this->input('answer_type') === 'multiple_choice') {
+        if ($this->has('answers')) {
             $rules['answers'] = 'required|array|min:2';
             $rules['answers.*.text'] = 'required|string|max:255';
             $rules['correct_answer'] = [
@@ -71,9 +60,7 @@ class QuestionRequest extends FormRequest
             'order.integer' => 'Thứ tự phải là số nguyên.',
             'order.min' => 'Thứ tự phải lớn hơn hoặc bằng 1.',
 
-            'answer_type.required' => 'Loại câu trả lời không được để trống.',
-            'answer_type.in' => 'Loại câu trả lời không hợp lệ.',
-
+          
             'answers.required' => 'Cần ít nhất 2 đáp án cho câu hỏi dạng lựa chọn.',
             'answers.array' => 'Danh sách đáp án phải là một mảng.',
             'answers.min' => 'Cần ít nhất 2 đáp án cho câu hỏi dạng lựa chọn.',

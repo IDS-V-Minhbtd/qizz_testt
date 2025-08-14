@@ -185,14 +185,12 @@ class QuestionController extends Controller
                     'quiz_id' => $quizId,
                     'question' => $questionText,
                     'order' => $order++,
-                    'answer_type' => 'multiple_choice',
                 ]);
                 $answersForService = [];
                 foreach ($answers as $label => $ansText) {
                     $answersForService[$label] = ['text' => $ansText];
                 }
                 $this->questionService->createAnswersForQuestion($question->id, [
-                    'answer_type' => 'multiple_choice',
                     'answers' => $answersForService,
                     'correct_answer' => $correct,
                 ]);
@@ -278,14 +276,13 @@ class QuestionController extends Controller
                     'quiz_id' => $quizId,
                     'question' => $questionText,
                     'order' => $order++,
-                    'answer_type' => 'multiple_choice',
                 ]);
                 $answersForService = [];
                 foreach ($answers as $label => $ansText) {
                     $answersForService[$label] = ['text' => $ansText];
                 }
                 $this->questionService->createAnswersForQuestion($question->id, [
-                    'answer_type' => 'multiple_choice',
+               
                     'answers' => $answersForService,
                     'correct_answer' => $correct,
                 ]);

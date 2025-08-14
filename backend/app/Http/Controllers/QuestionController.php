@@ -31,20 +31,15 @@ class QuestionController extends Controller
 
     public function store(QuestionRequest $request, $quizId)
     {
-        $validatedData = $request->validated(); // <-- lấy toàn bộ dữ liệu đã validate
+        $validatedData = $request->validated();
         $validatedData['quiz_id'] = $quizId;
 
-        Log::info('Dữ liệu đã validate trước khi gửi tới QuestionService:', $validatedData);
-
         try {
-            $this->questionService->createWithAnswers($validatedData);
-            return redirect()->route('admin.quizzes.edit', $quizId)
-                ->with('success', 'Câu hỏi đã được thêm thành công!');
+            $question = $this->questionService->create($validatedData);
+            return response()->json(['message' => 'Câu hỏi đã được thêm thành công!', 'question' => $question], 201);
         } catch (\Exception $e) {
             Log::error('Lỗi khi tạo câu hỏi: ' . $e->getMessage());
-            return redirect()->back()
-                ->withErrors(['error' => 'Không thể tạo câu hỏi: ' . $e->getMessage()])
-                ->withInput();
+            return response()->json(['error' => 'Không thể tạo câu hỏi: ' . $e->getMessage()], 500);
         }
     }
 
@@ -185,14 +180,12 @@ class QuestionController extends Controller
                     'quiz_id' => $quizId,
                     'question' => $questionText,
                     'order' => $order++,
-                    'answer_type' => 'multiple_choice',
                 ]);
                 $answersForService = [];
                 foreach ($answers as $label => $ansText) {
                     $answersForService[$label] = ['text' => $ansText];
                 }
                 $this->questionService->createAnswersForQuestion($question->id, [
-                    'answer_type' => 'multiple_choice',
                     'answers' => $answersForService,
                     'correct_answer' => $correct,
                 ]);
@@ -278,14 +271,14 @@ class QuestionController extends Controller
                     'quiz_id' => $quizId,
                     'question' => $questionText,
                     'order' => $order++,
-                    'answer_type' => 'multiple_choice',
+    
                 ]);
                 $answersForService = [];
                 foreach ($answers as $label => $ansText) {
                     $answersForService[$label] = ['text' => $ansText];
                 }
                 $this->questionService->createAnswersForQuestion($question->id, [
-                    'answer_type' => 'multiple_choice',
+                   
                     'answers' => $answersForService,
                     'correct_answer' => $correct,
                 ]);

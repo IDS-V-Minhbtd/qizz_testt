@@ -36,6 +36,14 @@ use App\Repositories\Interfaces\LessonRepositoryInterface;
 use App\Repositories\LessonRepository;
 
 
+use App\Repositories\Interfaces\FlashcardRepositoryInterface;
+use App\Repositories\FlashcardRepository;
+
+use App\Repositories\Interfaces\ProgressRepositoryInterface;
+use App\Repositories\ProgressRepository;
+
+
+
 // Services
 use App\Services\QuizService;
 use App\Services\QuestionService;
@@ -45,6 +53,10 @@ use App\Services\UserService;
 use App\Services\CourseService;
 use App\Services\TagService;
 use App\Services\CatalogService;
+use App\Services\FlashcardService;
+use App\Services\LessonService;
+use App\Services\ProgressService;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,10 +72,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CourseRepositoryInterface::class, CourseRepository::class);
         $this->app->bind(TagRepositoryInterface::class, TagRepository::class);
         $this->app->bind(CatalogRepositoryInterface::class, CatalogRepository::class);
-        $this->app->bind(
-            \App\Repositories\Interfaces\LessonRepositoryInterface::class,
-            \App\Repositories\LessonRepository::class
-        );
+        $this->app->bind(LessonRepositoryInterface::class, LessonRepository::class);
+        $this->app->bind(FlashcardRepositoryInterface::class, FlashcardRepository::class);
+        $this->app->bind(ProgressRepositoryInterface::class, ProgressRepository::class);
+
 
 
         $this->app->bind(QuizService::class, function ($app) {
@@ -122,6 +134,18 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CatalogService::class, function ($app) {
             return new CatalogService($app->make(CatalogRepositoryInterface::class));
         });
+        $this->app->bind(LessonService::class, function ($app){
+            return new LessonService($app->make(LessonRepositoryInterface::class));
+        });
+        
+        $this->app->bind(FlashcardService::class, function ($app) {
+    return new FlashcardService($app->make(FlashcardRepositoryInterface::class));
+});
+        $this->app->bind(ProgressService::class, function ($app) {
+            return new ProgressService($app->make(ProgressRepositoryInterface::class));
+        });
+        
+       
     }
 
     public function boot(): void
